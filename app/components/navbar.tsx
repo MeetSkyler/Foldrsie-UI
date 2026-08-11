@@ -21,7 +21,7 @@ const Navbar = () => {
 
       {/* .......Login and Try for Free...... */}
       <div className="flex flex-row h-full gap-[12px]">
-      <button onClick={openLogin} className=" text-label-sm s-btn-noicon-32 flex items-center justify-center bg-green-400">
+      <button onClick={openLogin} className=" text-label-sm s-btn-noicon-32 flex items-center cursor-pointer justify-center ">
         Login
       </button>
 

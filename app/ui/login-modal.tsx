@@ -4,10 +4,10 @@ import Image from "next/image";
 import { useAuthModal } from "@/app/context/auth-modal-context";
 import { LoginForm } from "./login-form";
 import SuccessPortion from "./successPortion";
-import img1 from "@/public/img1.png";
-import img3 from "@/public/img3.png";
-import img4 from "@/public/img4.png";
-import img5 from "@/public/img5.png";
+import img1 from "@/public/img1.jpg";
+import img3 from "@/public/img3.jpg";
+import img4 from "@/public/img4.jpg";
+import img5 from "@/public/img5.jpg";
 
 const carouselImages = [img1, img3, img4, img5];
 

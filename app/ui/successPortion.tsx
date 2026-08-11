@@ -1,24 +1,12 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuthModal } from "@/app/context/auth-modal-context";
 
 const successPortion = () => {
   const { closeLogin } = useAuthModal();
   const [name, setname] = useState("");
-  const [donetyping, setdonetyping] = useState(false);
   const [status, setstatus] = useState("idle"); // "idle" | "error"
   const [isautofilled, setisautofilled] = useState(false); // true right after browser autofill/paste-suggestion
-
-  useEffect(() => {
-    if (!name) {
-      setdonetyping(false);
-      return;
-    }
-    setdonetyping(false);
-    const timer = setTimeout(() => {
-      setdonetyping(true);
-    }, 600);
-    return () => clearTimeout(timer);
-  }, [name]);
+  const isfilled = name.length > 0;
 
   function handleNameChange(value: string) {
     // typecheck: strip anything that isn't a letter or space, so only a name can ever be entered
@@ -55,7 +43,6 @@ const successPortion = () => {
           <form onSubmit={(e) => { e.preventDefault(); handleContinueWithName(); }} className={`bg-surface-weak rounded-[12px] w-full h-[48px] items-center flex text-paragraph-sm overflow-hidden transition-colors duration-200 ${
             status === "error" ? "border border-red-500" :
             isautofilled ? "border border-line-white" :
-            donetyping ? "border border-line-strong" :
             "border border-line-strong focus-within:border-line-white"
           }`}>
             <input
@@ -71,7 +58,7 @@ const successPortion = () => {
                   setisautofilled(true);
                 }
               }}
-              className={`px-[12px] py-[16px] text-paragraph-sm w-full ${isautofilled ? "text-strong" : "text-soft"} border-none hover:bg-surface-alpha-light-soft focus:hover:bg-surface-weak focus:text-white outline-none autofill:bg-surface-weak`}
+              className={`px-[12px] py-[16px] text-paragraph-sm w-full ${isautofilled || isfilled ? "text-strong" : "text-soft"} border-none hover:bg-surface-alpha-light-soft focus:hover:bg-surface-weak focus:text-white outline-none autofill:bg-surface-weak`}
             />
           </form>
           {status === "error" && (

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import Image from 'next/image';
 import Foldrise from '@/public/Foldrise.png'
 import { useAuthModal } from "@/app/context/auth-modal-context";
@@ -8,23 +8,11 @@ import Link from 'next/link';
 
 const loginPortion = ({ onContinue }: { onContinue: (email: string) => void }) => {
   const [email, setemail] = useState("");
-  const [donetyping, setdonetyping] = useState(false);
   const [status, setstatus] = useState("idle"); // "idle" | "error"
   const [isdisabled, setisdisabled] = useState(false); // controls whether the email input is locked
   const [isautofilled, setisautofilled] = useState(false); // true right after browser autofill/paste-suggestion
   const {closeLogin}=useAuthModal();
-
-  useEffect(()=>{
-    if(!email){
-      setdonetyping(false);
-      return;
-    }
-    setdonetyping(false);
-    const timer=setTimeout(()=>{
-      setdonetyping(true);
-    },600);
-    return()=>clearTimeout(timer);
-  },[email]);
+  const isfilled = email.length > 0;
 
   function handleContinueWithEmail() {
     const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -235,7 +223,6 @@ const loginPortion = ({ onContinue }: { onContinue: (email: string) => void }) =
             <form onSubmit={(e) => { e.preventDefault(); handleContinueWithEmail(); }} className={`bg-surface-weak rounded-[12px] w-full h-[48px] items-center flex text-paragraph-sm overflow-hidden transition-colors duration-200 ${
               status === "error" ? "border border-red-500" :
               isautofilled ? "border border-line-white" :
-              donetyping ? "border border-line-strong" :
               "border border-line-strong focus-within:border-line-white"
             }`}>
 
@@ -252,7 +239,7 @@ const loginPortion = ({ onContinue }: { onContinue: (email: string) => void }) =
                   setisautofilled(true);
                 }
               }}
-              className={`px-[12px] py-[16px] text-paragraph-sm w-full ${isdisabled ? "text-disabled cursor-not-allowed hover:bg-surface-weak" : isautofilled ? "text-strong" : "text-soft"}  border-none hover:bg-surface-alpha-light-soft focus:hover:bg-surface-weak focus:text-white outline-none autofill:bg-surface-weak`}/>
+              className={`px-[12px] py-[16px] text-paragraph-sm w-full ${isdisabled ? "text-disabled cursor-not-allowed hover:bg-surface-weak" : isautofilled || isfilled ? "text-strong" : "text-soft"}  border-none hover:bg-surface-alpha-light-soft focus:hover:bg-surface-weak focus:text-white outline-none autofill:bg-surface-weak`}/>
               </form>
             {status === "error" && (
               <p className='text-label-xs text-red-500'>Please enter a valid email address</p>

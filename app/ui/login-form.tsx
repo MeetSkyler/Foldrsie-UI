@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { motion } from "motion/react";
-import img1 from '@/public/img1.png'
-import img3 from '@/public/img3.png'
-import img4 from '@/public/img4.png'
-import img5 from '@/public/img5.png'
+import img1 from '@/public/img1.jpg'
+import img3 from '@/public/img3.jpg'
+import img4 from '@/public/img4.jpg'
+import img5 from '@/public/img5.jpg'
 import Image from 'next/image';
 import LoginPortion from "./loginPortion";
 import VerifyPortion from "./verifyPortion";
