@@ -1,0 +1,24 @@
+.........................Sidebar.tsx..........................
+Buddy sidebar mai simply pages ki links hai ,
+sidebar open close yani collapse function added hai ,
+Generate,Settings,ShareFeedback,Gallery fill haal yahii hai options aik top bar hai aik bottom bar within bottom bar of sidebar.
+
+
+
+.........................navbar.tsx...........................
+Buddy yai navbar hai 
+but aiskii do functions hai 
+Agr user new hai and First Time land kar raha hai web pai to osko alug navbar show hoga .. os time isusernew state true hogii
+Agr user already login hai and oska first time naye hai to buddy oskoo dosra navbar show hoga jokai state false kai time apply horaahah hai woah wala,
+Buddy Pricing pur new user jub bhi click karaiga to login screen show hogii buddy login karnai kai baad hi main pricing modal oskoo show hoga .
+buddy agr user start mai start for free btn pur click karai tub bhi oskoo login screen show hogii ..
+and buddy login btn pai clcik pai bhi login page hi open hoga...
+
+
+.........................sideDrawer.tsx...........................
+buddy yai bohut important or main back hai whole ui ki or function ki 
+buddy generate btn abhi disbaled hai hai yai tabhii disabled sai hataiga jub user all options in sidedrawer slect karlaiga for example:
+  face,dress,poses etc yai sub jub select  hongi tubhii generate btn work karaiga and buddy option koye bhi buddy optional naye hoga nahii by default selected .
+and buddy main thing new user agr sidedrawer mai kaisii bhi option pai click karaiga to ossai login mangai ga yani login screen show hogii then buddy login kai baad sarai option selectable hojayiangai.
+
+

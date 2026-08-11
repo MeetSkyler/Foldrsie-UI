@@ -1,0 +1,59 @@
+  {/* ...topBar... */}
+      <div className={`w-full h-[60px] bg-surface-weak  flex items-center ${iscollapsed ? "justify-center" : "justify-between px-[16px]"}`}>
+
+      <div className={`flex flex-row gap-[6px] px-[4px] items-center justify-center  ${iscollapsed ?"hidden" : ""}`}>
+
+        <div className="p-[6px]">
+          <svg  width="20" height="20" viewBox="0 0 20 20" fill="none">
+          <rect width="20" height="20" rx="4" fill="white"/>
+          <path d="M4.4707 15.0966H5.11369C6.70483 15.0966 7.5004 15.0966 8.1556 14.7183C8.8108 14.3401 9.20859 13.6511 10.0042 12.2731L11.4524 9.76465" stroke="#101214" strokeWidth="1.64706" strokeLinecap="round" strokeLinejoin="round"/>
+          <path d="M13.2944 4.23535C13.2944 4.23535 13.4112 5.32593 13.8664 5.78104C14.3215 6.23616 15.4121 6.353 15.4121 6.353C15.4121 6.353 14.3215 6.46984 13.8664 6.92496C13.4112 7.38007 13.2944 8.47065 13.2944 8.47065C13.2944 8.47065 13.1776 7.38007 12.7224 6.92496C12.2673 6.46984 11.1768 6.353 11.1768 6.353C11.1768 6.353 12.2673 6.23616 12.7224 5.78104C13.1776 5.32593 13.2944 4.23535 13.2944 4.23535Z" fill="#101214" stroke="#101214" strokeWidth="0.352941" strokeLinejoin="round"/>
+          </svg>
+        </div>
+         <p className="text-strong text-[16px] font-medium">Foldrise</p>
+      </div>
+
+      {/* ....SidebarCollpasedIcon...... */}
+      <div onClick={()=>toggleCollapsed()} className={`p-[6px] aspect-square cursor-pointer  items-center justify-center group hover:bg-surface-light shrink-0 rounded-[8px] ${iscollapsed ? "" : "p-[6px]"}`}>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-soft group-hover:text-strong">
+         <path d="M7.4987 3.33203V16.6654M12.4987 8.33203L10.832 9.9987L12.4987 11.6654M3.33203 4.9987C3.33203 4.55667 3.50763 4.13275 3.82019 3.82019C4.13275 3.50763 4.55667 3.33203 4.9987 3.33203H14.9987C15.4407 3.33203 15.8646 3.50763 16.1772 3.82019C16.4898 4.13275 16.6654 4.55667 16.6654 4.9987V14.9987C16.6654 15.4407 16.4898 15.8646 16.1772 16.1772C15.8646 16.4898 15.4407 16.6654 14.9987 16.6654H4.9987C4.55667 16.6654 4.13275 16.4898 3.82019 16.1772C3.50763 15.8646 3.33203 15.4407 3.33203 14.9987V4.9987Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+        </svg>
+      </div>
+      </div>
+
+      {/* ....BottomBar.... */}
+      <div className="items-center flex flex-col justify-between relative w-full flex-1 min-h-0">
+              {/* ........TOP LINKS......... */}
+      <div className="w-full p-[16px]  bg-surface-weak  flex flex-col items-center justify-center gap-[4px] ">
+        {TopNavLinks.map((link)=>{
+          const isActive=pathname===link.href;
+      
+          return(
+             <Link key={link.href} href={link.href} className={`w-full cursor-pointer py-[8px] group px-[10px] flex items-center transition-all duration-200 ease-in-out hover:bg-surface-alpha-light-soft rounded-[10px] ${isActive?"bg-surface-soft":""} ${iscollapsed?"justify-center gap-0":"gap-[8px]"}`}>
+             <i className={`shrink-0 ${isActive?"text-strong":"text-sub"} group-hover:text-strong`}>{link.icon}</i>
+             <p className={`text-paragraph-sm whitespace-nowrap overflow-hidden transition-all duration-200 ease-in-out ${isActive?"text-strong":"text-sub"} group-hover:text-strong ${iscollapsed ? "max-w-0 opacity-0" : "max-w-[160px] opacity-100"}`}>{link.label}</p>
+             </Link>
+          )
+        })}
+
+      </div>
+      {/* ........BOTTOM LINKS......... */}
+      <div className="w-full bg-surface-weak p-[16px] flex flex-col items-center justify-center gap-[4px] ">
+        {BottomNavLinks.map((link)=>{
+             const isActive=pathname===link.href;
+          return(
+               <Link key={link.href} href={link.href} className={`w-full  py-[8px] px-[10px] cursor-pointer group flex items-center transition-all duration-200 ease-in-out hover:bg-surface-alpha-light-soft  ${isActive?"bg-surface-soft":""} rounded-[10px] ${iscollapsed?"justify-center gap-0":"gap-[8px]"}`}>
+              <i className={`shrink-0 ${isActive?"text-strong":"text-sub"} group-hover:text-strong`}>{link.icon}</i>
+              <p className={`text-paragraph-sm whitespace-nowrap overflow-hidden transition-all duration-200 ease-in-out ${isActive?"text-strong":"text-sub"} group-hover:text-strong ${iscollapsed ? "max-w-0 opacity-0" : "max-w-[160px] opacity-100"}`}>{link.label}</p>
+             </Link>
+          )
+        })}
+      </div>
+       
+      </div>
+
+      </div>
+  )
+}
+
+export default Sidebar

@@ -1,0 +1,897 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-inter);
+}
+
+@theme {
+  /* ---- Base palette — Neutrals / Solid ---- */
+  --color-neutral-50: #EBEDF0;
+  --color-neutral-100: #8C8E91;
+  --color-neutral-150: #6F7073;
+  --color-neutral-200: #4F5052;
+  --color-neutral-300: #3E3F41;
+  --color-neutral-400: #343538;
+  --color-neutral-500: #2A2B2E;
+  --color-neutral-600: #242528;
+  --color-neutral-700: #212325;
+  --color-neutral-800: #16171A;
+  --color-neutral-900: #0F1113;
+
+  /* ---- Base palette — Neutrals / Alpha / White ---- */
+  --color-white-2: rgb(235 237 240 / 2%);
+  --color-white-5: rgb(235 237 240 / 5%);
+  --color-white-8: rgb(235 237 240 / 8%);
+  --color-white-12: rgb(235 237 240 / 12%);
+  --color-white-20: rgb(235 237 240 / 20%);
+  --color-white-40: rgb(235 237 240 / 40%);
+  --color-white-60: rgb(235 237 240 / 60%);
+  --color-white-80: rgb(235 237 240 / 80%);
+  --color-white-90: rgb(235 237 240 / 90%);
+  --color-white-97: rgb(235 237 240 / 97%);
+
+  /* ---- Base palette — Neutrals / Alpha / Black ---- */
+  --color-black-2: rgb(11 13 14 / 2%);
+  --color-black-5: rgb(11 13 14 / 5%);
+  --color-black-8: rgb(11 13 14 / 8%);
+  --color-black-12: rgb(11 13 14 / 12%);
+  --color-black-20: rgb(11 13 14 / 20%);
+  --color-black-40: rgb(11 13 14 / 40%);
+  --color-black-60: rgb(11 13 14 / 60%);
+  --color-black-80: rgb(11 13 14 / 80%);
+  --color-black-90: rgb(11 13 14 / 90%);
+  --color-black-97: rgb(11 13 14 / 97%);
+
+  /* ---- Extra ---- */
+  --color-pure-dark: var(--color-neutral-900);
+  --color-pure-light: hsla(0, 0%, 100%, 1);
+
+  /* ---- Semantic — foreground (text + icons) ---- */
+  --color-strong: var(--color-white-97);
+  --color-sub: var(--color-neutral-100);
+  --color-soft: var(--color-neutral-150);
+  --color-disabled: var(--color-neutral-400);
+  --color-darker: var(--color-pure-dark);
+
+  /* ---- Semantic — border ---- */
+  --color-line-strong: var(--color-white-8);
+  --color-line-sub: var(--color-white-5);
+  --color-line-white: var(--color-white-97);
+
+  /* ---- Semantic — surface (background) ---- */
+  --color-surface-dark: var(--color-neutral-900);
+  --color-surface-weak: var(--color-neutral-800);
+  --color-surface-soft: var(--color-neutral-700);
+  --color-surface-mid: var(--color-neutral-600);
+  --color-surface-light: var(--color-neutral-500);
+  --color-surface-white: var(--color-pure-light);
+  --color-surface-alpha-light-white: var(--color-white-8);
+  --color-surface-alpha-light-weak: var(--color-white-5);
+  --color-surface-alpha-light-soft: var(--color-white-2);
+  --color-surface-alpha-dark-dark: var(--color-black-8);
+  --color-surface-alpha-dark-weak: var(--color-black-5);
+  --color-surface-alpha-dark-soft: var(--color-black-2);
+}
+
+@layer base {
+  html {
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-optical-sizing: auto;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0px 1000px var(--color-surface-weak) inset;
+    -webkit-text-fill-color: var(--color-strong);
+    caret-color: var(--color-strong);
+    transition: background-color 9999s ease-in-out 0s;
+    animation-name: onAutofillDetect;
+  }
+
+  @keyframes onAutofillDetect {
+    from {}
+    to {}
+  }
+}
+
+/* ============ Typography — Title (Medium 500) ============ */
+@utility text-title-h1 {
+  font-size: 3.5rem;
+  line-height: 4rem;
+  letter-spacing: -0.035rem;
+  font-weight: var(--font-weight-medium);
+}
+@utility text-title-h2 {
+  font-size: 3rem;
+  line-height: 3.5rem;
+  letter-spacing: -0.03rem;
+  font-weight: var(--font-weight-medium);
+}
+@utility text-title-h3 {
+  font-size: 2.5rem;
+  line-height: 3rem;
+  letter-spacing: -0.025rem;
+  font-weight: var(--font-weight-medium);
+}
+@utility text-title-h4 {
+  font-size: 2rem;
+  line-height: 2.5rem;
+  letter-spacing: 0rem;
+  font-weight: var(--font-weight-medium);
+}
+@utility text-title-h5 {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  letter-spacing: 0rem;
+  font-weight: var(--font-weight-medium);
+}
+@utility text-title-h6 {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+  letter-spacing: 0rem;
+  font-weight: var(--font-weight-medium);
+}
+
+/* ============ Typography — Label (Medium 500) ============ */
+@utility text-label-xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  letter-spacing: -0.0225rem;
+  font-weight: var(--font-weight-medium);
+}
+@utility text-label-lg {
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+  letter-spacing: -0.0169rem;
+  font-weight: var(--font-weight-medium);
+}
+@utility text-label-md {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  letter-spacing: -0.011rem;
+  font-weight: var(--font-weight-medium);
+}
+@utility text-label-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  letter-spacing: -0.0053rem;
+  font-weight: var(--font-weight-medium);
+}
+@utility text-label-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0rem;
+  font-weight: var(--font-weight-medium);
+}
+
+/* ============ Typography — Paragraph (Regular 400) ============ */
+@utility text-paragraph-xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+  letter-spacing: -0.0225rem;
+  font-weight: var(--font-weight-normal);
+}
+@utility text-paragraph-lg {
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+  letter-spacing: -0.0169rem;
+  font-weight: var(--font-weight-normal);
+}
+@utility text-paragraph-md {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  letter-spacing: -0.011rem;
+  font-weight: var(--font-weight-normal);
+}
+@utility text-paragraph-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  letter-spacing: -0.0053rem;
+  font-weight: var(--font-weight-normal);
+}
+@utility text-paragraph-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0rem;
+  font-weight: var(--font-weight-normal);
+}
+
+/* ============ Typography — Subheading (Medium 500) ============ */
+@utility text-subheading-md {
+  font-size: 1rem;
+  line-height: 1.5rem;
+  letter-spacing: 0.06rem;
+  font-weight: var(--font-weight-medium);
+}
+@utility text-subheading-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  letter-spacing: 0.0525rem;
+  font-weight: var(--font-weight-medium);
+}
+@utility text-subheading-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0.03rem;
+  font-weight: var(--font-weight-medium);
+}
+@utility text-subheading-2xs {
+  font-size: 0.6875rem;
+  line-height: 0.75rem;
+  letter-spacing: 0.0138rem;
+  font-weight: var(--font-weight-medium);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+                   /* //.........................Btns States Classes ..............................// */
+
+.p-btn-bothicons-48{
+  background:var(  --color-surface-white);
+  border-radius:12px;
+  padding: 14px 14px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-darker)
+}
+.p-btn-bothicons-48::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(6 7 8 / 12%);
+  pointer-events: none;
+  opacity: 0;
+}
+.p-btn-bothicons-48:hover::before {
+  opacity: 1;
+}
+.p-btn-bothicons-48:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.p-btn-bothicons-48:disabled:hover::before {
+  opacity: 0;
+}
+
+
+
+.p-btn-bothicons-36{
+  background:var(  --color-surface-white);
+  border-radius:8px;
+  padding: 8px 8px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-darker)
+}
+.p-btn-bothicons-36::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(6 7 8 / 12%);
+  pointer-events: none;
+  opacity: 0;
+}
+.p-btn-bothicons-36:hover::before {
+  opacity: 1;
+}
+.p-btn-bothicons-36:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.p-btn-bothicons-36:disabled:hover::before {
+  opacity: 0;
+}
+
+
+.p-btn-bothicons-32{
+  background:var(  --color-surface-white);
+  border-radius:8px;
+  padding: 6px 6px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-darker)
+}
+.p-btn-bothicons-32::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(6 7 8 / 12%);
+  pointer-events: none;
+  opacity: 0;
+}
+.p-btn-bothicons-32:hover::before {
+  opacity: 1;
+}
+.p-btn-bothicons-32:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.p-btn-bothicons-32:disabled:hover::before {
+  opacity: 0;
+}
+
+
+   /* ..........Secondary Btns........ */
+
+.s-btn-bothicons-48{
+  background:var( --color-surface-light);
+  border-radius:12px;
+  padding: 14px 14px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-strong)
+}
+.s-btn-bothicons-48:hover{
+   background:var(  --color-surface-mid);
+}
+.s-btn-bothicons-48:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.s-btn-bothicons-48:disabled:hover {
+    background: var(--color-surface-soft);
+}
+
+
+.s-btn-bothicons-36{
+  background:var( --color-surface-light);
+  border-radius:8px;
+  padding: 8px 8px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-strong)
+}
+.s-btn-bothicons-36:hover{
+   background:var(  --color-surface-mid);
+}
+.s-btn-bothicons-36:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.s-btn-bothicons-36:disabled:hover {
+    background: var(--color-surface-soft);
+}
+
+
+
+
+.s-btn-bothicons-32{
+  background:var( --color-surface-light);
+  border-radius:8px;
+  padding: 6px 6px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-strong)
+}
+.s-btn-bothicons-32:hover{
+   background:var(  --color-surface-mid);
+}
+.s-btn-bothicons-32:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.s-btn-bothicons-32:disabled:hover {
+    background: var(--color-surface-soft);
+}
+
+
+
+
+                   /* //.........................Btns States Left Icons ..............................// */
+
+
+.p-btn-lefticon-48{
+  background:var(  --color-surface-white);
+  border-radius:12px;
+  padding: 14px 14px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-darker)
+}
+.p-btn-lefticon-48::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(6 7 8 / 12%);
+  pointer-events: none;
+  opacity: 0;
+}
+.p-btn-lefticon-48:hover::before {
+  opacity: 1;
+}
+.p-btn-lefticon-48:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.p-btn-lefticon-48:disabled:hover::before {
+  opacity: 0;
+}
+
+
+
+.p-btn-lefticon-36{
+  background:var(  --color-surface-white);
+  border-radius:8px;
+  padding: 8px 8px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-darker)
+}
+.p-btn-lefticon-36::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(6 7 8 / 12%);
+  pointer-events: none;
+  opacity: 0;
+}
+.p-btn-lefticon-36:hover::before {
+  opacity: 1;
+}
+.p-btn-lefticon-36:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.p-btn-lefticon-36:disabled:hover::before {
+  opacity: 0;
+}
+
+
+.p-btn-lefticon-32{
+  background:var(  --color-surface-white);
+  border-radius:8px;
+  padding: 6px 6px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-darker)
+}
+.p-btn-lefticon-32::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(6 7 8 / 12%);
+  pointer-events: none;
+  opacity: 0;
+}
+.p-btn-lefticon-32:hover::before {
+  opacity: 1;
+}
+.p-btn-lefticon-32:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.p-btn-lefticon-32:disabled:hover::before {
+  opacity: 0;
+}
+
+
+   /* ..........Secondary Btns........ */
+
+.s-btn-lefticon-48{
+  background:var( --color-surface-light);
+  border-radius:12px;
+  padding: 14px 14px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-strong)
+}
+.s-btn-lefticon-48:hover{
+   background:var(  --color-surface-mid);
+}
+.s-btn-lefticon-48:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.s-btn-lefticon-48:disabled:hover {
+    background: var(--color-surface-soft);
+}
+
+
+.s-btn-lefticon-36{
+  background:var( --color-surface-light);
+  border-radius:8px;
+  padding: 8px 8px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-strong)
+}
+.s-btn-lefticon-36:hover{
+   background:var(  --color-surface-mid);
+}
+.s-btn-lefticon-36:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.s-btn-lefticon-36:disabled:hover {
+    background: var(--color-surface-soft);
+}
+
+
+
+
+.s-btn-lefticon-32{
+  background:var( --color-surface-light);
+  border-radius:8px;
+  padding: 6px 6px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-strong)
+}
+.s-btn-lefticon-32:hover{
+   background:var(  --color-surface-mid);
+}
+.s-btn-lefticon-32:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.s-btn-lefticon-32:disabled:hover {
+    background: var(--color-surface-soft);
+}
+
+
+
+
+                   /* //.........................Btns States Right Icons ..............................// */
+
+
+.p-btn-righticon-48{
+  background:var(  --color-surface-white);
+  border-radius:12px;
+  padding: 14px 14px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-darker)
+}
+.p-btn-righticon-48::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(6 7 8 / 12%);
+  pointer-events: none;
+  opacity: 0;
+}
+.p-btn-righticon-48:hover::before {
+  opacity: 1;
+}
+.p-btn-righticon-48:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.p-btn-righticon-48:disabled:hover::before {
+  opacity: 0;
+}
+
+
+
+.p-btn-righticon-36{
+  background:var(  --color-surface-white);
+  border-radius:8px;
+  padding: 8px 8px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-darker)
+}
+.p-btn-righticon-36::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(6 7 8 / 12%);
+  pointer-events: none;
+  opacity: 0;
+}
+.p-btn-righticon-36:hover::before {
+  opacity: 1;
+}
+.p-btn-righticon-36:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.p-btn-righticon-36:disabled:hover::before {
+  opacity: 0;
+}
+
+
+.p-btn-righticon-32{
+  background:var(  --color-surface-white);
+  border-radius:8px;
+  padding: 6px 6px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-darker)
+}
+.p-btn-righticon-32::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(6 7 8 / 12%);
+  pointer-events: none;
+  opacity: 0;
+}
+.p-btn-righticon-32:hover::before {
+  opacity: 1;
+}
+.p-btn-righticon-32:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.p-btn-righticon-32:disabled:hover::before {
+  opacity: 0;
+}
+
+
+   /* ..........Secondary Btns........ */
+
+.s-btn-righticon-48{
+  background:var( --color-surface-light);
+  border-radius:12px;
+  padding: 14px 14px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-strong)
+}
+.s-btn-righticon-48:hover{
+   background:var(  --color-surface-mid);
+}
+.s-btn-righticon-48:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.s-btn-righticon-48:disabled:hover {
+    background: var(--color-surface-soft);
+}
+
+
+.s-btn-righticon-36{
+  background:var( --color-surface-light);
+  border-radius:8px;
+  padding: 8px 8px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-strong)
+}
+.s-btn-righticon-36:hover{
+   background:var(  --color-surface-mid);
+}
+.s-btn-righticon-36:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.s-btn-righticon-36:disabled:hover {
+    background: var(--color-surface-soft);
+}
+
+
+
+
+.s-btn-righticon-32{
+  background:var( --color-surface-light);
+  border-radius:8px;
+  padding: 6px 6px;
+  gap: 4px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-strong)
+  
+}
+.s-btn-righticon-32:hover{
+   background:var(  --color-surface-mid);
+}
+.s-btn-righticon-32:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.s-btn-righticon-32:disabled:hover {
+    background: var(--color-surface-soft);
+}
+
+
+
+
+
+                   /* //.........................Btns States No Icons ..............................// */
+
+
+.p-btn-noicon-48{
+  background:var(  --color-surface-white);
+  border-radius:12px;
+  padding: 14px 14px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-darker)
+}
+.p-btn-noicon-48::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(6 7 8 / 12%);
+  pointer-events: none;
+  opacity: 0;
+}
+.p-btn-noicon-48:hover::before {
+  opacity: 1;
+}
+.p-btn-noicon-48:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.p-btn-noicon-48:disabled:hover::before {
+  opacity: 0;
+}
+
+
+
+.p-btn-noicon-36{
+  background:var(  --color-surface-white);
+  border-radius:8px;
+  padding: 8px 8px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-darker)
+}
+.p-btn-noicon-36::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(6 7 8 / 12%);
+  pointer-events: none;
+  opacity: 0;
+}
+.p-btn-noicon-36:hover::before {
+  opacity: 1;
+}
+.p-btn-noicon-36:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.p-btn-noicon-36:disabled:hover::before {
+  opacity: 0;
+}
+
+
+.p-btn-noicon-32{
+  background:var(  --color-surface-white);
+  border-radius:8px;
+  padding: 6px 6px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-darker)
+}
+.p-btn-noicon-32::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(6 7 8 / 12%);
+  pointer-events: none;
+  opacity: 0;
+}
+.p-btn-noicon-32:hover::before {
+  opacity: 1;
+}
+.p-btn-noicon-32:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+   cursor: not-allowed;
+}
+.p-btn-noicon-32:disabled:hover::before {
+  opacity: 0;
+}
+
+
+   /* ..........Secondary Btns........ */
+
+.s-btn-noicon-48{
+  background:var( --color-surface-light);
+  border-radius:12px;
+  padding: 14px 14px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-strong)
+}
+.s-btn-noicon-48:hover{
+   background:var(  --color-surface-mid);
+}
+.s-btn-noicon-48:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.s-btn-noicon-48:disabled:hover {
+    background: var(--color-surface-soft);
+}
+
+
+.s-btn-noicon-36{
+  background:var( --color-surface-light);
+  border-radius:8px;
+  padding: 8px 8px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-strong)
+}
+.s-btn-noicon-36:hover{
+   background:var(  --color-surface-mid);
+}
+.s-btn-noicon-36:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.s-btn-noicon-36:disabled:hover {
+    background: var(--color-surface-soft);
+}
+
+
+
+
+.s-btn-noicon-32{
+  background:var( --color-surface-light);
+  border-radius:8px;
+  padding: 6px 10px;
+  position: relative;
+  overflow: hidden;
+  color:var(  --color-strong)
+}
+.s-btn-noicon-32:hover{
+   background:var(  --color-surface-mid);
+}
+.s-btn-noicon-32:disabled {
+   background:var(  --color-surface-soft);
+   color: var(  --color-disabled);
+  cursor: not-allowed;
+}
+.s-btn-noicon-32:disabled:hover {
+    background: var(--color-surface-soft);
+}
+
+
+
