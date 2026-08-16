@@ -57,3 +57,87 @@
 }
 
 export default Sidebar
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div className="flex flex-col gap-[24px]">
+        <h1 className="text-title-h4 text-strong capitalize">Choose a {config.label}</h1>
+
+        <div className="flex items-center justify-between">
+          <p className="text-paragraph-sm text-sub capitalize">All {config.label}s</p>
+
+          <div className="flex items-center gap-[16px]">
+            {config.categories && (
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="bg-surface-soft text-strong text-label-sm rounded-[8px] px-[10px] py-[6px] outline-none cursor-pointer"
+              >
+                {config.categories.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            )}
+
+            <div className="flex items-center gap-[10px]">
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={zoom}
+                onChange={(e) => setZoom(Number(e.target.value))}
+                className="w-[140px] accent-white cursor-pointer"
+              />
+              <span className="text-label-sm text-sub w-[24px] text-right">{zoom}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Grid self-adjusts: each card targets `cardSize`px, and the browser fits as many
+          columns as the container width allows — no manual column-count math needed. */}
+      <div
+        className="grid gap-[16px]"
+        style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${cardSize}px, 1fr))` }}
+      >
+        {config.uploadEnabled && (
+          <button className="aspect-[3/4] rounded-[16px] bg-surface-soft flex flex-col items-center justify-center gap-[16px] hover:bg-surface-light transition-colors cursor-pointer">
+            <span className="w-[32px] h-[32px] rounded-full bg-surface-light flex items-center justify-center text-strong text-[20px] leading-none">
+              +
+            </span>
+            <span className="text-label-sm text-strong capitalize">Upload new {config.label}</span>
+            <span className="text-label-xs text-sub underline underline-offset-2">Photo guide</span>
+          </button>
+        )}
+
+        {config.items.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => handleSelect(item)}
+            className={`aspect-[3/4] rounded-[16px] overflow-hidden relative cursor-pointer ${
+              selectedId === item.id ? "outline outline-2 outline-offset-2 outline-white" : ""
+            }`}
+          >
+            <Image src={item.image} alt={item.label ?? config.label} fill sizes="320px" className="object-cover" />
+          </button>
+        ))}
+      </div>

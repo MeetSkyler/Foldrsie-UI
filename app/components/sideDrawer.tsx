@@ -1,12 +1,15 @@
 'use client';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { useOptionSelection } from '@/app/context/option-selection-context';
 
-
+const ALL_OPTION_KEYS = ["face", "bodyType", "top", "bottom", "footwear", "pose", "background", "aspectRatio"];
 
 const SideDrawer = () => {
   const pathname = usePathname();
+  const router = useRouter();
 
   const ModelOptions=[
     {
@@ -21,9 +24,9 @@ const SideDrawer = () => {
       <rect width="32" height="32" fill="white"/>
     </clipPath>
   </defs>
-      </svg>,label:"Face",href:"/faceModal"
+      </svg>,label:"Face",href:"/faceModal",key:"face"
     },
-    {icon:"Auto",label:"Body type",href:"/bodyTypeModal"}
+    {icon:"Auto",label:"Body type",href:"/bodyTypeModal",key:"bodyType"}
 
   ]
 
@@ -38,7 +41,7 @@ const SideDrawer = () => {
       <rect width="32" height="32" fill="white"/>
     </clipPath>
   </defs>
-</svg>,label:"Top",href:"/topModal"},
+</svg>,label:"Top",href:"/topModal",key:"top"},
 {icon:<svg  width="32" height="32" viewBox="0 0 32 32" fill="none">
   <g clipPath="url(#clip0_2002_14311)">
     <path d="M7.01223 6.2802C7.20404 4.97069 8.32726 4 9.65075 4H22.3609C23.6849 4 24.8084 4.97148 24.9996 6.28165L27.5547 23.7936C27.7895 25.4026 26.542 26.8453 24.916 26.8453H19.9841C18.8065 26.8453 17.7683 26.0729 17.4299 24.9449L16 20.1786L14.5701 24.9449C14.2317 26.0729 13.1935 26.8453 12.0159 26.8453H7.08572C5.45911 26.8453 4.21146 25.4016 4.4472 23.7922L7.01223 6.2802Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
@@ -50,7 +53,7 @@ const SideDrawer = () => {
       <rect width="32" height="32" fill="white"/>
     </clipPath>
   </defs>
-</svg>,label:"Bottom",href:"/bottomModal"},
+</svg>,label:"Bottom",href:"/bottomModal",key:"bottom"},
 {icon:<svg width="32" height="32" viewBox="0 0 32 32" fill="none">
   <g clipPath="url(#clip0_2002_14329)">
     <path d="M9.21352 13.3837H11.3347C12.0849 13.3837 12.693 12.7756 12.693 12.0254C12.693 11.2752 13.3012 10.667 14.0514 10.667H15.2388C16.14 10.667 16.9712 11.146 17.5039 11.8729C18.4647 13.1841 20.1709 15.161 22.0264 15.667C22.6542 15.8382 23.4532 15.8668 24.1717 15.8418C25.2906 15.803 26.3925 16.3154 26.9429 17.2904L28.2941 19.6837C29.0469 21.017 28.0836 22.667 26.5525 22.667H5.35068C3.64468 22.667 2.37743 21.0872 2.74751 19.4218L4.3877 12.041C4.5661 11.2382 5.27815 10.667 6.10053 10.667H6.49677C7.24698 10.667 7.85514 11.2752 7.85514 12.0254C7.85514 12.7756 8.46331 13.3837 9.21352 13.3837Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
@@ -61,13 +64,13 @@ const SideDrawer = () => {
       <rect width="32" height="32" fill="white"/>
     </clipPath>
   </defs>
-</svg>,label:"Footwear",href:"/footwearModal"}
+</svg>,label:"Footwear",href:"/footwearModal",key:"footwear"}
   ]
 
   const ShootOptions=[
     {icon:<svg width="32" height="32" viewBox="0 0 32 32" fill="none">
   <path d="M6.66699 26.6663L13.3337 25.9997L16.7943 19.6687M24.0003 26.6663V19.9997H16.667L20.0003 11.333L12.667 12.6663L14.667 15.333M20.0003 6.66634C20.0003 7.01996 20.1408 7.3591 20.3909 7.60915C20.6409 7.8592 20.98 7.99967 21.3337 7.99967C21.6873 7.99967 22.0264 7.8592 22.2765 7.60915C22.5265 7.3591 22.667 7.01996 22.667 6.66634C22.667 6.31272 22.5265 5.97358 22.2765 5.72353C22.0264 5.47348 21.6873 5.33301 21.3337 5.33301C20.98 5.33301 20.6409 5.47348 20.3909 5.72353C20.1408 5.97358 20.0003 6.31272 20.0003 6.66634Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-     </svg>,label:"Pose",href:"/poseModal"},
+     </svg>,label:"Pose",href:"/poseModal",key:"pose"},
     {icon:<svg  width="32" height="32" viewBox="0 0 32 32" fill="none">
   <g clipPath="url(#clip0_2002_14358)">
     <rect x="4" y="4" width="24" height="24" rx="2.66667" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
@@ -79,17 +82,19 @@ const SideDrawer = () => {
       <rect width="32" height="32" fill="white"/>
     </clipPath>
   </defs>
-    </svg>,label:"Background",href:"/backgroundModal"},
+    </svg>,label:"Background",href:"/backgroundModal",key:"background"},
     {icon:<svg  width="32" height="32" viewBox="0 0 32 32" fill="none">
     <path d="M8 7.99967C8 7.29243 8.28095 6.61415 8.78105 6.11406C9.28115 5.61396 9.95942 5.33301 10.6667 5.33301H21.3333C22.0406 5.33301 22.7189 5.61396 23.219 6.11406C23.719 6.61415 24 7.29243 24 7.99967V23.9997C24 24.7069 23.719 25.3852 23.219 25.8853C22.7189 26.3854 22.0406 26.6663 21.3333 26.6663H10.6667C9.95942 26.6663 9.28115 26.3854 8.78105 25.8853C8.28095 25.3852 8 24.7069 8 23.9997V7.99967Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-    </svg>,label:"Aspect ratio",href:"/AspectratioModal"}
+    </svg>,label:"Aspect ratio",href:"/AspectratioModal",key:"aspectRatio"}
 
   ]
   const [isselected, setisselected] = useState(false)
+  const { selections } = useOptionSelection();
+  const allOptionsSelected = ALL_OPTION_KEYS.every((k) => k in selections);
 
   return (
      <div className='w-[360px] flex flex-col relative'>
-      <div className='w-full bg-surface-weak flex-1 min-h-0 px-[16px] pt-[20px] gap-[28px] flex flex-col'>
+      <div className='w-full bg-surface-weak flex-1 min-h-0 px-[16px] pt-[20px] gap-[28px] border-l border-line-sub flex flex-col'>
 
       {/* ...................TopOptionsbar............... */}
       <div className=" w-full flex-1 bg-surface-weak min-h-0 pb-[28px] overflow-y-scroll no-scrollbar  flex flex-col gap-[20px]">
@@ -99,9 +104,26 @@ const SideDrawer = () => {
         <div className=' flex flex-col w-full gap-[12px]'>
           {ModelOptions.map((data)=>{
             const selected=pathname===data.href;
+            const selection = data.key ? selections[data.key] : undefined;
             return(
               <Link key={data.label} href={data.href} className={`rounded-[16px] p-[16px] flex hover:border-transparent gap-[16px] border border-line-sub flex-row items-center  hover:bg-surface-alpha-light-soft  border-line-sub ${selected?"bg-surface-soft hover:bg-surface-soft":"bg-surface-weak"}`}>
-               <div className='h-[48px] w-[48px] p-[8px] items-center justify-center flex text-label-xs rounded-[10px] bg-surface-alpha-light-white text-sub'>{data.icon}</div>
+               <div className='h-[48px] w-[48px] relative overflow-hidden items-center justify-center flex text-label-xs rounded-[10px] bg-surface-alpha-light-white text-sub'>
+                {selection?.color ? (
+                  <div className="w-full h-full" style={{ background: selection.color }} />
+                ) : selection?.ratio ? (
+                  <div
+                    className="bg-surface-mid rounded-[3px]"
+                    style={{
+                      width: selection.ratio >= 1 ? 28 : 28 * selection.ratio,
+                      height: selection.ratio >= 1 ? 28 / selection.ratio : 28,
+                    }}
+                  />
+                ) : selection?.image ? (
+                  <Image src={selection.image} alt={data.label} fill unoptimized={typeof selection.image === "string"} className="object-cover" />
+                ) : (
+                  <div className="p-[8px] w-full h-full items-center justify-center flex">{data.icon}</div>
+                )}
+               </div>
                 <p className='text-paragraph-sm text-[#FFFFFF]'>{data.label}</p>
               </Link>
             )
@@ -116,9 +138,26 @@ const SideDrawer = () => {
         <div className=' flex flex-col w-full gap-[12px]'>
           {OutfitOptions.map((data)=>{
              const selected=pathname===data.href;
+             const selection = data.key ? selections[data.key] : undefined;
             return(
               <Link key={data.label} href={data.href} className={`rounded-[16px] p-[16px] flex gap-[16px] border border-line-sub flex-row items-center hover:border-transparent  hover:bg-surface-alpha-light-soft  border-line-sub ${selected?"bg-surface-soft hover:bg-surface-soft":"bg-surface-weak"}`}>
-               <div className='h-[48px] w-[48px] p-[8px] items-center justify-center flex text-label-xs rounded-[10px]  bg-surface-alpha-light-white text-sub'>{data.icon}</div>
+               <div className='h-[48px] w-[48px] relative overflow-hidden items-center justify-center flex text-label-xs rounded-[10px]  bg-surface-alpha-light-white text-sub'>
+                {selection?.color ? (
+                  <div className="w-full h-full" style={{ background: selection.color }} />
+                ) : selection?.ratio ? (
+                  <div
+                    className="bg-surface-mid rounded-[3px]"
+                    style={{
+                      width: selection.ratio >= 1 ? 28 : 28 * selection.ratio,
+                      height: selection.ratio >= 1 ? 28 / selection.ratio : 28,
+                    }}
+                  />
+                ) : selection?.image ? (
+                  <Image src={selection.image} alt={data.label} fill unoptimized={typeof selection.image === "string"} className="object-cover" />
+                ) : (
+                  <div className="p-[8px] w-full h-full items-center justify-center flex">{data.icon}</div>
+                )}
+               </div>
                 <p className='text-paragraph-sm text-[#FFFFFF]'>{data.label}</p>
               </Link>
             )
@@ -132,9 +171,26 @@ const SideDrawer = () => {
         <div className=' flex flex-col w-full gap-[12px]'>
           {ShootOptions.map((data)=>{
              const selected=pathname===data.href;
+             const selection = data.key ? selections[data.key] : undefined;
             return(
-              <Link key={data.label} href={data.href} className={`rounded-[16px] p-[16px] flex hover:border-transparent bg-surface-weak hover:bg-surface-alpha-light-soft gap-[16px] border border-line-sub flex-row items-center border-line-sub  ${selected?"bg-surface-soft hover:bg-surface-soft":"bg-surface-weak"}`}>
-               <div className='h-[48px] w-[48px] p-[8px] items-center justify-center flex text-label-xs rounded-[10px]  bg-surface-alpha-light-white text-sub'>{data.icon}</div>
+              <Link key={data.label} href={data.href} className={`rounded-[16px] p-[16px] flex hover:border-transparent hover:bg-surface-alpha-light-soft gap-[16px] border flex-row items-center border-line-sub  ${selected?"bg-surface-soft hover:bg-surface-soft":"bg-surface-weak"}`}>
+               <div className='h-[48px] w-[48px] relative overflow-hidden items-center justify-center flex text-label-xs rounded-[10px]  bg-surface-alpha-light-white text-sub'>
+                {selection?.color ? (
+                  <div className="w-full h-full" style={{ background: selection.color }} />
+                ) : selection?.ratio ? (
+                  <div
+                    className="bg-surface-mid rounded-[3px]"
+                    style={{
+                      width: selection.ratio >= 1 ? 28 : 28 * selection.ratio,
+                      height: selection.ratio >= 1 ? 28 / selection.ratio : 28,
+                    }}
+                  />
+                ) : selection?.image ? (
+                  <Image src={selection.image} alt={data.label} fill unoptimized={typeof selection.image === "string"} className="object-cover" />
+                ) : (
+                  <div className="p-[8px] w-full h-full items-center justify-center flex">{data.icon}</div>
+                )}
+               </div>
                 <p className='text-paragraph-sm text-[#FFFFFF]'>{data.label}</p>
               </Link>
             )
@@ -150,9 +206,12 @@ const SideDrawer = () => {
 
       <div className='w-full  bg-green-200'>
           {/* ...........Bottom Generate Area......... */}
-      <div className="p-[16px] border-t bg-surface-weak border-line-sub w-full h-[80px]">
-      <Link href="">
-      <button className='s-btn-righticon-48 flex flex-row items-center justify-center w-full'disabled>
+      <div className="p-[16px] border-t border-l bg-surface-weak border-line-sub w-full h-[80px]">
+      <button
+        onClick={() => allOptionsSelected && router.push('/generate?generating=1')}
+        disabled={!allOptionsSelected}
+        className='s-btn-righticon-48 flex flex-row items-center justify-center w-full'
+      >
         <p className='text-label-sm px-[4px]'>Generate</p>
 
         <div className='flex flex-row items-center justify-center gap-[2px]'>
@@ -162,7 +221,7 @@ const SideDrawer = () => {
            </svg>
           <p className='text-label-sm px-[4px]'>24</p>
         </div>
-      </button></Link>
+      </button>
       </div>
       </div>
    

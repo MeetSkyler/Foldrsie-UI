@@ -78,11 +78,19 @@
     text-rendering: optimizeLegibility;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: var(--color-neutral-900);
   }
 
   body {
     font-family: var(--font-sans);
     font-optical-sizing: auto;
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+    background: var(--color-neutral-900);
   }
 
   input:-webkit-autofill,
@@ -235,6 +243,64 @@
   &::-webkit-scrollbar {
     display: none;
   }
+}
+
+@utility zoom-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 999px;
+  background: rgba(218, 236, 245, 0.15);
+  outline: none;
+  cursor: pointer;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 12px;
+    height: 12px;
+    border-radius: 999px;
+    background: #daecf5;
+    border: none;
+    cursor: pointer;
+    margin-top: -1px;
+  }
+
+  &::-moz-range-track {
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(218, 236, 245, 0.15);
+  }
+
+  &::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 999px;
+    background: #daecf5;
+    border: none;
+    cursor: pointer;
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+@keyframes loading-dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.2;
+    transform: translateY(0);
+  }
+  40% {
+    opacity: 1;
+    transform: translateY(-1.5px);
+  }
+}
+
+@utility loading-dot {
+  display: inline-block;
+  animation: loading-dot 1.4s ease-in-out infinite;
 }
 
                    /* //.........................Btns States Classes ..............................// */

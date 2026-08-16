@@ -2,7 +2,9 @@
 'use client'
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from "react"
-  import Link from 'next/link';
+import Link from 'next/link';
+
+
 
 
 
@@ -73,9 +75,9 @@ const Sidebar = () => {
   return (
     <div className={`bg-surface-weak h-full flex flex-col transition-[width] duration-200 ease-in-out ${iscollapsed ? "w-[72px]" : "w-[214px]"}`}>
       {/* ...topBar... */}
-      <div className={`w-full h-[60px] bg-surface-weak  flex border-b border-line-sub items-center ${iscollapsed ? "justify-center" : "justify-between px-[16px]"}`}>
+      <div className="relative w-full h-[60px] bg-surface-weak flex border-b border-line-sub">
 
-      <div className={`flex flex-row gap-[6px] px-[4px] items-center justify-center  ${iscollapsed ?"hidden" : ""}`}>
+      <div className={`absolute left-[16px] top-1/2 -translate-y-1/2 flex flex-row gap-[6px] items-center whitespace-nowrap transition-opacity duration-150 ease-in-out ${iscollapsed ? "opacity-0 pointer-events-none" : "opacity-100"}`}>
 
         <div className="p-[6px]">
          <Link href="/"> <svg  width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -88,7 +90,7 @@ const Sidebar = () => {
       </div>
 
       {/* ....SidebarCollpasedIcon...... */}
-      <div onClick={()=>toggleCollapsed()} className={`p-[6px] aspect-square cursor-pointer  items-center justify-center group hover:bg-surface-light shrink-0 rounded-[8px] ${iscollapsed ? "" : "p-[6px]"}`}>
+      <div onClick={()=>toggleCollapsed()} className={`absolute top-1/2 -translate-y-1/2 aspect-square cursor-pointer p-[6px] items-center justify-center flex group hover:bg-surface-light shrink-0 rounded-[8px] ${iscollapsed ? "left-1/2 -translate-x-1/2" : "right-[16px]"}`}>
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-soft group-hover:text-strong">
          <path d="M7.4987 3.33203V16.6654M12.4987 8.33203L10.832 9.9987L12.4987 11.6654M3.33203 4.9987C3.33203 4.55667 3.50763 4.13275 3.82019 3.82019C4.13275 3.50763 4.55667 3.33203 4.9987 3.33203H14.9987C15.4407 3.33203 15.8646 3.50763 16.1772 3.82019C16.4898 4.13275 16.6654 4.55667 16.6654 4.9987V14.9987C16.6654 15.4407 16.4898 15.8646 16.1772 16.1772C15.8646 16.4898 15.4407 16.6654 14.9987 16.6654H4.9987C4.55667 16.6654 4.13275 16.4898 3.82019 16.1772C3.50763 15.8646 3.33203 15.4407 3.33203 14.9987V4.9987Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
@@ -105,9 +107,9 @@ const Sidebar = () => {
       
           return(
             
-             <Link key={link.href} href={link.href} className={`w-full relative cursor-pointer py-[8px] group px-[10px] flex items-center   rounded-[10px] ${isActive?"bg-surface-soft":" hover:bg-surface-alpha-light-soft"} ${iscollapsed?"justify-center gap-0":"gap-[8px]"}`}>
+             <Link key={link.href} href={link.href} className={`w-full relative cursor-pointer py-[8px] group px-[10px] flex items-center gap-[8px] rounded-[10px] ${isActive?"bg-surface-soft":" hover:bg-surface-alpha-light-soft"}`}>
              <i className={`shrink-0 ${isActive?"text-strong":"text-sub group-hover:text-strong"} `}>{link.icon}</i>
-             <p className={`text-paragraph-sm  ${isActive?"text-strong":"text-sub group-hover:text-strong"}  ${iscollapsed ? "hidden" : ""}`}>{link.label}</p>
+             <p className={`text-paragraph-sm whitespace-nowrap overflow-hidden transition-all duration-200 ease-in-out ${isActive?"text-strong":"text-sub group-hover:text-strong"}  ${iscollapsed ? "max-w-0 opacity-0" : "max-w-[160px] opacity-100"}`}>{link.label}</p>
             {iscollapsed && (
               <div className='absolute items-center text-nowrap  justify-center left-full ml-[20px] transition-opacity text-white text-label-xs bg-surface-light duration-150  pointer-events-none bg-green-300 px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover:opacity-100 '>
                 {link.label}
@@ -127,11 +129,11 @@ const Sidebar = () => {
         {BottomNavLinks.map((link)=>{
              const isActive=pathname===link.href;
           return(
-               <Link key={link.href} href={link.href} className={`w-full  py-[8px] px-[10px] relative cursor-pointer group flex items-center   ${isActive?"bg-surface-soft":" hover:bg-surface-alpha-light-soft"} rounded-[10px] ${iscollapsed?"justify-center gap-0":"gap-[8px]"}`}>
+               <Link key={link.href} href={link.href} className={`w-full  py-[8px] px-[10px] relative cursor-pointer group flex items-center gap-[8px]  ${isActive?"bg-surface-soft":" hover:bg-surface-alpha-light-soft"} rounded-[10px]`}>
               <i className={`shrink-0 ${isActive?"text-strong":"text-sub group-hover:text-strong"} `}>{link.icon}</i>
-              <p className={`text-paragraph-sm whitespace-nowrap ${isActive?"text-strong":"text-sub group-hover:text-strong"}   ${iscollapsed ? "hidden" : ""}`}>{link.label}</p>
+              <p className={`text-paragraph-sm whitespace-nowrap overflow-hidden transition-all duration-200 ease-in-out ${isActive?"text-strong":"text-sub group-hover:text-strong"}   ${iscollapsed ? "max-w-0 opacity-0" : "max-w-[160px] opacity-100"}`}>{link.label}</p>
                    {iscollapsed && (
-              <div className='absolute items-center text-nowrap justify-center left-full ml-[20px] transition-opacity text-white text-label-xs bg-surface-light duration-150  pointer-events-none bg-green-300 px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover:opacity-100 '>
+              <div className='absolute items-center text-nowrap justify-center left-full ml-[20px] transition-opacity text-white text-label-xs bg-surface-light duration-150  pointer-events-none  px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover:opacity-100 '>
                 {link.label}
               </div>
             )

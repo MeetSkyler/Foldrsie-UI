@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useAuthModal } from "@/app/context/auth-modal-context";
+import { useFreeCreditModal } from "@/app/context/free-credit-modal-context";
 
 const successPortion = () => {
   const { closeLogin } = useAuthModal();
+  const { openFreeCredit } = useFreeCreditModal();
   const [name, setname] = useState("");
   const [status, setstatus] = useState("idle"); // "idle" | "error"
   const [isautofilled, setisautofilled] = useState(false); // true right after browser autofill/paste-suggestion
@@ -23,6 +25,7 @@ const successPortion = () => {
       return;
     }
     closeLogin();
+    setTimeout(() => openFreeCredit(), 1000);
   }
 
   return (

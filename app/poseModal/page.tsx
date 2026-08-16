@@ -1,9 +1,8 @@
-import React from 'react'
+import OptionPicker from "@/app/components/optionPicker/OptionPicker";
+import { poseConfig } from "@/app/config/optionPickerConfig";
 
 const page = () => {
-  return (
-    <div>page</div>
-  )
-}
+  return <OptionPicker config={poseConfig} />;
+};
 
 export default page

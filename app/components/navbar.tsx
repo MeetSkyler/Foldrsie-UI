@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { useAuthModal } from "@/app/context/auth-modal-context";
 
 const Navbar = () => {
-  const [isusernew, setisusernew] = useState(true);
+  const [isusernew, setisusernew] = useState(false);
   const { openLogin } = useAuthModal();
 
   return (

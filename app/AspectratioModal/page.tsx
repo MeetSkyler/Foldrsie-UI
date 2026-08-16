@@ -1,9 +1,8 @@
-import React from 'react'
+import AspectRatioPicker from "@/app/components/optionPicker/AspectRatioPicker";
+import { aspectRatioConfig } from "@/app/config/optionPickerConfig";
 
 const page = () => {
-  return (
-    <div>page</div>
-  )
-}
+  return <AspectRatioPicker config={aspectRatioConfig} />;
+};
 
 export default page

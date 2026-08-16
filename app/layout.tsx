@@ -4,6 +4,10 @@ import "./globals.css";
 import Appshell from "./components/Appshell";
 import { AuthModalProvider } from "./context/auth-modal-context";
 import { LoginModal } from "./ui/login-modal";
+import { FreeCreditModalProvider } from "./context/free-credit-modal-context";
+import FreeCreditModal from "./components/freeCreditModal";
+import { OptionSelectionProvider } from "./context/option-selection-context";
+import { GenerationsProvider } from "./context/generations-context";
 
 export const metadata: Metadata = {
   title: "Foldrise",
@@ -19,8 +23,15 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body>
         <AuthModalProvider>
-          <Appshell>{children}</Appshell>
-          <LoginModal />
+          <FreeCreditModalProvider>
+            <OptionSelectionProvider>
+              <GenerationsProvider>
+                <Appshell>{children}</Appshell>
+                <LoginModal />
+                <FreeCreditModal />
+              </GenerationsProvider>
+            </OptionSelectionProvider>
+          </FreeCreditModalProvider>
         </AuthModalProvider>
       </body>
     </html>

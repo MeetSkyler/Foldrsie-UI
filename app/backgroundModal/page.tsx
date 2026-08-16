@@ -1,9 +1,8 @@
-import React from 'react'
+import OptionPicker from "@/app/components/optionPicker/OptionPicker";
+import { backgroundConfig } from "@/app/config/optionPickerConfig";
 
 const page = () => {
-  return (
-    <div>page</div>
-  )
-}
+  return <OptionPicker config={backgroundConfig} />;
+};
 
 export default page
