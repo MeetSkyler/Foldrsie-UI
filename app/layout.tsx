@@ -8,6 +8,8 @@ import { FreeCreditModalProvider } from "./context/free-credit-modal-context";
 import FreeCreditModal from "./components/freeCreditModal";
 import { OptionSelectionProvider } from "./context/option-selection-context";
 import { GenerationsProvider } from "./context/generations-context";
+import { FeedbackModalProvider } from "./context/feedback-modal-context";
+import FeedbackModal from "./components/FeedbackModal";
 
 export const metadata: Metadata = {
   title: "Foldrise",
@@ -26,9 +28,12 @@ export default function RootLayout({
           <FreeCreditModalProvider>
             <OptionSelectionProvider>
               <GenerationsProvider>
-                <Appshell>{children}</Appshell>
-                <LoginModal />
-                <FreeCreditModal />
+                <FeedbackModalProvider>
+                  <Appshell>{children}</Appshell>
+                  <LoginModal />
+                  <FreeCreditModal />
+                  <FeedbackModal />
+                </FeedbackModalProvider>
               </GenerationsProvider>
             </OptionSelectionProvider>
           </FreeCreditModalProvider>

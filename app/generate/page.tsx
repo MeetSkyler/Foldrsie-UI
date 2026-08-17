@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import modalimg from '@/public/modalimg.svg'
 import dummyResult from '@/public/mainPerson.png'
 import Image from 'next/image';
@@ -22,7 +22,7 @@ function fitBox(ratio: number, maxW: number, maxH: number) {
   return { width: w, height: h };
 }
 
-const Page = () => {
+const GenerateContent = () => {
   const searchParams = useSearchParams();
   const isGenerating = searchParams.get('generating') === '1';
   const { selections } = useOptionSelection();
@@ -175,5 +175,11 @@ const Page = () => {
     </div>
   )
 }
+
+const Page = () => (
+  <Suspense fallback={null}>
+    <GenerateContent />
+  </Suspense>
+);
 
 export default Page

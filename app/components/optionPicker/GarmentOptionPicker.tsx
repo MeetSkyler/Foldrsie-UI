@@ -32,10 +32,12 @@ const ZOOM_STEP = 100 / (COLUMN_STOPS.length - 1);
 
 function Thumb({ image, alt }: { image: StaticImageData | string | undefined; alt: string }) {
   if (!image) {
-    return <div className="w-[40px] h-[40px] rounded-[8px] bg-surface-white" />;
+    return <div className="w-[41px] h-[50px] rounded-[8px] bg-surface-white border-[1.5px] border-[#FFFFFF]" 
+    style={{boxShadow:" 0 0 0 1.4px rgba(0, 0, 0, 0.08), 0 8px 8px -4px rgba(0, 0, 0, 0.07), 0 6px 6px -3px rgba(0, 0, 0, 0.07), 0 4px 4px -2px rgba(0, 0, 0, 0.04), 0 2px 2px -1px rgba(0, 0, 0, 0.04)"}}/>;
   }
   return (
-    <div className="relative w-[40px] h-[40px] rounded-[8px] overflow-hidden bg-surface-white">
+    <div className="relative w-[41px] h-[50px] rounded-[8px] overflow-hidden border-[1.5px] border-[#FFFFFF] bg-surface-white "
+    style={{boxShadow:" 0 0 0 1.4px rgba(0, 0, 0, 0.08), 0 8px 8px -4px rgba(0, 0, 0, 0.07), 0 6px 6px -3px rgba(0, 0, 0, 0.07), 0 4px 4px -2px rgba(0, 0, 0, 0.04), 0 2px 2px -1px rgba(0, 0, 0, 0.04)"}}>
       <Image src={image} alt={alt} fill unoptimized={typeof image === "string"} className="object-cover" />
     </div>
   );
@@ -84,13 +86,13 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
   return (
     <div className="w-full h-full pb-[24px] px-[20px] bg-neutral-900  overflow-y-auto no-scrollbar">
       <div className="w-full mt-[24px] rounded-[24px] bg-surface-weak border border-line-sub flex flex-col">
-        <p className="text-label-lg text-strong capitalize px-[20px] pt-[24px] pb-[16px]">Choose a {config.label}</p>
+        <p className="text-label-lg text-strong px-[20px] pt-[24px] pb-[16px]">Choose a {config.label}</p>
 
         {/* This row sticks to the top of the scroll container once the title
             scrolls past it, so only the card grid keeps scrolling under it. */}
         <div className="sticky top-0 z-10 bg-surface-weak px-[20px] py-[12px]">
           <div className="w-full h-[32px] flex flex-row items-center justify-between">
-            <p className="text-label-sm text-white capitalize">All {config.description}</p>
+            <p className="text-label-sm text-white ">All {config.description}</p>
             <div className="flex flex-row gap-[24px] items-center h-full justify-center ">
               <SourceFilterDropdown value={sourceFilter} onChange={setSourceFilter} />
               <div className="h-full py-[6px] flex flex-row items-center justify-center gap-[12px]">
@@ -143,7 +145,7 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                     />
                   </svg>
                 </div>
-                <p className="text-label-sm text-strong capitalize">Upload new {config.label}</p>
+                <p className="text-label-sm text-strong ">Upload new {config.label}</p>
               </div>
               <p className="text-label-xs text-sub absolute bottom-[32.4px] underline underline-offset-3 hover:text-strong">Photo guide</p>
             </button>
@@ -171,24 +173,27 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                     <div className="absolute inset-0 bg-surface-white" />
                   )}
 
-                  <div className="absolute bottom-[8px] left-[8px] flex flex-row gap-[6px]">
+                  <div className="absolute bottom-[8px] left-[8px] flex flex-row gap-[12px]">
                     <Thumb image={item.back} alt={`${config.label} back`} />
                     <Thumb image={item.closeup} alt={`${config.label} close-up`} />
                   </div>
 
                   {selectedId === item.id && (
-                    <div className="absolute top-[8px] left-[8px] px-[8px] py-[4px] rounded-[6px] bg-black-80 text-label-xs text-white">
-                      Selected
+                    <div className="absolute top-[8px] flex items-center justify-center gap-[4px] flex-row left-[8px] pl-[4px] pr-[8px] py-[4px] rounded-[6px] bg-surface-light">
+                      <svg  width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-strong">
+                        <path d="M3.33203 7.99935L6.66536 11.3327L13.332 4.66602" stroke="currentColor" strokeOpacity="0.97" stroke-width="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                      <p className="text-label-xs text-[#FFFFFF]">Selected</p>
                     </div>
                   )}
 
                   {isUpload && (
                     <div
                       onClick={(e) => handleRemove(e, item)}
-                      className="absolute top-[8px] right-[8px] w-[24px] h-[24px] rounded-full bg-black-80 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                      className="absolute top-[12px] right-[12px] w-[24px] h-[24px] rounded-full bg-surface-light opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
                     >
-                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                        <path d="M9 3L3 9M3 3L9 9" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+                      <svg  width="16" height="16" viewBox="0 0 16 16" fill="none">
+                       <path d="M12 4L4 12M4 4L12 12" stroke="#EBEDF0" strokeOpacity="0.97" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     </div>
                   )}

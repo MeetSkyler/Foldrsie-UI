@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from "react"
 import Link from 'next/link';
+import { useFeedbackModal } from '@/app/context/feedback-modal-context';
 
 
 
@@ -10,6 +11,7 @@ import Link from 'next/link';
 
 const Sidebar = () => {
   const pathname=usePathname();
+  const { openFeedback } = useFeedbackModal();
 
   const [iscollapsed, setiscollapsed] = useState(false);
   useEffect(()=>{
@@ -128,8 +130,10 @@ const Sidebar = () => {
       <div className="w-full bg-surface-weak p-[16px] flex flex-col items-center justify-center gap-[4px] ">
         {BottomNavLinks.map((link)=>{
              const isActive=pathname===link.href;
-          return(
-               <Link key={link.href} href={link.href} className={`w-full  py-[8px] px-[10px] relative cursor-pointer group flex items-center gap-[8px]  ${isActive?"bg-surface-soft":" hover:bg-surface-alpha-light-soft"} rounded-[10px]`}>
+             const isFeedback = link.href === "/feedback";
+             const className = `w-full  py-[8px] px-[10px] relative cursor-pointer group flex items-center gap-[8px]  ${isActive?"bg-surface-soft":" hover:bg-surface-alpha-light-soft"} rounded-[10px]`;
+             const content = (
+               <>
               <i className={`shrink-0 ${isActive?"text-strong":"text-sub group-hover:text-strong"} `}>{link.icon}</i>
               <p className={`text-paragraph-sm whitespace-nowrap overflow-hidden transition-all duration-200 ease-in-out ${isActive?"text-strong":"text-sub group-hover:text-strong"}   ${iscollapsed ? "max-w-0 opacity-0" : "max-w-[160px] opacity-100"}`}>{link.label}</p>
                    {iscollapsed && (
@@ -139,7 +143,16 @@ const Sidebar = () => {
             )
 
              }
-             </Link>
+             </>
+             );
+          return isFeedback ? (
+               <button key={link.href} onClick={openFeedback} className={className}>
+                 {content}
+               </button>
+          ) : (
+               <Link key={link.href} href={link.href} className={className}>
+                 {content}
+               </Link>
           )
         })}
       </div>

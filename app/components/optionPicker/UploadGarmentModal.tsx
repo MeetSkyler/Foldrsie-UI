@@ -19,8 +19,8 @@ const EMPTY_SLOT: SlotState = { previewUrl: null, uploading: false, progress: 0 
 
 const SLOT_META: Record<SlotKey, { title: string }> = {
   front: { title: "Front view" },
-  back: { title: "Back view" },
-  closeup: { title: "Fabric close-up" },
+  back: { title: "Back view  (Optional)" },
+  closeup: { title: "Fabric close-up  (Optional)" },
 };
 
 function UploadSlot({
@@ -44,7 +44,7 @@ function UploadSlot({
   }
 
   return (
-    <div className="flex flex-col gap-[8px]">
+    <div className="flex flex-col  bg-amber-400">
       <input
         ref={inputRef}
         type="file"
@@ -58,51 +58,75 @@ function UploadSlot({
       />
 
       {state.previewUrl && !state.uploading ? (
-        <div className="relative w-full h-[280px] rounded-[16px] overflow-hidden bg-white">
+        <div className="relative w-full h-[350px] rounded-[16px] overflow-hidden bg-white">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={state.previewUrl} alt={meta.title} className="w-full h-full object-cover" />
 
           <div
             onClick={onRemove}
-            className="absolute top-[8px] right-[8px] w-[24px] h-[24px] rounded-full bg-black-80 flex items-center justify-center cursor-pointer"
+            className="absolute top-[12px] right-[12px] w-[24px] h-[24px] rounded-full  bg-surface-light flex items-center justify-center cursor-pointer"
           >
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M9 3L3 9M3 3L9 9" stroke="white" strokeWidth="1.5" strokeLinecap="round" />
+           <svg  width="16" height="16" viewBox="0 0 16 16" fill="none">
+             <path d="M12 4L4 12M4 4L12 12" stroke="#EBEDF0" strokeOpacity="0.97" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
 
           <div
             onClick={handleClick}
-            className="absolute bottom-[12px] left-1/2 -translate-x-1/2 px-[12px] py-[6px] rounded-[999px] bg-black-80 text-label-xs text-white cursor-pointer"
+            className="absolute bottom-[16px] left-1/2 flex items-center justify-center -translate-x-1/2 px-[10px] py-[6px] rounded-[8px] bg-surface-light text-label-sm text-strong cursor-pointer"
           >
             Re-upload
           </div>
         </div>
       ) : state.uploading ? (
-        <div className="w-full h-[280px] rounded-[16px] bg-surface-soft flex flex-col items-center justify-center gap-[16px] px-[24px]">
-          <div className="w-full h-[4px] rounded-[999px] bg-white-8 overflow-hidden">
+        <div className="w-full relative h-[350px] rounded-[16px] bg-surface-alpha-light-weak flex flex-col items-center justify-center gap-[16px] px-[24px]">
+          <div className="w-full h-[4px] rounded-[999px] bg-surface-mid overflow-hidden">
             <div
-              className="h-full bg-white transition-[width] duration-150 ease-linear"
+              className="h-full bg-[#D9D9D9] transition-[width] duration-150 ease-linear"
               style={{ width: `${state.progress}%` }}
             />
           </div>
-          <p className="text-label-sm text-sub">Uploading...{state.progress}%</p>
-          <p onClick={onCancelUpload} className="text-label-sm text-strong underline underline-offset-2 cursor-pointer">
+          <p className="text-paragraph-xs text-strong">Uploading...{state.progress}%</p>
+          <p onClick={onCancelUpload} className="text-label-sm absolute bottom-[29px] px-[10px] py-[6px] text-strong bg-surface-light rounded-[8px] cursor-pointer">
             Cancel
           </p>
         </div>
       ) : (
+     <>
         <button
           onClick={handleClick}
-          className="w-full h-[280px] rounded-[16px] bg-surface-soft hover:bg-surface-mid transition-colors flex flex-col items-center justify-center gap-[12px] cursor-pointer"
+          className="w-full h-[350px] rounded-[16px] bg-surface-alpha-light-weak hover:bg-surface-alpha-light-white transition-colors flex flex-col items-center justify-center gap-[12px] cursor-pointer"
         >
-          <span className="w-[32px] h-[32px] rounded-full bg-surface-light flex items-center justify-center text-strong text-[18px] leading-none">
-            +
-          </span>
+          <div  className="w-[32px] h-[32px] rounded-full flex p-[6px] items-center justify-center text-strong text-[20px] leading-none"
+                  style={{ boxShadow:
+    "0 0 0.5px 0.5px var(--color-white-20, rgba(235, 237, 240, 0.20)) inset, " +
+    "0 8px 8px -4px rgba(0, 0, 0, 0.05), " +
+    "0 4px 4px -2px rgba(0, 0, 0, 0.05), " +
+    "0 2px 2px -1px rgba(0, 0, 0, 0.05), " +
+    "0 0 12px 0 var(--color-white-20, rgba(235, 237, 240, 0.20)) inset, " +
+    "0 0 4px 0 var(--color-white-60, rgba(235, 237, 240, 0.60)) inset"
+,
+                    background:"var(--color-neutral-500),rgba(235, 237, 240, 0.08)"
+                  }}>
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                    <path
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      d="M10 5C10.3452 5 10.625 5.27982 10.625 5.625V9.375H14.375C14.7202 9.375 15 9.65482 15 10C15 10.3452 14.7202 10.625 14.375 10.625H10.625V14.375C10.625 14.7202 10.3452 15 10 15C9.65482 15 9.375 14.7202 9.375 14.375V10.625H5.625C5.27982 10.625 5 10.3452 5 10C5 9.65482 5.27982 9.375 5.625 9.375H9.375V5.625C9.375 5.27982 9.65482 5 10 5Z"
+                      fill="white"
+                    />
+                  </svg>
+                </div>
+                <p className="text-label-sm text-strong text-center">{meta.title}</p>
         </button>
+   
+    
+     
+     </>
+        
       )}
 
-      <p className="text-label-sm text-strong text-center">{meta.title}</p>
+     
     </div>
   );
 }
@@ -199,21 +223,21 @@ export default function UploadGarmentModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black-80">
-      <div className="bg-surface-weak w-[720px] rounded-[24px] p-[24px] flex flex-col gap-[24px]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black-90">
+      <div className="bg-surface-weak w-[780px] rounded-[24px] p-[24px] flex flex-col gap-[24px]">
         <div className="flex flex-row items-start justify-between">
-          <div className="flex flex-col gap-[4px]">
-            <p className="text-title-h6 text-strong capitalize">Upload {label}</p>
-            <p className="text-paragraph-sm text-sub">
-              Add at least one photo — front, back, or a fabric close-up.
+          <div className="flex flex-col gap-[8px]">
+            <p className="text-label-lg text-strong ">Upload {label}</p>
+            <p className="text-label-sm text-sub">
+              Front is required. Back and fabric closeup are optional but improve accuracy.
             </p>
           </div>
           <div
             onClick={requestClose}
-            className="w-[32px] h-[32px] rounded-full bg-surface-light flex items-center justify-center text-strong cursor-pointer shrink-0"
+            className="w-[24px] h-[24px]  flex items-center justify-center text-strong cursor-pointer shrink-0"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="text-sub">
+             <path d="M8.59961 0.600006L0.599609 8.60001M0.599609 0.600006L8.59961 8.60001" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
         </div>
@@ -245,14 +269,14 @@ export default function UploadGarmentModal({
         <div className="flex flex-row items-center justify-end gap-[12px]">
           <button
             onClick={requestClose}
-            className="px-[16px] py-[10px] rounded-[10px] bg-surface-light text-label-sm text-strong cursor-pointer"
+            className="px-[12px] py-[8px] rounded-[8px] bg-surface-light text-label-sm text-strong cursor-pointer"
           >
             Cancel
           </button>
           <button
             onClick={handleAdd}
             disabled={!hasCompletedImage}
-            className="px-[16px] py-[10px] rounded-[10px] bg-white text-label-sm text-darker cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed capitalize"
+            className="px-[12px] py-[8px] rounded-[8px] bg-white text-label-sm text-darker cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed capitalize"
           >
             Add {label}
           </button>
