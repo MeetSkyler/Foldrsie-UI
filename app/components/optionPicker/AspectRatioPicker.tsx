@@ -1,6 +1,9 @@
 "use client";
 import { useState } from "react";
 import { useOptionSelection } from "@/app/context/option-selection-context";
+import Image from 'next/image';
+import ratio1 from '@/public/ratio1.svg'
+import { label } from "motion/react-client";
 
 export type AspectRatioItem = {
   id: string;
@@ -15,6 +18,7 @@ export type AspectRatioConfig = {
   description: string;
   items: AspectRatioItem[];
 };
+
 
 // Same column-stop approach as OptionPicker: every zoom stop the slider can
 // land on is guaranteed to look different from its neighbors.
@@ -47,12 +51,12 @@ const AspectRatioPicker = ({ config }: { config: AspectRatioConfig }) => {
 
   return (
     <div className="w-full h-full pb-[24px] px-[20px] bg-neutral-900 overflow-y-auto no-scrollbar">
-      <div className="w-full mt-[24px] rounded-[24px] bg-surface-weak border border-line-sub flex flex-col">
+      <div className="w-full mt-[24px] rounded-[20px] bg-surface-weak border border-line-sub flex flex-col">
         <p className="text-label-lg text-strong capitalize px-[20px] pt-[24px] pb-[16px]">Choose a {config.label}</p>
 
         {/* This row sticks to the top of the scroll container once the title
             scrolls past it, so only the card grid keeps scrolling under it. */}
-        <div className="sticky top-0 z-10 bg-surface-weak px-[20px] py-[12px]">
+        <div className="sticky -top-[2px] z-10 bg-surface-weak px-[20px] py-[12px]">
           <div className="w-full h-[32px] flex flex-row items-center justify-between">
             <p className="text-label-sm text-white capitalize">All {config.description}</p>
             <div className="h-full py-[6px] flex flex-row items-center justify-center gap-[12px]">
@@ -78,19 +82,27 @@ const AspectRatioPicker = ({ config }: { config: AspectRatioConfig }) => {
               <button
                 key={item.id}
                 onClick={() => handleSelect(item)}
-                className="group aspect-[5/6] relative rounded-[16px] border border-line-sub bg-surface-weak hover:bg-surface-alpha-light-soft flex flex-col items-center justify-center gap-[16px] cursor-pointer"
+                className="group aspect-[5/6] relative rounded-[16px] border border-line-sub bg-surface-weak hover:bg-surface-alpha-light-soft flex flex-col items-center justify-center  cursor-pointer"
               >
+              
                 {selectedId === item.id && (
-                  <div className="absolute top-[8px] left-[8px] px-[8px] py-[4px] rounded-[6px] bg-black-80 text-label-xs text-white">
-                    Selected
+                  <div className="absolute top-[12px] flex items-center justify-center gap-[4px] flex-row left-[12px] pl-[4px] pr-[8px] py-[4px] rounded-[6px] bg-surface-light">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-strong">
+                      <path d="M3.33203 7.99935L6.66536 11.3327L13.332 4.66602" stroke="currentColor" strokeOpacity="0.97" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <p className="text-label-xs text-[#FFFFFF]">Selected</p>
                   </div>
                 )}
-
-                <div className="flex items-center justify-center" style={{ height: BOX }}>
-                  <RatioPreview ratio={item.ratio} label={item.ratioLabel} />
+                <div>
+                 
+                  
+                  <Image src={ratio1} alt="RatioImages" width={100} height={100} />
+                    <p className="text-label-sm text-strong">{item.name}</p>
                 </div>
 
-                <p className="text-label-sm text-strong">{item.name}</p>
+               
+
+               
               </button>
             ))}
           </div>

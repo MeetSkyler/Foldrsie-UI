@@ -1,7 +1,7 @@
 "use client";
 import { Suspense, useEffect, useState } from 'react';
 import modalimg from '@/public/modalimg.svg'
-import dummyResult from '@/public/mainPerson.png'
+import dummyResult from '@/public/modalimg.svg'
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -51,7 +51,7 @@ const GenerateContent = () => {
   if (!isGenerating) {
     return (
       <div className='w-full h-full flex items-center justify-center bg-neutral-900'>
-        <div className='relative w-[377.129px] h-[492.625px] aspect-[49/64] items-center flex mb-[80px] justify-center'>
+        <div className='relative w-[377px] h-[493px] items-center flex mb-[80px] justify-center'>
           <Image src={modalimg} alt="Model shot preview" fill className='object-cover' />
           <div className='absolute h-[76px]  -bottom-[36px] flex flex-col items-center justify-center gap-[8px]'>
             <p className='text-title-h6 text-strong'>Create your model shot</p>

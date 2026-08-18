@@ -28,12 +28,12 @@ const page = () => {
 
   return (
     <div className="w-full h-full pb-[24px] px-[20px] bg-neutral-900 overflow-y-auto no-scrollbar">
-      <div className="w-full mt-[24px] rounded-[24px] bg-surface-weak border border-line-sub flex flex-col">
+      <div className="w-full mt-[24px] rounded-[20px] bg-surface-weak border border-line-sub flex flex-col">
         <p className="text-label-lg text-strong px-[20px] pt-[24px] pb-[16px]">Gallery</p>
 
         {/* This row sticks to the top of the scroll container once the title
             scrolls past it, so only the card grid keeps scrolling under it. */}
-        <div className="sticky top-0 z-10 bg-surface-weak px-[20px] py-[12px]">
+        <div className="sticky -top-[2px] z-10 bg-surface-weak px-[20px] py-[12px]">
           <div className="w-full h-[32px] flex flex-row items-center justify-between">
             <p className="text-label-sm text-white">All results</p>
             <div className="h-full py-[6px] flex flex-row items-center justify-center gap-[12px]">

@@ -40,7 +40,7 @@ export default function SourceFilterDropdown({
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-[calc(100%+8px)] z-20 w-[160px] rounded-[10px] bg-surface-light border border-line-sub overflow-hidden">
+          <div className="absolute right-0 top-[calc(100%+8px)] p-[4px] gap-[4px] flex flex-col z-20 w-[160px] rounded-[12px] bg-surface-mid  overflow-hidden">
             {OPTIONS.map((opt) => (
               <div
                 key={opt.value}
@@ -48,11 +48,19 @@ export default function SourceFilterDropdown({
                   onChange(opt.value);
                   setOpen(false);
                 }}
-                className={`px-[12px] py-[10px] text-label-sm cursor-pointer hover:bg-surface-mid ${
-                  opt.value === value ? "text-strong bg-surface-mid" : "text-sub"
+                className={`h-[32px] w-full text-label-sm cursor-pointer flex flex-row items-center  text-strong hover:bg-surface-alpha-light-white rounded-[8px] justify-between p-[6px]
+                   ${opt.value === value ?
+                    " bg-surface-alpha-light-white hover:bg-surface-alpha-light-white " 
+                    : 
+                    " "
                 }`}
-              >
-                {opt.label}
+                 >
+                <span className="px-[4px]">{opt.label}</span>
+                {opt.value===value&&(
+                  <svg  width="18" height="18" viewBox="0 0 18 18" fill="none" className="text-sub">
+                    <path d="M3 8.75L6.75 12.5L14.25 5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                )}
               </div>
             ))}
           </div>

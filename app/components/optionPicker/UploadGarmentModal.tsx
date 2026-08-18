@@ -44,7 +44,7 @@ function UploadSlot({
   }
 
   return (
-    <div className="flex flex-col  bg-amber-400">
+    <div className="flex flex-col">
       <input
         ref={inputRef}
         type="file"
@@ -58,22 +58,27 @@ function UploadSlot({
       />
 
       {state.previewUrl && !state.uploading ? (
-        <div className="relative w-full h-[350px] rounded-[16px] overflow-hidden bg-white">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={state.previewUrl} alt={meta.title} className="w-full h-full object-cover" />
+        <div className="relative w-full h-[350px] rounded-[16px]">
+          <div className="absolute inset-0 rounded-[16px] overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={state.previewUrl} alt={meta.title} className="absolute inset-0 w-full h-full object-cover" />
+          </div>
 
           <div
             onClick={onRemove}
-            className="absolute top-[12px] right-[12px] w-[24px] h-[24px] rounded-full  bg-surface-light flex items-center justify-center cursor-pointer"
+            className="group/remove absolute top-[12px] right-[12px] w-[24px] h-[24px] rounded-full  bg-black-60 flex items-center justify-center cursor-pointer"
           >
            <svg  width="16" height="16" viewBox="0 0 16 16" fill="none">
              <path d="M12 4L4 12M4 4L12 12" stroke="#EBEDF0" strokeOpacity="0.97" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
+            <div className="absolute bottom-full mb-[8px] right-0 z-20 whitespace-nowrap text-white text-label-xs bg-surface-light px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover/remove:opacity-100 transition-opacity duration-150 pointer-events-none">
+              Remove image
+            </div>
           </div>
 
           <div
             onClick={handleClick}
-            className="absolute bottom-[16px] left-1/2 flex items-center justify-center -translate-x-1/2 px-[10px] py-[6px] rounded-[8px] bg-surface-light text-label-sm text-strong cursor-pointer"
+            className="absolute bottom-[16px] left-1/2 flex items-center justify-center hover:bg-surface-mid -translate-x-1/2 px-[10px] py-[6px] rounded-[8px] bg-surface-light text-label-sm text-strong cursor-pointer"
           >
             Re-upload
           </div>
@@ -97,7 +102,7 @@ function UploadSlot({
           onClick={handleClick}
           className="w-full h-[350px] rounded-[16px] bg-surface-alpha-light-weak hover:bg-surface-alpha-light-white transition-colors flex flex-col items-center justify-center gap-[12px] cursor-pointer"
         >
-          <div  className="w-[32px] h-[32px] rounded-full flex p-[6px] items-center justify-center text-strong text-[20px] leading-none"
+          <div  className="w-[32px] h-[32px] rounded-full flex p-[6px] items-center bg-surface-alpha-light-white justify-center text-strong text-[20px] leading-none"
                   style={{ boxShadow:
     "0 0 0.5px 0.5px var(--color-white-20, rgba(235, 237, 240, 0.20)) inset, " +
     "0 8px 8px -4px rgba(0, 0, 0, 0.05), " +
@@ -105,8 +110,6 @@ function UploadSlot({
     "0 2px 2px -1px rgba(0, 0, 0, 0.05), " +
     "0 0 12px 0 var(--color-white-20, rgba(235, 237, 240, 0.20)) inset, " +
     "0 0 4px 0 var(--color-white-60, rgba(235, 237, 240, 0.60)) inset"
-,
-                    background:"var(--color-neutral-500),rgba(235, 237, 240, 0.08)"
                   }}>
                   <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                     <path
@@ -269,41 +272,41 @@ export default function UploadGarmentModal({
         <div className="flex flex-row items-center justify-end gap-[12px]">
           <button
             onClick={requestClose}
-            className="px-[12px] py-[8px] rounded-[8px] bg-surface-light text-label-sm text-strong cursor-pointer"
+            className="s-btn-noicon-36 bg-surface-light text-label-sm text-strong cursor-pointer"
           >
-            Cancel
+           <p className="px-[4px]"> Cancel </p>
           </button>
           <button
             onClick={handleAdd}
             disabled={!hasCompletedImage}
-            className="px-[12px] py-[8px] rounded-[8px] bg-white text-label-sm text-darker cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed capitalize"
+            className="py-[8px] p-btn-noicon-36  text-label-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed capitalize"
           >
-            Add {label}
+           <p className="px-[4px]">  Add {label} </p>
           </button>
         </div>
       </div>
 
       {showDiscardConfirm && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black-80">
-          <div className="bg-surface-weak w-[420px] rounded-[24px] p-[24px] flex flex-col gap-[20px]">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black-90">
+          <div className="bg-surface-weak w-[552px] rounded-[24px] p-[32px] flex flex-col border border-line-sub gap-[32px]">
             <div className="flex flex-row items-start justify-between">
               <div className="flex flex-col gap-[4px]">
-                <p className="text-title-h6 text-strong">Discard uploaded images?</p>
-                <p className="text-paragraph-sm text-sub">Your selected images will be removed</p>
+                <p className="text-label-lg text-strong">Discard uploaded images?</p>
+                <p className="text-label-sm text-sub">Your selected images will be removed</p>
               </div>
               <div
                 onClick={() => setShowDiscardConfirm(false)}
-                className="w-[32px] h-[32px] rounded-full bg-surface-light flex items-center justify-center text-strong cursor-pointer shrink-0"
+                className="w-[24px] h-[24px] flex items-center justify-center text-strong cursor-pointer shrink-0"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="aspect-square text-sub">
+                 <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
             </div>
             <div className="flex flex-row items-center justify-end gap-[12px]">
               <button
                 onClick={() => setShowDiscardConfirm(false)}
-                className="px-[16px] py-[10px] rounded-[10px] bg-surface-light text-label-sm text-strong cursor-pointer"
+                className="s-btn-noicon-36 text-label-sm cursor-pointer"
               >
                 Keep editing
               </button>
@@ -312,7 +315,7 @@ export default function UploadGarmentModal({
                   setShowDiscardConfirm(false);
                   onClose();
                 }}
-                className="px-[16px] py-[10px] rounded-[10px] bg-white text-label-sm text-darker cursor-pointer"
+                className="p-btn-noicon-36 text-label-sm text-darker cursor-pointer"
               >
                 Discard
               </button>

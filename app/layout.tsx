@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { inter } from "./fonts";
 import "./globals.css";
 import Appshell from "./components/Appshell";
@@ -16,11 +17,18 @@ export const metadata: Metadata = {
   description: "",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // Read on the server so the very first HTML already has the sidebar at its
+  // saved width — there's no wrong initial state for the client to correct,
+  // so the collapse preference can't flicker on reload. Absent cookie (first
+  // visit) means expanded.
+  const cookieStore = await cookies();
+  const initialSidebarCollapsed = cookieStore.get("sidebar-collapsed")?.value === "true";
+
   return (
     <html lang="en" className={inter.variable}>
       <body>
@@ -29,7 +37,7 @@ export default function RootLayout({
             <OptionSelectionProvider>
               <GenerationsProvider>
                 <FeedbackModalProvider>
-                  <Appshell>{children}</Appshell>
+                  <Appshell initialSidebarCollapsed={initialSidebarCollapsed}>{children}</Appshell>
                   <LoginModal />
                   <FreeCreditModal />
                   <FeedbackModal />

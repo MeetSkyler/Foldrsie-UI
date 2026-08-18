@@ -106,7 +106,7 @@ const SideDrawer = () => {
             const selected=pathname===data.href;
             const selection = data.key ? selections[data.key] : undefined;
             return(
-              <Link key={data.label} href={data.href} className={`rounded-[16px] p-[16px] flex hover:border-transparent gap-[16px] border border-line-sub flex-row items-center  hover:bg-surface-alpha-light-soft  border-line-sub ${selected?"bg-surface-soft hover:bg-surface-soft":"bg-surface-weak"}`}>
+              <Link key={data.label} href={data.href} className={`rounded-[16px] p-[16px] flex gap-[16px] border border-line-sub flex-row items-center ${selected?"bg-surface-soft":"bg-surface-weak hover:border-transparent hover:bg-surface-alpha-light-soft"}`}>
                <div className='h-[48px] w-[48px] relative overflow-hidden items-center justify-center flex text-label-xs rounded-[10px] bg-surface-alpha-light-white text-sub'>
                 {selection?.color ? (
                   <div className="w-full h-full" style={{ background: selection.color }} />
@@ -140,7 +140,7 @@ const SideDrawer = () => {
              const selected=pathname===data.href;
              const selection = data.key ? selections[data.key] : undefined;
             return(
-              <Link key={data.label} href={data.href} className={`rounded-[16px] p-[16px] flex gap-[16px] border border-line-sub flex-row items-center hover:border-transparent  hover:bg-surface-alpha-light-soft  border-line-sub ${selected?"bg-surface-soft hover:bg-surface-soft":"bg-surface-weak"}`}>
+              <Link key={data.label} href={data.href} className={`rounded-[16px] p-[16px] flex gap-[16px] border border-line-sub flex-row items-center ${selected?"bg-surface-soft":"bg-surface-weak hover:border-transparent hover:bg-surface-alpha-light-soft"}`}>
                <div className='h-[48px] w-[48px] relative overflow-hidden items-center justify-center flex text-label-xs rounded-[10px]  bg-surface-alpha-light-white text-sub'>
                 {selection?.color ? (
                   <div className="w-full h-full" style={{ background: selection.color }} />
@@ -173,7 +173,7 @@ const SideDrawer = () => {
              const selected=pathname===data.href;
              const selection = data.key ? selections[data.key] : undefined;
             return(
-              <Link key={data.label} href={data.href} className={`rounded-[16px] p-[16px] flex hover:border-transparent hover:bg-surface-alpha-light-soft gap-[16px] border flex-row items-center border-line-sub  ${selected?"bg-surface-soft hover:bg-surface-soft":"bg-surface-weak"}`}>
+              <Link key={data.label} href={data.href} className={`rounded-[16px] p-[16px] flex gap-[16px] border border-line-sub flex-row items-center ${selected?"bg-surface-soft":"bg-surface-weak hover:border-transparent hover:bg-surface-alpha-light-soft"}`}>
                <div className='h-[48px] w-[48px] relative overflow-hidden items-center justify-center flex text-label-xs rounded-[10px]  bg-surface-alpha-light-white text-sub'>
                 {selection?.color ? (
                   <div className="w-full h-full" style={{ background: selection.color }} />

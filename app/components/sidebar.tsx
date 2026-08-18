@@ -1,7 +1,7 @@
 // ......Sidebar........//
 'use client'
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import Link from 'next/link';
 import { useFeedbackModal } from '@/app/context/feedback-modal-context';
 
@@ -9,18 +9,20 @@ import { useFeedbackModal } from '@/app/context/feedback-modal-context';
 
 
 
-const Sidebar = () => {
+const Sidebar = ({ initialCollapsed }: { initialCollapsed: boolean }) => {
   const pathname=usePathname();
   const { openFeedback } = useFeedbackModal();
 
-  const [iscollapsed, setiscollapsed] = useState(false);
-  useEffect(()=>{
-    const savedCollapsed=localStorage.getItem("sidebar-Collapsed");
-  setiscollapsed(savedCollapsed==="true");
-  },[]);
+  // Seeded from the cookie the server already read (see app/layout.tsx), so
+  // the first client render matches the server HTML exactly — there is no
+  // wrong initial state to correct after mount, hence nothing to flicker.
+  const [iscollapsed, setiscollapsed] = useState(initialCollapsed);
   function toggleCollapsed() {
     const toggle=!iscollapsed;
     setiscollapsed(toggle);
+    // The cookie is what the server reads on the next request; localStorage
+    // is kept in sync for any client-side code still reading it.
+    document.cookie = `sidebar-collapsed=${toggle}; path=/; max-age=31536000`;
     localStorage.setItem("sidebar-Collapsed",String(toggle));
   }
   const TopNavLinks=[
