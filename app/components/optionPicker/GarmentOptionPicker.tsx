@@ -4,6 +4,7 @@ import Image, { StaticImageData } from "next/image";
 import { useOptionSelection } from "@/app/context/option-selection-context";
 import UploadGarmentModal, { GarmentUploadResult } from "./UploadGarmentModal";
 import SourceFilterDropdown, { SourceFilter } from "./SourceFilterDropdown";
+import { useResponsiveColumns } from "./useResponsiveColumns";
 
 export type GarmentItem = {
   id: string;
@@ -17,6 +18,17 @@ function primaryImage(item: GarmentItem) {
   return item.front ?? item.back ?? item.closeup;
 }
 
+// Only uploaded items (always string blob URLs, never a static import) are
+// ever reopened for editing, so this coercion is safe in practice — it just
+// satisfies GarmentUploadResult's narrower (string-only) field types.
+function toUploadResult(item: GarmentItem): GarmentUploadResult {
+  return {
+    front: typeof item.front === "string" ? item.front : undefined,
+    back: typeof item.back === "string" ? item.back : undefined,
+    closeup: typeof item.closeup === "string" ? item.closeup : undefined,
+  };
+}
+
 export type GarmentPickerConfig = {
   key: string;
   label: string; // singular, e.g. "top" — drives "Choose a {label}" / "All {label}s"
@@ -27,38 +39,52 @@ export type GarmentPickerConfig = {
 
 // Same column-stop approach as OptionPicker: every zoom stop the slider can
 // land on is guaranteed to look different from its neighbors.
-const COLUMN_STOPS = [6, 5, 4, 3, 2];
+// 3 stops — with cards enforcing a 184px min-width, denser stops (5/6, and
+// even a 4th stop down to 1 column) collapse into the same clamped column
+// count as a neighboring stop (see useResponsiveColumns), so both were
+// dropped. Keep this at 3 (or another divisor of 100 like 5) — ZOOM_STEP
+// must divide 100 with zero floating-point remainder, or the native slider's
+// own step math (floor((max-min)/step)) rounds down a full step short and
+// the last stop becomes permanently unreachable by drag/keyboard.
+const COLUMN_STOPS = [4, 3, 2];
 const ZOOM_STEP = 100 / (COLUMN_STOPS.length - 1);
 
-// Cards shrink as zoom drops toward 0 (more columns) — scale the icon,
-// gap, label and footer note down to match, so both blocks physically fit
-// above/below one another without colliding at the narrowest card sizes.
-// Unaffected from zoom 50 upward, where the default sizes already fit.
-function responsiveCardText(zoom: number) {
-  const t = Math.min(zoom, 50) / 50; // 0 at zoom<=0, 1 at zoom>=50
-  const iconBox = 18 + t * 14; // 18px -> 32px
-  const labelFontSize = 10 + t * 4; // 10px -> 14px
-  const noteFontSize = 7 + t * 5; // 7px -> 12px
-  return {
-    iconBox: { width: `${iconBox}px`, height: `${iconBox}px`, padding: `${2 + t * 4}px` } as React.CSSProperties,
-    iconSvg: Math.round(11 + t * 9), // 11 -> 20
-    gap: `${4 + t * 8}px`, // 4px -> 12px
-    label: {
-      fontSize: `${labelFontSize}px`,
-      lineHeight: `${labelFontSize * 1.2}px`,
-    } as React.CSSProperties,
-    note: {
-      fontSize: `${noteFontSize}px`,
-      lineHeight: `${noteFontSize * 1.15}px`,
-      bottom: `${10 + t * 24}px`, // 10px -> 34px
-    } as React.CSSProperties,
-  };
-}
+// ---- First-card sizing (Upload) ----
+// Designer spec: these stay FIXED at every zoom level — no shrinking as
+// columns get denser. Mirrors OptionPicker.tsx's FIRST_CARD_* constants.
+// Icon+label stays independently centered in the card; the "Photo guide"
+// link is a separate element pinned this many px from the bottom edge.
+const FIRST_CARD_ICON_SIZE = 32; // px — the circular icon button (width & height)
+const FIRST_CARD_ICON_LABEL_GAP = 12; // px — gap between the icon and its label
+const FIRST_CARD_GUIDE_BOTTOM = 32; // px — distance from the card's bottom edge to the "Photo guide" link
 
-function Thumb({ image, alt }: { image: StaticImageData | string | undefined; alt: string }) {
+function Thumb({
+  image,
+  alt,
+  onClickMissing,
+}: {
+  image: StaticImageData | string | undefined;
+  alt: string;
+  // Only set for user-uploaded items — clicking a blank thumbnail reopens
+  // the upload modal, pre-filled with whichever angles already exist, so
+  // the user can fill in just the missing one(s).
+  onClickMissing?: () => void;
+}) {
   if (!image) {
-    return <div className="w-[41px] h-[50px] rounded-[8px] bg-surface-white border-[1.5px] border-[#FFFFFF]" 
-    style={{boxShadow:" 0 0 0 1.4px rgba(0, 0, 0, 0.08), 0 8px 8px -4px rgba(0, 0, 0, 0.07), 0 6px 6px -3px rgba(0, 0, 0, 0.07), 0 4px 4px -2px rgba(0, 0, 0, 0.04), 0 2px 2px -1px rgba(0, 0, 0, 0.04)"}}/>;
+    return (
+      <div
+        onClick={
+          onClickMissing
+            ? (e) => {
+                e.stopPropagation();
+                onClickMissing();
+              }
+            : undefined
+        }
+        className={`w-[41px] h-[50px] rounded-[8px] bg-surface-white border-[1.5px] border-[#FFFFFF] ${onClickMissing ? "cursor-pointer" : ""}`}
+        style={{boxShadow:" 0 0 0 1.4px rgba(0, 0, 0, 0.08), 0 8px 8px -4px rgba(0, 0, 0, 0.07), 0 6px 6px -3px rgba(0, 0, 0, 0.07), 0 4px 4px -2px rgba(0, 0, 0, 0.04), 0 2px 2px -1px rgba(0, 0, 0, 0.04)"}}
+      />
+    );
   }
   return (
     <div className="relative w-[41px] h-[50px] rounded-[8px] overflow-hidden border-[1.5px] border-[#FFFFFF] bg-surface-white "
@@ -70,11 +96,15 @@ function Thumb({ image, alt }: { image: StaticImageData | string | undefined; al
 
 const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
   const { selections, setSelection } = useOptionSelection();
-  const [zoom, setZoom] = useState(50);
+  const [zoom, setZoom] = useState(ZOOM_STEP); // must land on a ZOOM_STEP multiple
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(() => selections[config.key]?.id ?? null);
   const [items, setItems] = useState(config.items);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  // Set when the upload modal was reopened from a card missing an angle
+  // (instead of the "Upload new {label}" first card) — the save handler
+  // then updates this item in place instead of creating a new one.
+  const [editingItem, setEditingItem] = useState<GarmentItem | null>(null);
   const gridRef = useRef<HTMLDivElement | null>(null);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -101,8 +131,8 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
     }, 150);
   }
 
-  const columns = COLUMN_STOPS[Math.round(zoom / ZOOM_STEP)];
-  const rc = responsiveCardText(zoom);
+  const desiredColumns = COLUMN_STOPS[Math.round(zoom / ZOOM_STEP)];
+  const columns = useResponsiveColumns(gridRef, desiredColumns);
   const visibleItems = items.filter((item) => {
     if (sourceFilter === "all") return true;
     const isUpload = item.id.startsWith("upload-");
@@ -122,7 +152,33 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
     if (selectedId === item.id) setSelectedId(null);
   }
 
-  function handleAddGarment(result: GarmentUploadResult) {
+  // Reopens the upload modal for an existing uploaded item that's missing
+  // an angle — only wired up for isUpload cards (never default catalog
+  // items), so this is unreachable for anything but the user's own uploads.
+  function handleEditMissing(item: GarmentItem) {
+    setEditingItem(item);
+    setShowUploadModal(true);
+  }
+
+  function closeUploadModal() {
+    setShowUploadModal(false);
+    setEditingItem(null);
+  }
+
+  function handleSaveGarment(result: GarmentUploadResult) {
+    if (editingItem) {
+      // Reflects the modal's final slot state as-is — a pre-filled slot the
+      // user left untouched stays, one they removed becomes missing again,
+      // and a previously-empty one now has the newly uploaded image.
+      const updated: GarmentItem = { ...editingItem, front: result.front, back: result.back, closeup: result.closeup };
+      setItems((prev) => prev.map((i) => (i.id === editingItem.id ? updated : i)));
+      if (selectedId === editingItem.id) {
+        setSelection(config.key, { id: updated.id, image: primaryImage(updated) });
+      }
+      closeUploadModal();
+      return;
+    }
+
     const newItem: GarmentItem = {
       id: `upload-${Date.now()}`,
       front: result.front,
@@ -130,7 +186,7 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
       closeup: result.closeup,
     };
     setItems((prev) => [newItem, ...prev]);
-    setShowUploadModal(false);
+    closeUploadModal();
     handleSelect(newItem);
   }
 
@@ -159,7 +215,7 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                     background: `linear-gradient(to right, #DAECF5 0%, #DAECF5 ${zoom}%, rgba(218, 236, 245, 0.15) ${zoom}%, rgba(218, 236, 245, 0.15) 100%)`,
                   }}
                 />
-                <p className="w-[27px] h-full flex items-center justify-end text-sub text-label-sm ">{zoom}</p>
+                <p className="w-[27px] h-full flex items-center justify-end text-sub text-label-sm ">{Math.round(zoom)}</p>
               </div>
             </div>
           </div>
@@ -168,21 +224,26 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
           <div ref={gridRef} className="grid gap-[16px] px-[20px] pb-[24px] pt-[16px]" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
             {/* Firstcard — opens the multi-slot upload modal instead of a direct file picker */}
             <button
-              onClick={() => setShowUploadModal(true)}
-              className={`aspect-[5/6] relative border-[1px] border-white/50 bg-white/8 hover:bg-white-12 cursor-pointer ${
+              onClick={() => {
+                setEditingItem(null);
+                setShowUploadModal(true);
+              }}
+              className={`aspect-[5/6] min-w-[184px] relative border-[1px] border-white/50 bg-white/8 hover:bg-white-12 cursor-pointer ${
                 zoom === 0 ? "rounded-[16px]" : "rounded-[24px]"
               }`}
               style={{ boxShadow: "0 0 24px 0 rgba(255, 255, 255, 0.24) inset, 0 0 4px 0 rgba(255, 255, 255, 0.40) inset" }}
             >
-              {/* Absolutely centered in the full card, independent of the
-                  footer note below — neither can ever affect the other's
-                  layout, however many lines either one wraps to. Every
-                  size below scales with zoom so the two never collide. */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center px-[12px]" style={{ gap: rc.gap }}>
+              {/* Fixed sizing (see FIRST_CARD_* constants above) — no
+                  shrinking with zoom. Icon+label stays independently
+                  centered in the card; the link below is a separate element
+                  pinned to the bottom edge, so neither can push the other. */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center px-[12px]" style={{ gap: FIRST_CARD_ICON_LABEL_GAP }}>
                 <div
                   className="rounded-full flex items-center bg-surface-alpha-light-white justify-center text-strong leading-none"
                   style={{
-                    ...rc.iconBox,
+                    width: FIRST_CARD_ICON_SIZE,
+                    height: FIRST_CARD_ICON_SIZE,
+                    padding: 6,
                     boxShadow:
     "0 0 0.5px 0.5px var(--color-white-20, rgba(235, 237, 240, 0.20)) inset, " +
     "0 8px 8px -4px rgba(0, 0, 0, 0.05), " +
@@ -191,7 +252,7 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
     "0 0 12px 0 var(--color-white-20, rgba(235, 237, 240, 0.20)) inset, " +
     "0 0 4px 0 var(--color-white-60, rgba(235, 237, 240, 0.60)) inset"
                   }}>
-                  <svg width={rc.iconSvg} height={rc.iconSvg} viewBox="0 0 20 20" fill="none">
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                     <path
                       fillRule="evenodd"
                       clipRule="evenodd"
@@ -200,9 +261,9 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                     />
                   </svg>
                 </div>
-                <p style={rc.label} className="text-strong text-center">Upload new {config.label}</p>
+                <p className="text-label-sm text-strong text-center">Upload new {config.label}</p>
               </div>
-              <p style={rc.note} className="absolute left-0 right-0 text-sub text-center underline underline-offset-3 hover:text-strong">Photo guide</p>
+              <p className="absolute left-0 right-0 text-label-xs text-sub text-center underline underline-offset-3 hover:text-strong" style={{ bottom: FIRST_CARD_GUIDE_BOTTOM }}>Photo guide</p>
             </button>
 
             {/* Other cards — front image as the main photo, back + closeup as small
@@ -213,7 +274,7 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                 <button
                   key={item.id}
                   onClick={() => handleSelect(item)}
-                  className="group aspect-[5/6] rounded-[16px] relative cursor-pointer bg-surface-white"
+                  className="group aspect-[5/6] min-w-[184px] rounded-[16px] relative cursor-pointer bg-surface-white"
                 >
                   <div className="absolute inset-0 rounded-[16px] overflow-hidden">
                     {item.front ? (
@@ -231,8 +292,16 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                   </div>
 
                   <div className="absolute bottom-[12px] left-[12px] flex flex-row gap-[12px]">
-                    <Thumb image={item.back} alt={`${config.label} back`} />
-                    <Thumb image={item.closeup} alt={`${config.label} close-up`} />
+                    <Thumb
+                      image={item.back}
+                      alt={`${config.label} back`}
+                      onClickMissing={isUpload ? () => handleEditMissing(item) : undefined}
+                    />
+                    <Thumb
+                      image={item.closeup}
+                      alt={`${config.label} close-up`}
+                      onClickMissing={isUpload ? () => handleEditMissing(item) : undefined}
+                    />
                   </div>
 
                   {selectedId === item.id && (
@@ -252,7 +321,7 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                       <svg  width="16" height="16" viewBox="0 0 16 16" fill="none">
                        <path d="M12 4L4 12M4 4L12 12" stroke="#EBEDF0" strokeOpacity="0.97" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
-                      <div className="absolute bottom-full mb-[8px] right-0 z-20 whitespace-nowrap text-white text-label-xs bg-surface-light px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover/remove:opacity-100 transition-opacity duration-150 pointer-events-none">
+                      <div className="absolute bottom-full mb-[4px] left-1/2 -translate-x-1/2 z-20 whitespace-nowrap text-white text-label-xs bg-surface-light px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover/remove:opacity-100 transition-opacity duration-150 pointer-events-none">
                         Remove image
                       </div>
                     </div>
@@ -266,8 +335,9 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
       {showUploadModal && (
         <UploadGarmentModal
           label={config.label}
-          onClose={() => setShowUploadModal(false)}
-          onAdd={handleAddGarment}
+          initial={editingItem ? toUploadResult(editingItem) : undefined}
+          onClose={closeUploadModal}
+          onAdd={handleSaveGarment}
         />
       )}
     </div>

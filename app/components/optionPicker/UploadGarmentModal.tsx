@@ -71,7 +71,7 @@ function UploadSlot({
            <svg  width="16" height="16" viewBox="0 0 16 16" fill="none">
              <path d="M12 4L4 12M4 4L12 12" stroke="#EBEDF0" strokeOpacity="0.97" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            <div className="absolute bottom-full mb-[8px] right-0 z-20 whitespace-nowrap text-white text-label-xs bg-surface-light px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover/remove:opacity-100 transition-opacity duration-150 pointer-events-none">
+            <div className="absolute bottom-full mb-[4px] left-1/2 -translate-x-1/2 z-20 whitespace-nowrap text-white text-label-xs bg-surface-light px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover/remove:opacity-100 transition-opacity duration-150 pointer-events-none">
               Remove image
             </div>
           </div>
@@ -134,19 +134,28 @@ function UploadSlot({
   );
 }
 
+function slotFromInitial(url: string | undefined): SlotState {
+  return url ? { previewUrl: url, uploading: false, progress: 100 } : EMPTY_SLOT;
+}
+
 export default function UploadGarmentModal({
   label,
+  initial,
   onClose,
   onAdd,
 }: {
   label: string;
+  // Pre-fills slots that already have an image (e.g. reopening this modal
+  // from a card missing only back/closeup) so the user only has to fill in
+  // what's actually missing, instead of re-uploading everything.
+  initial?: GarmentUploadResult;
   onClose: () => void;
   onAdd: (result: GarmentUploadResult) => void;
 }) {
   const [slots, setSlots] = useState<Record<SlotKey, SlotState>>({
-    front: EMPTY_SLOT,
-    back: EMPTY_SLOT,
-    closeup: EMPTY_SLOT,
+    front: slotFromInitial(initial?.front),
+    back: slotFromInitial(initial?.back),
+    closeup: slotFromInitial(initial?.closeup),
   });
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   const timersRef = useRef<Record<SlotKey, ReturnType<typeof setInterval> | null>>({

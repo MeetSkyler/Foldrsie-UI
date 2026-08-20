@@ -77,7 +77,7 @@ const Sidebar = ({ initialCollapsed }: { initialCollapsed: boolean }) => {
 
 
   return (
-    <div className={`bg-surface-weak h-full flex flex-col transition-[width] duration-200 ease-in-out ${iscollapsed ? "w-[72px]" : "w-[214px]"}`}>
+    <div className={`relative z-30 bg-surface-weak h-full flex flex-col transition-[width] duration-200 ease-in-out ${iscollapsed ? "w-[72px]" : "w-[214px]"}`}>
       {/* ...topBar... */}
       <div className="relative w-full h-[60px] bg-surface-weak flex border-b border-line-sub">
 
@@ -115,7 +115,7 @@ const Sidebar = ({ initialCollapsed }: { initialCollapsed: boolean }) => {
              <i className={`shrink-0 ${isActive?"text-strong":"text-sub group-hover:text-strong"} `}>{link.icon}</i>
              <p className={`text-paragraph-sm whitespace-nowrap overflow-hidden transition-all duration-200 ease-in-out ${isActive?"text-strong":"text-sub group-hover:text-strong"}  ${iscollapsed ? "max-w-0 opacity-0" : "max-w-[160px] opacity-100"}`}>{link.label}</p>
             {iscollapsed && (
-              <div className='absolute items-center text-nowrap  justify-center left-full ml-[20px] transition-opacity text-white text-label-xs bg-surface-light duration-150  pointer-events-none bg-green-300 px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover:opacity-100 '>
+              <div className='absolute z-20 items-center text-nowrap  justify-center left-full ml-[20px] transition-opacity text-white text-label-xs bg-surface-light duration-150  pointer-events-none bg-green-300 px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover:opacity-100 '>
                 {link.label}
               </div>
             )
@@ -139,7 +139,7 @@ const Sidebar = ({ initialCollapsed }: { initialCollapsed: boolean }) => {
               <i className={`shrink-0 ${isActive?"text-strong":"text-sub group-hover:text-strong"} `}>{link.icon}</i>
               <p className={`text-paragraph-sm whitespace-nowrap overflow-hidden transition-all duration-200 ease-in-out ${isActive?"text-strong":"text-sub group-hover:text-strong"}   ${iscollapsed ? "max-w-0 opacity-0" : "max-w-[160px] opacity-100"}`}>{link.label}</p>
                    {iscollapsed && (
-              <div className='absolute items-center text-nowrap justify-center left-full ml-[20px] transition-opacity text-white text-label-xs bg-surface-light duration-150  pointer-events-none  px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover:opacity-100 '>
+              <div className='absolute z-20 items-center text-nowrap justify-center left-full ml-[20px] transition-opacity text-white text-label-xs bg-surface-light duration-150  pointer-events-none  px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover:opacity-100 '>
                 {link.label}
               </div>
             )

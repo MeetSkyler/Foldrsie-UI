@@ -22,3 +22,18 @@ buddy generate btn abhi disbaled hai hai yai tabhii disabled sai hataiga jub use
 and buddy main thing new user agr sidedrawer mai kaisii bhi option pai click karaiga to ossai login mangai ga yani login screen show hogii then buddy login kai baad sarai option selectable hojayiangai.
 
 
+.........................Aspect ratio ............................
+buddy aspect ratio option page jo kai sideDrawer kai option aspectratio pur apen hota hai buddy aispai main khaayal karna user jo ratio select karai osii ratio pur img generate ho nad buddy 
+always and always ration img cover ayaaai kabhi but genertaed page mai generate card mai img cutted na ho wahii strategyu use karna jo humani sath banaye thii kai landscape ya koye aiisis pose ho to background inscrease hoga 
+
+
+........................generate..................................
+buddy generate btn jisai kai tumhai pata hai sirf login users or just all options sleect karnai pur hi disbale sai hatdiga and agr os pai clcik hoga to img generate hogii buddy
+and buddy genertae hotai time naiamtion vedio play hogii jo abhi whaha hai mp4 
+and buddy woha tub tub generating dots animation or bg aniamtion play rahaiagii jubtuk buddy img generate naye hojatii 
+
+buddy jub 1 sai zaiydah user imgs genrtae karaiga to buddy neechai chotai card show hongai jo tum generate kai page.tsx mai daikhogai 
+budy 4 tuk viisble hongi but 5th pai jo card viisble hoga oskai baad naye hongii bakii images show or os 5tyh card pai clcik pai gelery pai user jayaiga jaha oskii 1st image sai likrr current tuk sub history hogii 
+also buddy jo neechai 4 cards jinmai iamges hongii onmai budy agr user kissi card pai clcik kariaga to woah img oskoo generate card mai show hogii 
+also buddy 5th card mai recent generated img hsow hogii opur view all text jisai kai abhi hai ..
+

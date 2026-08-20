@@ -57,9 +57,9 @@ const page = () => {
         {items.length === 0 ? (
           <p className="px-[20px] pb-[24px] text-paragraph-sm text-sub">No generations yet — head back to Generate to create your first shot.</p>
         ) : (
-          <div className="grid gap-[16px] px-[20px] pb-[24px] pt-[16px]" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
+          <div className="grid gap-[16px] px-[20px] pb-[24px] pt-[16px] items-start" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
             {items.map((g) => (
-              <div key={g.id} className="group aspect-[5/6] rounded-[16px] overflow-hidden relative bg-surface-soft">
+              <div key={g.id} style={{ aspectRatio: g.ratio }} className="group w-full rounded-[16px] overflow-hidden relative bg-surface-soft">
                 <Image src={g.image} alt="Generated result" fill unoptimized className="object-cover" />
 
                 <div className="absolute top-[8px] right-[8px] flex flex-row gap-[6px] opacity-0 group-hover:opacity-100 transition-opacity">

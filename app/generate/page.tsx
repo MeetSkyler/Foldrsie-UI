@@ -1,7 +1,8 @@
 "use client";
 import { Suspense, useEffect, useState } from 'react';
+import { motion } from "motion/react";
 import modalimg from '@/public/modalimg.svg'
-import dummyResult from '@/public/modalimg.svg'
+import dummyResult from '@/public/img4.jpg'
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -9,8 +10,10 @@ import { useOptionSelection } from '@/app/context/option-selection-context';
 import { useGenerations, GenerationItem } from '@/app/context/generations-context';
 
 const CARD_MAX_W = 370;
-const CARD_MAX_H = 440;
-const THUMB_MAX = 64;
+const CARD_MAX_H_LARGE = 540; // 2xl (1536px+) screens
+const CARD_MAX_H_SMALL = 460; // below 2xl (small + medium/tablet, incl. a 13" laptop like a MacBook Air) screens
+const LARGE_SCREEN_QUERY = "(min-width: 1536px)"; // matches Tailwind's default `2xl` breakpoint
+const THUMB_HEIGHT = 80;
 
 function fitBox(ratio: number, maxW: number, maxH: number) {
   let w = maxW;
@@ -20,6 +23,32 @@ function fitBox(ratio: number, maxW: number, maxH: number) {
     w = h * ratio;
   }
   return { width: w, height: h };
+}
+
+// Thumbnails are a fixed height with width following each generation's own
+// ratio — never a shared box, since every generation can have a different
+// aspect ratio from the current selection.
+function thumbBox(ratio: number) {
+  return { width: THUMB_HEIGHT * ratio, height: THUMB_HEIGHT };
+}
+
+// The generate card's max height is computed in JS (via fitBox) rather than
+// a CSS class, so it needs its own media-query check instead of a `2xl:`
+// class. Always starts `false` on both server and the first client render
+// (matching what SSR renders, since `window` doesn't exist there) and only
+// switches after mount — reading matchMedia in the initial useState would
+// make the client's first render disagree with the server-rendered HTML
+// whenever the real viewport is wide, causing a hydration mismatch.
+function useIsLargeScreen() {
+  const [isLarge, setIsLarge] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(LARGE_SCREEN_QUERY);
+    const handler = () => setIsLarge(mq.matches);
+    handler();
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return isLarge;
 }
 
 const GenerateContent = () => {
@@ -32,6 +61,7 @@ const GenerateContent = () => {
   const [phase, setPhase] = useState<'loading' | 'done'>('loading');
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  const isLargeScreen = useIsLargeScreen();
 
   useEffect(() => {
     if (!isGenerating) return;
@@ -62,9 +92,15 @@ const GenerateContent = () => {
     );
   }
 
-  const card = fitBox(ratio, CARD_MAX_W, CARD_MAX_H);
-  const thumb = fitBox(ratio, THUMB_MAX, THUMB_MAX);
+  const cardMaxH = isLargeScreen ? CARD_MAX_H_LARGE : CARD_MAX_H_SMALL;
+  // The card being generated (not shown yet) is always the current
+  // selection's ratio; once a result is showing, the card must follow THAT
+  // specific generation's own stored ratio — never the current selection —
+  // since an older thumbnail with a different ratio can be clicked back into
+  // view without touching the current selection.
+  const loadingCard = fitBox(ratio, CARD_MAX_W, cardMaxH);
   const viewing = generations.find((g) => g.id === viewingId) ?? generations[generations.length - 1];
+  const doneCard = viewing ? fitBox(viewing.ratio, CARD_MAX_W, cardMaxH) : loadingCard;
 
   const total = generations.length;
   const showStrip = total >= 2;
@@ -73,10 +109,10 @@ const GenerateContent = () => {
   const latest = generations[total - 1];
 
   return (
-    <div className='w-full h-full flex flex-col items-center justify-center bg-neutral-900 gap-[16px]'>
+    <div className='w-full h-full flex flex-col items-center justify-center bg-neutral-900 gap-[24px]'>
       {phase === 'loading' && (
         <div
-          style={{ width: card.width, height: card.height }}
+          style={{ width: loadingCard.width, height: loadingCard.height }}
           className='relative rounded-[24px] overflow-hidden flex items-center justify-center bg-surface-soft'
         >
           <video
@@ -98,54 +134,77 @@ const GenerateContent = () => {
 
       {phase === 'done' && viewing && (
         <>
-          <div
-            style={{ width: card.width, height: card.height }}
-            className='relative rounded-[24px] overflow-hidden bg-surface-soft'
+          <motion.div
+            layout
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            style={{ width: doneCard.width, height: doneCard.height }}
+            className='relative rounded-[18.67px] overflow-hidden bg-surface-soft'
           >
             <Image src={viewing.image} alt="Generated result" fill unoptimized className='object-cover' />
             <div
               onClick={() => setFullscreen(true)}
-              className='absolute top-[12px] right-[12px] w-[32px] h-[32px] rounded-[8px] bg-black-60 flex items-center justify-center cursor-pointer'
+              className='absolute top-[12px] right-[12px] w-[32px] h-[32px]  rounded-[8px] bg-black-60 flex items-center justify-center cursor-pointer'
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M6 2H2V6M10 2H14V6M14 10V14H10M2 10V14H6" stroke="white" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+             <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path d="M3.33366 13.333V16.6663H6.66699M3.33366 16.6663L8.33366 11.6663M16.667 6.66634V3.33301H13.3337M16.667 3.33301L11.667 8.33301" stroke="#EBEDF0" strokeOpacity="0.97" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+             </svg>
             </div>
-          </div>
+          </motion.div>
 
-          <button
-            style={{ width: card.width }}
-            className='h-[48px] rounded-[10px] bg-surface-light hover:bg-surface-mid text-label-sm text-strong cursor-pointer'
+          <motion.button
+            layout
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            style={{ width: doneCard.width }}
+            className='s-btn-noicon-48  text-label-sm text-strong cursor-pointer'
           >
             Download
-          </button>
+          </motion.button>
 
           {showStrip && (
-            <div className='flex flex-row gap-[8px] items-end'>
-              {stripItems.map((g) => (
-                <button
-                  key={g.id}
-                  onClick={() => setViewingId(g.id)}
-                  style={{ width: thumb.width, height: thumb.height }}
-                  className={`relative rounded-[10px] overflow-hidden cursor-pointer ${
-                    g.id === viewing.id ? 'outline outline-2 outline-offset-1 outline-white' : ''
-                  }`}
-                >
-                  <Image src={g.image} alt="" fill unoptimized className='object-cover' />
-                </button>
-              ))}
+            // mt-[8px] on small/medium (tablet, incl. 13"-15" laptops) screens,
+            // mt-[32px] on 2xl+ — on top of the parent's gap-[24px]. `layout` on this + the
+            // siblings above turns the "image/button suddenly jump up"
+            // reflow (when this strip first mounts, or grows past 4 items)
+            // into a smooth animated shift instead of an instant snap;
+            // initial/animate gives the strip itself a fade+slide-in the
+            // first time it appears.
+            <motion.div
+              layout
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, ease: "easeOut" }}
+              className='flex flex-row gap-[12px] items-end mt-[8px] 2xl:mt-[32px]'>
+              {stripItems.map((g) => {
+                const itemThumb = thumbBox(g.ratio);
+                return (
+                  <button
+                    key={g.id}
+                    onClick={() => setViewingId(g.id)}
+                    style={{ width: itemThumb.width, height: itemThumb.height }}
+                    className={`relative rounded-[12px] overflow-hidden bg-surface-soft cursor-pointer ${
+                      g.id === viewing.id ? 'shadow-[0_0_0_2px_#FFF] border-[2px] border-[#000000]' : ''
+                    }`}
+                  >
+                    <Image src={g.image} alt="" fill unoptimized className='object-cover' />
+                  </button>
+                );
+              })}
 
-              {showOverflow && latest && (
-                <Link
-                  href="/gallery"
-                  style={{ width: thumb.width, height: thumb.height }}
-                  className='relative rounded-[10px] overflow-hidden flex items-center justify-center cursor-pointer'
-                >
-                  <Image src={latest.image} alt="" fill unoptimized className='object-cover opacity-40' />
-                  <span className='relative text-label-xs text-white'>View all</span>
-                </Link>
-              )}
-            </div>
+              {showOverflow && latest && (() => {
+                const overflowThumb = thumbBox(latest.ratio);
+                return (
+                  <Link
+                    href="/gallery"
+                    style={{ width: overflowThumb.width, height: overflowThumb.height }}
+                    className='relative rounded-[12px]  overflow-hidden flex  items-center justify-center  cursor-pointer'
+                  >
+                    <Image src={latest.image} alt="" fill unoptimized className='object-cover' / >
+                    <span className='relative tracking-[-0.5%] text-strong z-20 text-[0.7em]'>View all</span>
+                    <div className='absolute bg-black-80 pointer-events-none inset-0'></div>
+                  </Link>
+                );
+              })()}
+            </motion.div>
           )}
         </>
       )}

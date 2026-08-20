@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useOptionSelection } from '@/app/context/option-selection-context';
 
@@ -92,6 +92,15 @@ const SideDrawer = () => {
   const { selections } = useOptionSelection();
   const allOptionsSelected = ALL_OPTION_KEYS.every((k) => k in selections);
 
+  // The route can take a beat to actually swap (server round-trip, dev-mode
+  // compile, etc). Highlighting the clicked item immediately — instead of
+  // waiting for `pathname` to catch up — makes the click feel acknowledged
+  // right away instead of like nothing happened.
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
+  useEffect(() => {
+    setPendingHref(null);
+  }, [pathname]);
+
   return (
      <div className='w-[360px] flex flex-col relative'>
       <div className='w-full bg-surface-weak flex-1 min-h-0 px-[16px] pt-[20px] gap-[28px] border-l border-line-sub flex flex-col'>
@@ -99,14 +108,14 @@ const SideDrawer = () => {
       {/* ...................TopOptionsbar............... */}
       <div className=" w-full flex-1 bg-surface-weak min-h-0 pb-[28px] overflow-y-scroll no-scrollbar  flex flex-col gap-[20px]">
         {/* ............Model............. */}
-        <div className='w-full   h-full flex flex-col  gap-[16px]'>
+        <div className='w-full flex flex-col  gap-[16px]'>
         <p className='px-[16px] text-subheading-xs text-soft uppercase w-full '>Model</p>
         <div className=' flex flex-col w-full gap-[12px]'>
           {ModelOptions.map((data)=>{
-            const selected=pathname===data.href;
+            const selected=pathname===data.href || pendingHref===data.href;
             const selection = data.key ? selections[data.key] : undefined;
             return(
-              <Link key={data.label} href={data.href} className={`rounded-[16px] p-[16px] flex gap-[16px] border border-line-sub flex-row items-center ${selected?"bg-surface-soft":"bg-surface-weak hover:border-transparent hover:bg-surface-alpha-light-soft"}`}>
+              <Link key={data.label} href={data.href} onClick={() => setPendingHref(data.href)} className={`rounded-[16px] p-[16px] flex gap-[16px] border border-line-sub flex-row items-center ${selected?"bg-surface-soft":"bg-surface-weak hover:border-transparent hover:bg-surface-alpha-light-soft"}`}>
                <div className='h-[48px] w-[48px] relative overflow-hidden items-center justify-center flex text-label-xs rounded-[10px] bg-surface-alpha-light-white text-sub'>
                 {selection?.color ? (
                   <div className="w-full h-full" style={{ background: selection.color }} />
@@ -133,14 +142,14 @@ const SideDrawer = () => {
 
 
        {/* .............OUTFIT................. */}
-     <div className='w-full bg-surface-weak h-full flex flex-col  gap-[16px]'>
+     <div className='w-full bg-surface-weak flex flex-col  gap-[16px]'>
         <p className='px-[16px] text-subheading-xs text-soft uppercase w-full '>Outfit</p>
         <div className=' flex flex-col w-full gap-[12px]'>
           {OutfitOptions.map((data)=>{
-             const selected=pathname===data.href;
+             const selected=pathname===data.href || pendingHref===data.href;
              const selection = data.key ? selections[data.key] : undefined;
             return(
-              <Link key={data.label} href={data.href} className={`rounded-[16px] p-[16px] flex gap-[16px] border border-line-sub flex-row items-center ${selected?"bg-surface-soft":"bg-surface-weak hover:border-transparent hover:bg-surface-alpha-light-soft"}`}>
+              <Link key={data.label} href={data.href} onClick={() => setPendingHref(data.href)} className={`rounded-[16px] p-[16px] flex gap-[16px] border border-line-sub flex-row items-center ${selected?"bg-surface-soft":"bg-surface-weak hover:border-transparent hover:bg-surface-alpha-light-soft"}`}>
                <div className='h-[48px] w-[48px] relative overflow-hidden items-center justify-center flex text-label-xs rounded-[10px]  bg-surface-alpha-light-white text-sub'>
                 {selection?.color ? (
                   <div className="w-full h-full" style={{ background: selection.color }} />
@@ -166,14 +175,14 @@ const SideDrawer = () => {
         </div>
 
       {/* .................SHOOT......................... */}
-     <div className='w-full  h-full flex flex-col  gap-[16px]'>
+     <div className='w-full flex flex-col  gap-[16px]'>
         <p className='px-[16px] text-subheading-xs text-soft uppercase w-full'>Shoot</p>
         <div className=' flex flex-col w-full gap-[12px]'>
           {ShootOptions.map((data)=>{
-             const selected=pathname===data.href;
+             const selected=pathname===data.href || pendingHref===data.href;
              const selection = data.key ? selections[data.key] : undefined;
             return(
-              <Link key={data.label} href={data.href} className={`rounded-[16px] p-[16px] flex gap-[16px] border border-line-sub flex-row items-center ${selected?"bg-surface-soft":"bg-surface-weak hover:border-transparent hover:bg-surface-alpha-light-soft"}`}>
+              <Link key={data.label} href={data.href} onClick={() => setPendingHref(data.href)} className={`rounded-[16px] p-[16px] flex gap-[16px] border border-line-sub flex-row items-center ${selected?"bg-surface-soft":"bg-surface-weak hover:border-transparent hover:bg-surface-alpha-light-soft"}`}>
                <div className='h-[48px] w-[48px] relative overflow-hidden items-center justify-center flex text-label-xs rounded-[10px]  bg-surface-alpha-light-white text-sub'>
                 {selection?.color ? (
                   <div className="w-full h-full" style={{ background: selection.color }} />
@@ -204,13 +213,13 @@ const SideDrawer = () => {
 
       </div>
 
-      <div className='w-full  bg-green-200'>
+      <div className='w-full'>
           {/* ...........Bottom Generate Area......... */}
       <div className="p-[16px] border-t border-l bg-surface-weak border-line-sub w-full h-[80px]">
       <button
         onClick={() => allOptionsSelected && router.push('/generate?generating=1')}
         disabled={!allOptionsSelected}
-        className='s-btn-righticon-48 flex flex-row items-center justify-center w-full'
+        className='p-btn-righticon-48 flex flex-row items-center justify-center w-full'
       >
         <p className='text-label-sm px-[4px]'>Generate</p>
 

@@ -20,15 +20,15 @@ export default function Appshell({
       {/* ....LeftBar//Sidebar.... */}
      <Sidebar initialCollapsed={initialSidebarCollapsed}/>
     
-  <div className="flex-1 flex flex-col min-h-0">
+  <div className="flex-1 min-w-0 flex flex-col min-h-0">
 
      {/* ....Navbar.... */}
       <Navbar/>
 
-      <div className="flex-1 flex flex-row bg-neutral-900 min-h-0">
-   
+      <div className="flex-1 min-w-0 flex flex-row bg-neutral-900 min-h-0">
+
       {/* ....Main Center Screen Pages.... */}
-       <main className="flex-1 overflow-hidden">{children}</main>
+       <main className="flex-1 min-w-0 overflow-hidden">{children}</main>
 
        {/* ....Rightbar//Side Drawer.... */}
        {!hideSideDrawer && <SideDrawer/>}
