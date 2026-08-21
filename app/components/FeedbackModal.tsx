@@ -8,6 +8,10 @@ const FeedbackModal = () => {
   const { isFeedbackOpen, closeFeedback } = useFeedbackModal();
   const [type, setType] = useState(FEEDBACK_TYPES[0]);
   const [message, setMessage] = useState("");
+  // Same autofill/paste-suggestion detection as the login email input (see
+  // globals.css's onAutofillDetect keyframe, now also scoped to textarea).
+  const [isAutofilled, setIsAutofilled] = useState(false);
+  const isFilled = message.length > 0;
 
   useEffect(() => {
     if (!isFeedbackOpen) return;
@@ -35,39 +39,45 @@ const FeedbackModal = () => {
     closeFeedback();
   }
 
+  function handleMessageChange(value: string) {
+    setMessage(value);
+    setIsAutofilled(false);
+  }
+
   return (
     <div
-      onClick={closeFeedback}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black-80"
+      // Deliberately no onClick here — the backdrop must not close the
+      // modal; only the cross icon or the Cancel button should.
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black-90"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-surface-weak w-[600px] rounded-[24px] p-[24px] flex flex-col gap-[24px]"
+        className="bg-surface-weak w-[700px] rounded-[24px] p-[24px] border border-line-sub flex flex-col gap-[24px]"
       >
         <div className="flex flex-row items-start justify-between">
-          <div className="flex flex-col gap-[4px]">
-            <p className="text-title-h6 text-strong">Share feedback</p>
+          <div className="flex flex-col gap-[8px]">
+            <p className="text-label-lg text-strong">Share feedback</p>
             <p className="text-paragraph-sm text-sub">Tell us what&apos;s working, what&apos;s confusing, or what we can improve.</p>
           </div>
           <div
             onClick={closeFeedback}
-            className="w-[32px] h-[32px] rounded-full bg-surface-light flex items-center justify-center text-strong cursor-pointer shrink-0"
+            className="w-[24px] h-[24px]  flex items-center justify-center cursor-pointer shrink-0"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <svg  width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-sub">
+             <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
         </div>
 
-        <div className="flex flex-col gap-[10px]">
+        <div className="flex flex-col  gap-[16px]">
           <p className="text-label-sm text-strong">Feedback type</p>
           <div className="flex flex-row gap-[8px]">
             {FEEDBACK_TYPES.map((t) => (
               <button
                 key={t}
                 onClick={() => setType(t)}
-                className={`px-[14px] py-[8px] rounded-[999px] text-label-sm cursor-pointer ${
-                  type === t ? "bg-white text-darker" : "bg-surface-light text-sub hover:text-strong"
+                className={`px-[12px] py-[8px] rounded-[8px] cursor-pointer ${
+                  type === t ? "bg-surface-light text-strong border border-surface-light text-label-sm" : " text-sub text-paragraph-sm hover:text-strong hover:border-surface-light border border-line-strong"
                 }`}
               >
                 {t}
@@ -76,29 +86,45 @@ const FeedbackModal = () => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-[10px]">
+        <div className="flex flex-col gap-[16px]">
           <p className="text-label-sm text-strong">Tell us more</p>
-          <textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Share what happened, what you were trying to do, or what you'd like to see."
-            className="w-full h-[160px] rounded-[12px] bg-surface-soft border border-line-strong focus-within:border-line-white p-[12px] text-paragraph-sm text-strong placeholder:text-soft outline-none resize-none"
-          />
+          <div
+            className={`rounded-[12px] h-[182px] w-full overflow-hidden transition-colors duration-200 border ${
+              isAutofilled ? "border-line-white" : "border-line-strong focus-within:border-line-white"
+            }`}
+          >
+            <textarea
+              value={message}
+              onChange={(e) => handleMessageChange(e.target.value)}
+              onAnimationStart={(e) => {
+                if (e.animationName === "onAutofillDetect") {
+                  if (e.currentTarget.value !== message) {
+                    handleMessageChange(e.currentTarget.value);
+                  }
+                  setIsAutofilled(true);
+                }
+              }}
+              placeholder="Share what happened, what you were trying to do, or what you'd like to see."
+              className={`w-full h-[182px] p-[12px] text-paragraph-sm ${
+                isAutofilled || isFilled ? "text-strong" : "text-soft"
+              } border-none hover:bg-surface-alpha-light-soft focus:hover:bg-surface-weak focus:text-white outline-none resize-none autofill:bg-surface-soft`}
+            />
+          </div>
         </div>
 
         <div className="flex flex-row items-center justify-end gap-[12px]">
           <button
             onClick={closeFeedback}
-            className="px-[16px] py-[10px] rounded-[10px] bg-surface-light text-label-sm text-strong cursor-pointer"
+            className="s-btn-noicon-36 text-label-sm  cursor-pointer"
           >
-            Cancel
+           <p className="px-[4px]"> Cancel</p>
           </button>
           <button
             onClick={handleSend}
             disabled={!message.trim()}
-            className="px-[16px] py-[10px] rounded-[10px] bg-white text-label-sm text-darker cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+            className="p-btn-noicon-36 text-label-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Send feedback
+            <p className="px-[4px]">Send feedback</p>
           </button>
         </div>
       </div>

@@ -2,6 +2,8 @@
 import { useRef, useState } from "react";
 import { useOptionSelection } from "@/app/context/option-selection-context";
 import { useResponsiveColumns } from "./useResponsiveColumns";
+import { useIsLargeScreen } from "./useIsLargeScreen";
+import { useZoom } from "@/app/context/zoom-context";
 import Image from 'next/image';
 import ratio1 from '@/public/ratio1.svg'
 import ratio2 from '@/public/ratio2.svg'
@@ -29,26 +31,25 @@ export type AspectRatioConfig = {
 
 
 // Same column-stop approach as OptionPicker: every zoom stop the slider can
-// land on is guaranteed to look different from its neighbors.
-// 3 stops — with cards enforcing a 184px min-width, denser stops (5/6, and
-// even a 4th stop down to 1 column) collapse into the same clamped column
-// count as a neighboring stop (see useResponsiveColumns), so both were
-// dropped. Keep this at 3 (or another divisor of 100 like 5) — ZOOM_STEP
-// must divide 100 with zero floating-point remainder, or the native slider's
-// own step math (floor((max-min)/step)) rounds down a full step short and
-// the last stop becomes permanently unreachable by drag/keyboard.
-const COLUMN_STOPS = [4, 3, 2];
-const ZOOM_STEP = 100 / (COLUMN_STOPS.length - 1);
+// land on is guaranteed to look different from its neighbors. Screens above
+// 1441px get the fuller 5-stop range (matches the Gallery page); at/below
+// 1441px, cards enforcing a 184px min-width don't have room for 5-6 distinct
+// column counts without stops collapsing into duplicates (see
+// useResponsiveColumns), so that range is reduced to 3 stops instead. Each
+// array's ZOOM_STEP must divide 100 with zero floating-point remainder
+// (both do: 100/4=25, 100/2=50), or the native slider's own step math
+// (floor((max-min)/step)) rounds down a full step short and the last stop
+// becomes permanently unreachable by drag/keyboard.
+const COLUMN_STOPS_LARGE = [6, 5, 4, 3, 2];
+const COLUMN_STOPS_SMALL = [4, 3, 2];
 
 // ---- Ratio-preview sizing ----
-// Designer spec: interpolated linearly across the full zoom range (0 -> 100)
-// — edit these six numbers to restyle the preview image + name-label gap at
-// every zoom stop; nothing else in this file needs to change.
-const MIN_IMG_WIDTH = 100; // px — image width at zoom 0 (narrowest / most columns)
-const MIN_IMG_HEIGHT = 120; // px — image height at zoom 0
+// Designer spec: the preview image itself is a fixed size at every zoom
+// level — only the card (via column count) changes with zoom, never the
+// image. The gap between image and name label still scales with zoom.
+const IMG_WIDTH = 150; // px — fixed, does not change with zoom
+const IMG_HEIGHT = 180; // px — fixed, does not change with zoom
 const MIN_IMG_LABEL_GAP = 26; // px — gap between image and name label at zoom 0
-const MAX_IMG_WIDTH = 150; // px — image width at zoom 100 (widest / fewest columns)
-const MAX_IMG_HEIGHT = 180; // px — image height at zoom 100
 const MAX_IMG_LABEL_GAP = 37; // px — gap between image and name label at zoom 100
 
 // The image+label pair is wrapped in one flex column so it always moves and
@@ -56,15 +57,20 @@ const MAX_IMG_LABEL_GAP = 37; // px — gap between image and name label at zoom
 function aspectCardMetrics(zoom: number) {
   const t = zoom / 100; // 0 -> 1 across the full slider
   return {
-    imgWidth: MIN_IMG_WIDTH + t * (MAX_IMG_WIDTH - MIN_IMG_WIDTH),
-    imgHeight: MIN_IMG_HEIGHT + t * (MAX_IMG_HEIGHT - MIN_IMG_HEIGHT),
+    imgWidth: IMG_WIDTH,
+    imgHeight: IMG_HEIGHT,
     gap: MIN_IMG_LABEL_GAP + t * (MAX_IMG_LABEL_GAP - MIN_IMG_LABEL_GAP),
   };
 }
 
 const AspectRatioPicker = ({ config }: { config: AspectRatioConfig }) => {
   const { selections, setSelection } = useOptionSelection();
-  const [zoom, setZoom] = useState(ZOOM_STEP); // must land on a ZOOM_STEP multiple
+  const isLargeScreen = useIsLargeScreen();
+  const COLUMN_STOPS = isLargeScreen ? COLUMN_STOPS_LARGE : COLUMN_STOPS_SMALL;
+  const ZOOM_STEP = 100 / (COLUMN_STOPS.length - 1);
+  // Shared across every option-picker page so the zoom the user picks on
+  // one page (e.g. Pose) carries over instead of resetting on the next.
+  const { zoom, setZoom } = useZoom();
   const [selectedId, setSelectedId] = useState<string | null>(() => selections[config.key]?.id ?? null);
 
   const gridRef = useRef<HTMLDivElement | null>(null);
@@ -110,7 +116,7 @@ const AspectRatioPicker = ({ config }: { config: AspectRatioConfig }) => {
               <button
                 key={item.id}
                 onClick={() => handleSelect(item)}
-                className="group aspect-[5/6] min-w-[184px] relative rounded-[16px] border border-line-sub bg-surface-weak hover:bg-surface-alpha-light-soft flex flex-col items-center justify-center  cursor-pointer"
+                className="group aspect-[5/6] min-w-[184px] relative rounded-[16px] min-[1441px]:rounded-[24px] border border-line-sub bg-surface-weak hover:bg-surface-alpha-light-soft flex flex-col items-center justify-center  cursor-pointer"
               >
 
                 {selectedId === item.id && (

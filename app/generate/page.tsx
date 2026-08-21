@@ -9,20 +9,19 @@ import { useSearchParams } from 'next/navigation';
 import { useOptionSelection } from '@/app/context/option-selection-context';
 import { useGenerations, GenerationItem } from '@/app/context/generations-context';
 
-const CARD_MAX_W = 370;
-const CARD_MAX_H_LARGE = 540; // 2xl (1536px+) screens
-const CARD_MAX_H_SMALL = 460; // below 2xl (small + medium/tablet, incl. a 13" laptop like a MacBook Air) screens
-const LARGE_SCREEN_QUERY = "(min-width: 1536px)"; // matches Tailwind's default `2xl` breakpoint
+const CARD_MAX_H_LARGE = 540; // >= 1441px screens
+const CARD_MAX_H_SMALL = 460; // <= 1440px screens
+const LARGE_SCREEN_QUERY = "(min-width: 1441px)";
 const THUMB_HEIGHT = 80;
 
-function fitBox(ratio: number, maxW: number, maxH: number) {
-  let w = maxW;
-  let h = w / ratio;
-  if (h > maxH) {
-    h = maxH;
-    w = h * ratio;
-  }
-  return { width: w, height: h };
+// Height always stays fixed at the current breakpoint's target (460 or
+// 540) for every aspect ratio — width is the only dimension that varies,
+// derived straight from the ratio. No width cap: a cap would silently
+// shrink height back down for wide (landscape) ratios, which is exactly
+// the bug this replaced (only portrait-ish ratios were reaching the full
+// target height; landscape/square ratios were getting clipped shorter).
+function fitBox(ratio: number, targetH: number) {
+  return { width: targetH * ratio, height: targetH };
 }
 
 // Thumbnails are a fixed height with width following each generation's own
@@ -33,8 +32,8 @@ function thumbBox(ratio: number) {
 }
 
 // The generate card's max height is computed in JS (via fitBox) rather than
-// a CSS class, so it needs its own media-query check instead of a `2xl:`
-// class. Always starts `false` on both server and the first client render
+// a CSS class, so it needs its own media-query check instead of a Tailwind
+// breakpoint class. Always starts `false` on both server and the first client render
 // (matching what SSR renders, since `window` doesn't exist there) and only
 // switches after mount — reading matchMedia in the initial useState would
 // make the client's first render disagree with the server-rendered HTML
@@ -45,8 +44,15 @@ function useIsLargeScreen() {
     const mq = window.matchMedia(LARGE_SCREEN_QUERY);
     const handler = () => setIsLarge(mq.matches);
     handler();
+    // Belt-and-suspenders: also re-check on window resize, not just
+    // matchMedia's own "change" event — costs nothing and removes any
+    // doubt about that event's reliability across browsers.
     mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
+    window.addEventListener("resize", handler);
+    return () => {
+      mq.removeEventListener("change", handler);
+      window.removeEventListener("resize", handler);
+    };
   }, []);
   return isLarge;
 }
@@ -98,9 +104,9 @@ const GenerateContent = () => {
   // specific generation's own stored ratio — never the current selection —
   // since an older thumbnail with a different ratio can be clicked back into
   // view without touching the current selection.
-  const loadingCard = fitBox(ratio, CARD_MAX_W, cardMaxH);
+  const loadingCard = fitBox(ratio, cardMaxH);
   const viewing = generations.find((g) => g.id === viewingId) ?? generations[generations.length - 1];
-  const doneCard = viewing ? fitBox(viewing.ratio, CARD_MAX_W, cardMaxH) : loadingCard;
+  const doneCard = viewing ? fitBox(viewing.ratio, cardMaxH) : loadingCard;
 
   const total = generations.length;
   const showStrip = total >= 2;

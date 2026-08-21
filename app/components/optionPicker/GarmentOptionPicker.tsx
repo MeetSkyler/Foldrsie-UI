@@ -5,6 +5,8 @@ import { useOptionSelection } from "@/app/context/option-selection-context";
 import UploadGarmentModal, { GarmentUploadResult } from "./UploadGarmentModal";
 import SourceFilterDropdown, { SourceFilter } from "./SourceFilterDropdown";
 import { useResponsiveColumns } from "./useResponsiveColumns";
+import { useIsLargeScreen } from "./useIsLargeScreen";
+import { useZoom } from "@/app/context/zoom-context";
 
 export type GarmentItem = {
   id: string;
@@ -38,16 +40,17 @@ export type GarmentPickerConfig = {
 };
 
 // Same column-stop approach as OptionPicker: every zoom stop the slider can
-// land on is guaranteed to look different from its neighbors.
-// 3 stops — with cards enforcing a 184px min-width, denser stops (5/6, and
-// even a 4th stop down to 1 column) collapse into the same clamped column
-// count as a neighboring stop (see useResponsiveColumns), so both were
-// dropped. Keep this at 3 (or another divisor of 100 like 5) — ZOOM_STEP
-// must divide 100 with zero floating-point remainder, or the native slider's
-// own step math (floor((max-min)/step)) rounds down a full step short and
-// the last stop becomes permanently unreachable by drag/keyboard.
-const COLUMN_STOPS = [4, 3, 2];
-const ZOOM_STEP = 100 / (COLUMN_STOPS.length - 1);
+// land on is guaranteed to look different from its neighbors. Screens above
+// 1441px get the fuller 5-stop range (matches the Gallery page); at/below
+// 1441px, cards enforcing a 184px min-width don't have room for 5-6 distinct
+// column counts without stops collapsing into duplicates (see
+// useResponsiveColumns), so that range is reduced to 3 stops instead. Each
+// array's ZOOM_STEP must divide 100 with zero floating-point remainder
+// (both do: 100/4=25, 100/2=50), or the native slider's own step math
+// (floor((max-min)/step)) rounds down a full step short and the last stop
+// becomes permanently unreachable by drag/keyboard.
+const COLUMN_STOPS_LARGE = [6, 5, 4, 3, 2];
+const COLUMN_STOPS_SMALL = [4, 3, 2];
 
 // ---- First-card sizing (Upload) ----
 // Designer spec: these stay FIXED at every zoom level — no shrinking as
@@ -81,9 +84,22 @@ function Thumb({
               }
             : undefined
         }
-        className={`w-[41px] h-[50px] rounded-[8px] bg-surface-white border-[1.5px] border-[#FFFFFF] ${onClickMissing ? "cursor-pointer" : ""}`}
+        className={`group/addphoto relative w-[41px] h-[50px] rounded-[8px] bg-surface-white border-[1.5px] border-[#FFFFFF] ${onClickMissing ? "cursor-pointer" : ""}`}
         style={{boxShadow:" 0 0 0 1.4px rgba(0, 0, 0, 0.08), 0 8px 8px -4px rgba(0, 0, 0, 0.07), 0 6px 6px -3px rgba(0, 0, 0, 0.07), 0 4px 4px -2px rgba(0, 0, 0, 0.04), 0 2px 2px -1px rgba(0, 0, 0, 0.04)"}}
-      />
+      >
+        {/* Only reachable when input is allowed (onClickMissing set) — a
+            plain plus, no background, centered in the thumb, only on hover
+            over this thumb. Dark stroke since this sits on the card's light
+            surface-white background (no circle behind it anymore to give
+            a light icon contrast). */}
+        {onClickMissing && (
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover/addphoto:opacity-100 transition-opacity pointer-events-none">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-darker">
+              <path d="M8 3V13M3 8H13" stroke="currentColor" strokeOpacity="0.85" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        )}
+      </div>
     );
   }
   return (
@@ -96,7 +112,12 @@ function Thumb({
 
 const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
   const { selections, setSelection } = useOptionSelection();
-  const [zoom, setZoom] = useState(ZOOM_STEP); // must land on a ZOOM_STEP multiple
+  const isLargeScreen = useIsLargeScreen();
+  const COLUMN_STOPS = isLargeScreen ? COLUMN_STOPS_LARGE : COLUMN_STOPS_SMALL;
+  const ZOOM_STEP = 100 / (COLUMN_STOPS.length - 1);
+  // Shared across every option-picker page so the zoom the user picks on
+  // one page (e.g. Pose) carries over instead of resetting on the next.
+  const { zoom, setZoom } = useZoom();
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(() => selections[config.key]?.id ?? null);
   const [items, setItems] = useState(config.items);
@@ -229,7 +250,7 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                 setShowUploadModal(true);
               }}
               className={`aspect-[5/6] min-w-[184px] relative border-[1px] border-white/50 bg-white/8 hover:bg-white-12 cursor-pointer ${
-                zoom === 0 ? "rounded-[16px]" : "rounded-[24px]"
+                zoom === 0 ? "rounded-[16px] min-[1441px]:rounded-[24px]" : "rounded-[24px] min-[1441px]:rounded-[32px]"
               }`}
               style={{ boxShadow: "0 0 24px 0 rgba(255, 255, 255, 0.24) inset, 0 0 4px 0 rgba(255, 255, 255, 0.40) inset" }}
             >
@@ -261,7 +282,7 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                     />
                   </svg>
                 </div>
-                <p className="text-label-sm text-strong text-center">Upload new {config.label}</p>
+                <p className="text-label-sm text-strong text-center whitespace-nowrap">Upload new {config.label}</p>
               </div>
               <p className="absolute left-0 right-0 text-label-xs text-sub text-center underline underline-offset-3 hover:text-strong" style={{ bottom: FIRST_CARD_GUIDE_BOTTOM }}>Photo guide</p>
             </button>
@@ -274,9 +295,9 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                 <button
                   key={item.id}
                   onClick={() => handleSelect(item)}
-                  className="group aspect-[5/6] min-w-[184px] rounded-[16px] relative cursor-pointer bg-surface-white"
+                  className="group aspect-[5/6] min-w-[184px] rounded-[16px] min-[1441px]:rounded-[24px] relative cursor-pointer bg-surface-white"
                 >
-                  <div className="absolute inset-0 rounded-[16px] overflow-hidden">
+                  <div className="absolute inset-0 rounded-[16px] min-[1441px]:rounded-[24px] overflow-hidden">
                     {item.front ? (
                       <Image
                         src={item.front}
@@ -287,7 +308,27 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                         className="object-cover"
                       />
                     ) : (
-                      <div className="absolute inset-0 bg-surface-white" />
+                      <div
+                        onClick={
+                          isUpload
+                            ? (e) => {
+                                e.stopPropagation();
+                                handleEditMissing(item);
+                              }
+                            : undefined
+                        }
+                        className={`group/addphoto absolute inset-0 bg-surface-white flex items-center justify-center ${isUpload ? "cursor-pointer" : ""}`}
+                      >
+                        {/* Same plain-plus, hover-only treatment as the
+                            back/closeup thumbnails (dark stroke — this sits
+                            on the light surface-white background), just
+                            bigger since this fills the whole card. */}
+                        {isUpload && (
+                          <svg width="24" height="24" viewBox="0 0 16 16" fill="none" className="text-darker opacity-0 group-hover/addphoto:opacity-100 transition-opacity pointer-events-none">
+                            <path d="M8 3V13M3 8H13" stroke="currentColor" strokeOpacity="0.85" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </div>
                     )}
                   </div>
 

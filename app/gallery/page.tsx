@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useGenerations } from '@/app/context/generations-context';
 
@@ -7,6 +7,14 @@ import { useGenerations } from '@/app/context/generations-context';
 // slider can land on is guaranteed to look different from its neighbors.
 const COLUMN_STOPS = [6, 5, 4, 3, 2];
 const ZOOM_STEP = 100 / (COLUMN_STOPS.length - 1);
+const GRID_GAP = 16; // px — must match the grid's gap-[16px]
+// All cards at a given zoom stop share one row height, computed as if every
+// card were this reference ratio — this keeps the "how big are the cards"
+// feel at each zoom stop exactly as it already was. Each card's actual
+// width is then derived from its own real ratio at that shared height, so
+// every card keeps its true shape (no crop/stretch) while still lining up
+// in even rows.
+const REFERENCE_RATIO = 5 / 6;
 
 function downloadImage(src: string) {
   const a = document.createElement('a');
@@ -21,8 +29,23 @@ const page = () => {
   const { generations } = useGenerations();
   const [zoom, setZoom] = useState(50);
   const [fullscreenId, setFullscreenId] = useState<string | null>(null);
+  const gridRef = useRef<HTMLDivElement | null>(null);
+  const [gridWidth, setGridWidth] = useState(0);
+
+  useLayoutEffect(() => {
+    const el = gridRef.current;
+    if (!el) return;
+    function measure() {
+      setGridWidth(el!.getBoundingClientRect().width);
+    }
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const columns = COLUMN_STOPS[Math.round(zoom / ZOOM_STEP)];
+  const cardHeight = gridWidth > 0 ? ((gridWidth - (columns - 1) * GRID_GAP) / columns) / REFERENCE_RATIO : 0;
   const items = [...generations].reverse();
   const viewing = items.find((g) => g.id === fullscreenId);
 
@@ -57,9 +80,13 @@ const page = () => {
         {items.length === 0 ? (
           <p className="px-[20px] pb-[24px] text-paragraph-sm text-sub">No generations yet — head back to Generate to create your first shot.</p>
         ) : (
-          <div className="grid gap-[16px] px-[20px] pb-[24px] pt-[16px] items-start" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
+          <div ref={gridRef} className="flex flex-row flex-wrap gap-[16px] px-[20px] pb-[24px] pt-[16px]">
             {items.map((g) => (
-              <div key={g.id} style={{ aspectRatio: g.ratio }} className="group w-full rounded-[16px] overflow-hidden relative bg-surface-soft">
+              <div
+                key={g.id}
+                style={cardHeight ? { height: cardHeight, width: cardHeight * g.ratio } : undefined}
+                className="group shrink-0 rounded-[16px] overflow-hidden relative bg-surface-soft"
+              >
                 <Image src={g.image} alt="Generated result" fill unoptimized className="object-cover" />
 
                 <div className="absolute top-[8px] right-[8px] flex flex-row gap-[6px] opacity-0 group-hover:opacity-100 transition-opacity">

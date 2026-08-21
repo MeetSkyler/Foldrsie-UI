@@ -110,7 +110,6 @@ export const poseConfig: OptionPickerConfig = {
   uploadEnabled: true,
   uploadLabel: "Upload pose reference",
   uploadNote: "Note: Uploaded pose accuracy\nis currently around 90%.",
-  uploadNoteGap: 51,
   items: [
     { id: "1", image: img1 },
     { id: "2", image: img2 },

@@ -9,6 +9,7 @@ import { FreeCreditModalProvider } from "./context/free-credit-modal-context";
 import FreeCreditModal from "./components/freeCreditModal";
 import { OptionSelectionProvider } from "./context/option-selection-context";
 import { GenerationsProvider } from "./context/generations-context";
+import { ZoomProvider } from "./context/zoom-context";
 import { FeedbackModalProvider } from "./context/feedback-modal-context";
 import FeedbackModal from "./components/FeedbackModal";
 
@@ -36,12 +37,14 @@ export default async function RootLayout({
           <FreeCreditModalProvider>
             <OptionSelectionProvider>
               <GenerationsProvider>
-                <FeedbackModalProvider>
-                  <Appshell initialSidebarCollapsed={initialSidebarCollapsed}>{children}</Appshell>
-                  <LoginModal />
-                  <FreeCreditModal />
-                  <FeedbackModal />
-                </FeedbackModalProvider>
+                <ZoomProvider>
+                  <FeedbackModalProvider>
+                    <Appshell initialSidebarCollapsed={initialSidebarCollapsed}>{children}</Appshell>
+                    <LoginModal />
+                    <FreeCreditModal />
+                    <FeedbackModal />
+                  </FeedbackModalProvider>
+                </ZoomProvider>
               </GenerationsProvider>
             </OptionSelectionProvider>
           </FreeCreditModalProvider>

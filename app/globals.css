@@ -95,7 +95,10 @@
 
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
-  input:-webkit-autofill:focus {
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus {
     -webkit-box-shadow: 0 0 0px 1000px var(--color-surface-weak) inset;
     -webkit-text-fill-color: var(--color-strong);
     caret-color: var(--color-strong);
