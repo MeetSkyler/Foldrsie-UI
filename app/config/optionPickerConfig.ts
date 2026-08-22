@@ -110,6 +110,10 @@ export const poseConfig: OptionPickerConfig = {
   uploadEnabled: true,
   uploadLabel: "Upload pose reference",
   uploadNote: "Note: Uploaded pose accuracy\nis currently around 90%.",
+  // Used only at the narrowest card size (small-screen scheme at zoom 0,
+  // ~184px cards) — the full text above wraps to 3 lines there and pushes
+  // past the card's bottom edge; this shorter version fits 2 lines.
+  uploadNoteShort: "Note: Uploaded pose accuracy is ~90%.",
   items: [
     { id: "1", image: img1 },
     { id: "2", image: img2 },

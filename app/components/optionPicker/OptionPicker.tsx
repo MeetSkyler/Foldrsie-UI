@@ -4,7 +4,7 @@ import Image, { StaticImageData } from "next/image";
 import { useOptionSelection } from "@/app/context/option-selection-context";
 import SourceFilterDropdown, { SourceFilter } from "./SourceFilterDropdown";
 import ColorPickerModal from "./ColorPickerModal";
-import { useResponsiveColumns } from "./useResponsiveColumns";
+import { useMaxFitColumns, capAndDedupe } from "./useResponsiveColumns";
 import { useIsLargeScreen } from "./useIsLargeScreen";
 import { useZoom } from "@/app/context/zoom-context";
 
@@ -27,6 +27,9 @@ export type OptionPickerConfig = {
   // and a "Photo guide" link when omitted.
   uploadLabel?: string;
   uploadNote?: string;
+  // Shown instead of uploadNote only at the narrowest card size (small-screen
+  // scheme at zoom 0) — falls back to uploadNote if omitted.
+  uploadNoteShort?: string;
   // A selectable (non-upload) first card, e.g. "Auto / Choose for me".
   // Selecting it clears any image override for this option's sidebar icon,
   // so the icon box falls back to its default look.
@@ -46,12 +49,16 @@ const AUTO_ID = "auto";
 // regardless of container width.
 // Screens above 1441px get the fuller 5-stop range (matches the Gallery
 // page). At/below 1441px, cards enforcing a 184px min-width don't have room
-// for 5-6 distinct column counts without stops collapsing into duplicates
-// (see useResponsiveColumns), so that range is reduced to 3 stops instead.
-// Each array's ZOOM_STEP must divide 100 with zero floating-point remainder
-// (both do: 100/4=25, 100/2=50), or the native slider's own step math
-// (floor((max-min)/step)) rounds down a full step short and the last stop
-// becomes permanently unreachable by drag/keyboard.
+// for 5-6 distinct column counts without stops collapsing into duplicates,
+// so that range is reduced to 3 stops instead. Even within the "large" tier,
+// the raw array is further capped+deduped against the container's
+// actually-measured capacity (see capAndDedupe/useMaxFitColumns) — the
+// 1441px breakpoint alone isn't a reliable proxy for "room for 6 distinct
+// columns" once sidebar/right-panel width is accounted for, and without
+// this a screen just above 1441px can silently clamp two adjacent zoom
+// stops down to the same column count, making the slider look like it does
+// nothing.
+const MIN_CARD_WIDTH = 184; // px — matches every card's own min-w-[184px] class below
 const COLUMN_STOPS_LARGE = [6, 5, 4, 3, 2];
 const COLUMN_STOPS_SMALL = [4, 3, 2];
 
@@ -69,8 +76,6 @@ const FIRST_CARD_GUIDE_BOTTOM = 32; // px
 const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect?: (item: OptionPickerItem) => void;}) => {
   const { selections, setSelection } = useOptionSelection();
   const isLargeScreen = useIsLargeScreen();
-  const COLUMN_STOPS = isLargeScreen ? COLUMN_STOPS_LARGE : COLUMN_STOPS_SMALL;
-  const ZOOM_STEP = 100 / (COLUMN_STOPS.length - 1);
   // Shared across every option-picker page so the zoom the user picks on
   // one page (e.g. Pose) carries over instead of resetting on the next.
   const { zoom, setZoom } = useZoom();
@@ -82,6 +87,8 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
   const [showColorModal, setShowColorModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const gridRef = useRef<HTMLDivElement | null>(null);
+  const maxFitColumns = useMaxFitColumns(gridRef, MIN_CARD_WIDTH);
+  const COLUMN_STOPS = capAndDedupe(isLargeScreen ? COLUMN_STOPS_LARGE : COLUMN_STOPS_SMALL, maxFitColumns);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Hover-triggered tooltips are positioned relative to their scrolling
@@ -113,9 +120,14 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
   // "zoom === 0" as its most-zoomed-out state, while the small 3-stop range
   // covers two stops (0 and 50) at that same low-density end.
   const noteBottomOffset = isLargeScreen ? (zoom === 0 ? 24 : 32) : (zoom <= 50 ? 24 : 32);
+  // The small-screen scheme's zoom-0 stop is the one card size (~184px)
+  // narrow enough that the full note text wraps to 3 lines and pushes past
+  // the card's bottom edge — swap in the shorter version there only.
+  const isTightNote = !isLargeScreen && zoom === 0;
+  const uploadNoteText = isTightNote ? (config.uploadNoteShort ?? config.uploadNote) : config.uploadNote;
 
-  const desiredColumns = COLUMN_STOPS[Math.round(zoom / ZOOM_STEP)];
-  const columns = useResponsiveColumns(gridRef, desiredColumns);
+  const stopIndex = Math.min(Math.round((zoom / 100) * (COLUMN_STOPS.length - 1)), COLUMN_STOPS.length - 1);
+  const columns = COLUMN_STOPS[stopIndex];
   const visibleItems = items.filter((item) => {
     if (sourceFilter === "all") return true;
     const isUserAdded = item.id.startsWith("upload-") || item.id.startsWith("color-");
@@ -182,9 +194,20 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
                 type="range"
                 min={0}
                 max={100}
-                step={ZOOM_STEP}
+                step={1}
                 value={zoom}
-                onChange={(e) => setZoom(Number(e.target.value))}
+                onChange={(e) => {
+                  // The number of stops depends on the current container
+                  // width, so 100/(stops-1) can be a non-integer (e.g. a
+                  // 4-stop array gives 33.33) — using that as the native
+                  // `step` would resurrect the exact "last value
+                  // unreachable" float bug this project already fixed once.
+                  // Snapping to the nearest stop in JS instead keeps the
+                  // same discrete feel without depending on native step math.
+                  const raw = Number(e.target.value);
+                  const idx = Math.round((raw / 100) * (COLUMN_STOPS.length - 1));
+                  setZoom((idx / (COLUMN_STOPS.length - 1)) * 100);
+                }}
                 className="zoom-slider w-[96px] h-[4px]"
                 style={{
                   background: `linear-gradient(to right, #DAECF5 0%, #DAECF5 ${zoom}%, rgba(218, 236, 245, 0.15) ${zoom}%, rgba(218, 236, 245, 0.15) 100%)`,
@@ -220,7 +243,7 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
               <button
                 onClick={handleUploadClick}
                 className={`aspect-[5/6] min-w-[184px] relative border border-white/50 bg-white/8 hover:bg-white-12 cursor-pointer ${
-                  zoom === 0 ? "rounded-[16px] min-[1441px]:rounded-[24px]" : "rounded-[24px] min-[1441px]:rounded-[32px]"
+                  "rounded-[16px] min-[1441px]:rounded-[24px]"
                 }`}
                 style={{boxShadow:"0 0 24px 0 rgba(255, 255, 255, 0.24) inset, 0 0 4px 0 rgba(255, 255, 255, 0.40) inset"}}>
                 {/* Fixed sizing (see FIRST_CARD_* constants above) — no
@@ -260,7 +283,7 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
                       className="absolute left-0 right-0 text-paragraph-xs text-sub text-center whitespace-pre-line px-[12px]"
                       style={{ bottom: noteBottomOffset }}
                     >
-                      {config.uploadNote}
+                      {uploadNoteText}
                     </p>
                   </>
                 ) : (
@@ -301,7 +324,7 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
             <button
               onClick={() => setShowColorModal(true)}
               className={`aspect-[5/6] min-w-[184px] relative border border-white/50 bg-white/8 hover:bg-white-12 flex flex-col items-center justify-center cursor-pointer ${
-                zoom === 0 ? "rounded-[16px] min-[1441px]:rounded-[24px]" : "rounded-[24px] min-[1441px]:rounded-[32px]"
+                "rounded-[16px] min-[1441px]:rounded-[24px]"
               }`}
               style={{boxShadow:"0 0 24px 0 rgba(255, 255, 255, 0.24) inset, 0 0 4px 0 rgba(255, 255, 255, 0.40) inset"}}>
               <div className="flex flex-col items-center justify-center px-[12px]" style={{ gap: FIRST_CARD_ICON_LABEL_GAP }}>
@@ -331,7 +354,7 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
             <button
               onClick={handleSelectAuto}
               className={`aspect-[5/6] min-w-[184px] relative border-[2px] hover:bg-surface-alpha-light-soft hover:border-line-strong flex flex-col items-center justify-center cursor-pointer ${selectedId===AUTO_ID?"bg-surface-alpha-light-soft border-line-strong":"border-line-sub"} ${
-                zoom === 0 ? "rounded-[16px] min-[1441px]:rounded-[24px]" : "rounded-[24px] min-[1441px]:rounded-[32px]"
+                "rounded-[16px] min-[1441px]:rounded-[24px]"
               }`}>
               <div className="flex flex-col items-center justify-center gap-[8px] px-[12px]">
                 <p className="text-label-sm text-strong text-center">{config.autoOption.title}</p>

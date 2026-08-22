@@ -4,7 +4,7 @@ import Image, { StaticImageData } from "next/image";
 import { useOptionSelection } from "@/app/context/option-selection-context";
 import UploadGarmentModal, { GarmentUploadResult } from "./UploadGarmentModal";
 import SourceFilterDropdown, { SourceFilter } from "./SourceFilterDropdown";
-import { useResponsiveColumns } from "./useResponsiveColumns";
+import { useMaxFitColumns, capAndDedupe } from "./useResponsiveColumns";
 import { useIsLargeScreen } from "./useIsLargeScreen";
 import { useZoom } from "@/app/context/zoom-context";
 
@@ -43,12 +43,15 @@ export type GarmentPickerConfig = {
 // land on is guaranteed to look different from its neighbors. Screens above
 // 1441px get the fuller 5-stop range (matches the Gallery page); at/below
 // 1441px, cards enforcing a 184px min-width don't have room for 5-6 distinct
-// column counts without stops collapsing into duplicates (see
-// useResponsiveColumns), so that range is reduced to 3 stops instead. Each
-// array's ZOOM_STEP must divide 100 with zero floating-point remainder
-// (both do: 100/4=25, 100/2=50), or the native slider's own step math
-// (floor((max-min)/step)) rounds down a full step short and the last stop
-// becomes permanently unreachable by drag/keyboard.
+// column counts without stops collapsing into duplicates, so that range is
+// reduced to 3 stops instead. Even within the "large" tier, the raw array is
+// further capped+deduped against the container's actually-measured capacity
+// (see capAndDedupe/useMaxFitColumns) — the 1441px breakpoint alone isn't a
+// reliable proxy for "room for 6 distinct columns" once sidebar/right-panel
+// width is accounted for, and without this a screen just above 1441px can
+// silently clamp two adjacent zoom stops down to the same column count,
+// making the slider look like it does nothing.
+const MIN_CARD_WIDTH = 184; // px — matches every card's own min-w-[184px] class below
 const COLUMN_STOPS_LARGE = [6, 5, 4, 3, 2];
 const COLUMN_STOPS_SMALL = [4, 3, 2];
 
@@ -113,8 +116,6 @@ function Thumb({
 const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
   const { selections, setSelection } = useOptionSelection();
   const isLargeScreen = useIsLargeScreen();
-  const COLUMN_STOPS = isLargeScreen ? COLUMN_STOPS_LARGE : COLUMN_STOPS_SMALL;
-  const ZOOM_STEP = 100 / (COLUMN_STOPS.length - 1);
   // Shared across every option-picker page so the zoom the user picks on
   // one page (e.g. Pose) carries over instead of resetting on the next.
   const { zoom, setZoom } = useZoom();
@@ -127,6 +128,8 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
   // then updates this item in place instead of creating a new one.
   const [editingItem, setEditingItem] = useState<GarmentItem | null>(null);
   const gridRef = useRef<HTMLDivElement | null>(null);
+  const maxFitColumns = useMaxFitColumns(gridRef, MIN_CARD_WIDTH);
+  const COLUMN_STOPS = capAndDedupe(isLargeScreen ? COLUMN_STOPS_LARGE : COLUMN_STOPS_SMALL, maxFitColumns);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Hover-triggered tooltips are positioned relative to their scrolling
@@ -152,8 +155,8 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
     }, 150);
   }
 
-  const desiredColumns = COLUMN_STOPS[Math.round(zoom / ZOOM_STEP)];
-  const columns = useResponsiveColumns(gridRef, desiredColumns);
+  const stopIndex = Math.min(Math.round((zoom / 100) * (COLUMN_STOPS.length - 1)), COLUMN_STOPS.length - 1);
+  const columns = COLUMN_STOPS[stopIndex];
   const visibleItems = items.filter((item) => {
     if (sourceFilter === "all") return true;
     const isUpload = item.id.startsWith("upload-");
@@ -228,9 +231,20 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                   type="range"
                   min={0}
                   max={100}
-                  step={ZOOM_STEP}
+                  step={1}
                   value={zoom}
-                  onChange={(e) => setZoom(Number(e.target.value))}
+                  onChange={(e) => {
+                    // The number of stops depends on the current container
+                    // width, so 100/(stops-1) can be a non-integer (e.g. a
+                    // 4-stop array gives 33.33) — using that as the native
+                    // `step` would resurrect the exact "last value
+                    // unreachable" float bug this project already fixed once.
+                    // Snapping to the nearest stop in JS instead keeps the
+                    // same discrete feel without depending on native step math.
+                    const raw = Number(e.target.value);
+                    const idx = Math.round((raw / 100) * (COLUMN_STOPS.length - 1));
+                    setZoom((idx / (COLUMN_STOPS.length - 1)) * 100);
+                  }}
                   className="zoom-slider w-[96px] h-[4px]"
                   style={{
                     background: `linear-gradient(to right, #DAECF5 0%, #DAECF5 ${zoom}%, rgba(218, 236, 245, 0.15) ${zoom}%, rgba(218, 236, 245, 0.15) 100%)`,
@@ -250,7 +264,7 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                 setShowUploadModal(true);
               }}
               className={`aspect-[5/6] min-w-[184px] relative border-[1px] border-white/50 bg-white/8 hover:bg-white-12 cursor-pointer ${
-                zoom === 0 ? "rounded-[16px] min-[1441px]:rounded-[24px]" : "rounded-[24px] min-[1441px]:rounded-[32px]"
+                "rounded-[16px] min-[1441px]:rounded-[24px]"
               }`}
               style={{ boxShadow: "0 0 24px 0 rgba(255, 255, 255, 0.24) inset, 0 0 4px 0 rgba(255, 255, 255, 0.40) inset" }}
             >

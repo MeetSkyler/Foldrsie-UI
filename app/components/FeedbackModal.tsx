@@ -46,8 +46,7 @@ const FeedbackModal = () => {
 
   return (
     <div
-      // Deliberately no onClick here — the backdrop must not close the
-      // modal; only the cross icon or the Cancel button should.
+      onClick={closeFeedback}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black-90"
     >
       <div

@@ -25,7 +25,7 @@ function downloadImage(src: string) {
   a.remove();
 }
 
-const page = () => {
+const Page = () => {
   const { generations } = useGenerations();
   const [zoom, setZoom] = useState(50);
   const [fullscreenId, setFullscreenId] = useState<string | null>(null);
@@ -78,7 +78,7 @@ const page = () => {
         </div>
 
         {items.length === 0 ? (
-          <p className="px-[20px] pb-[24px] text-paragraph-sm text-sub">No generations yet — head back to Generate to create your first shot.</p>
+          <p className="px-[20px] pb-[24px] text-paragraph-sm text-sub">No generations yet, head back to Generate to create your first shot.</p>
         ) : (
           <div ref={gridRef} className="flex flex-row flex-wrap gap-[16px] px-[20px] pb-[24px] pt-[16px]">
             {items.map((g) => (
@@ -135,4 +135,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

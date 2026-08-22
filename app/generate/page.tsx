@@ -141,11 +141,17 @@ const GenerateContent = () => {
       {phase === 'done' && viewing && (
         <>
           <motion.div
-            layout
+            animate={{ width: doneCard.width, height: doneCard.height }}
             transition={{ duration: 0.35, ease: "easeOut" }}
-            style={{ width: doneCard.width, height: doneCard.height }}
             className='relative rounded-[18.67px] overflow-hidden bg-surface-soft'
           >
+            {/* `animate` on real width/height (not the `layout` prop) makes
+                Framer tween the actual box-model size frame by frame, so
+                object-cover keeps recalculating against the image's true
+                aspect ratio the whole time. `layout` instead uses a
+                transform-based FLIP trick that visibly stretches/squishes
+                the image while the box scales between two different aspect
+                ratios. */}
             <Image src={viewing.image} alt="Generated result" fill unoptimized className='object-cover' />
             <div
               onClick={() => setFullscreen(true)}
@@ -160,7 +166,7 @@ const GenerateContent = () => {
           <motion.button
             layout
             transition={{ duration: 0.35, ease: "easeOut" }}
-            style={{ width: doneCard.width }}
+            style={{ width: 368 }}
             className='s-btn-noicon-48  text-label-sm text-strong cursor-pointer'
           >
             Download
@@ -217,24 +223,23 @@ const GenerateContent = () => {
 
       {fullscreen && viewing && (
         <div
-          onClick={() => setFullscreen(false)}
           className='fixed inset-0 z-50 bg-black-90 flex items-center justify-center'
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className='relative'
+            className='relative '
             style={{ width: '80vw', height: '80vh' }}
           >
             <Image src={viewing.image} alt="Generated result" fill unoptimized className='object-contain' />
-            <div
+          </div>
+             <div
               onClick={() => setFullscreen(false)}
-              className='absolute -top-[48px] right-0 w-[36px] h-[36px] rounded-full bg-surface-light flex items-center justify-center text-strong cursor-pointer'
+              className='absolute top-[24px] right-[24px] w-[36px] h-[36px] rounded-full bg-surface-light flex items-center justify-center text-strong cursor-pointer'
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
-          </div>
         </div>
       )}
     </div>
