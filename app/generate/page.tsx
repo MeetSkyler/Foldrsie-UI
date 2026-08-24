@@ -1,5 +1,6 @@
 "use client";
 import { Suspense, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from "motion/react";
 import modalimg from '@/public/modalimg.svg'
 import dummyResult from '@/public/img4.jpg'
@@ -29,6 +30,42 @@ function fitBox(ratio: number, targetH: number) {
 // aspect ratio from the current selection.
 function thumbBox(ratio: number) {
   return { width: THUMB_HEIGHT * ratio, height: THUMB_HEIGHT };
+}
+
+// The fullscreen view must show the same cropped composition as the small
+// card (object-cover into a box shaped like the *selected* ratio) — not the
+// dummy stand-in photo's own raw, uncropped proportions. This build reuses
+// one static portrait photo for every selected ratio, so showing it
+// object-contain at its real (uncropped) size made fullscreen display
+// completely different content than what was just previewed (the whole
+// portrait photo instead of the zoomed-in landscape crop shown on the
+// card). Sizing the box from the ratio and covering it, exactly like the
+// small card does, keeps fullscreen a bigger version of the same view.
+function fitFullscreenBox(ratio: number, viewportW: number, viewportH: number) {
+  const maxW = viewportW * 0.8;
+  const maxH = viewportH * 0.8;
+  let width = maxW;
+  let height = width / ratio;
+  if (height > maxH) {
+    height = maxH;
+    width = height * ratio;
+  }
+  return { width, height };
+}
+
+// Only read at fullscreen-open time (via a click), never during SSR/initial
+// render, so there's no hydration-mismatch risk in starting at 0x0.
+function useWindowSize() {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  useEffect(() => {
+    function update() {
+      setSize({ width: window.innerWidth, height: window.innerHeight });
+    }
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+  return size;
 }
 
 // The generate card's max height is computed in JS (via fitBox) rather than
@@ -68,6 +105,7 @@ const GenerateContent = () => {
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const isLargeScreen = useIsLargeScreen();
+  const windowSize = useWindowSize();
 
   useEffect(() => {
     if (!isGenerating) return;
@@ -221,26 +259,43 @@ const GenerateContent = () => {
         </>
       )}
 
-      {fullscreen && viewing && (
-        <div
-          className='fixed inset-0 z-50 bg-black-90 flex items-center justify-center'
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className='relative '
-            style={{ width: '80vw', height: '80vh' }}
-          >
-            <Image src={viewing.image} alt="Generated result" fill unoptimized className='object-contain' />
-          </div>
-             <div
+      {fullscreen && viewing && createPortal(
+        // Portaled straight to <body> — a `fixed inset-0` here otherwise
+        // gets contained by whichever ancestor up the tree has a CSS
+        // transform (Framer Motion leaves one on animated elements), so the
+        // backdrop silently covers less than the real viewport instead of
+        // all of it. Portaling escapes that entirely.
+        (() => {
+          const fsBox = fitFullscreenBox(viewing.ratio, windowSize.width, windowSize.height);
+          return (
+            <div
               onClick={() => setFullscreen(false)}
-              className='absolute top-[24px] right-[24px] w-[36px] h-[36px] rounded-full bg-surface-light flex items-center justify-center text-strong cursor-pointer'
+              className='fixed inset-0 z-50 bg-black-90 flex items-center justify-center'
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+              <div
+                onClick={(e) => e.stopPropagation()}
+                className='relative rounded-[8px] overflow-hidden'
+                style={{ width: fsBox.width, height: fsBox.height }}
+              >
+                {/* object-cover, matching the small card exactly — this is
+                    meant to be a bigger version of the same preview, not a
+                    reveal of the dummy source photo's own raw, uncropped
+                    shape. */}
+                <Image src={viewing.image} alt="Generated result" fill unoptimized className='object-cover' />
+             
+              </div>
+                 <div
+                  onClick={() => setFullscreen(false)}
+                  className='absolute top-[24px] right-[24px] w-[36px] h-[36px] rounded-full bg-surface-light flex items-center justify-center text-strong cursor-pointer'
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M12 4L4 12M4 4L12 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
             </div>
-        </div>
+          );
+        })(),
+        document.body
       )}
     </div>
   )

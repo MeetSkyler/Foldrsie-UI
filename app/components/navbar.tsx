@@ -4,10 +4,12 @@ import { useState } from "react";
 import profile from '@/public/profile.svg'
 import Image from 'next/image';
 import { useAuthModal } from "@/app/context/auth-modal-context";
+import { usePricingModal } from "@/app/context/pricing-modal-context";
 
 const Navbar = () => {
   const [isusernew, setisusernew] = useState(false);
   const { openLogin } = useAuthModal();
+  const { openPricing } = usePricingModal();
 
   return (
     <div className="w-full h-[60px] border-b border-line-sub pr-[16px] items-center flex justify-end py-[14px] bg-surface-weak">
@@ -15,7 +17,7 @@ const Navbar = () => {
       (<>
       {/* ....Pricing Link ..... */}
       <div className="flex flex-row pr-[20px] h-full items-center gap-[20px]  ">
-             <Link href="" className=" flex items-center text-paragraph-sm text-sub  hover:text-strong">Pricing</Link>
+             <button onClick={openPricing} className=" flex items-center text-paragraph-sm text-sub  hover:text-strong cursor-pointer">Pricing</button>
         <div className="bg-white-12 w-px h-[12px]"></div>
       </div>
 
@@ -38,7 +40,7 @@ const Navbar = () => {
         <>
       {/* ....Pricing Link ..... */}
       <div className="flex flex-row pr-[20px] h-full items-center gap-[20px] ">
-             <Link href="" className=" flex items-center text-paragraph-sm text-sub hover:text-strong">Pricing</Link>
+             <button onClick={openPricing} className=" flex items-center text-paragraph-sm text-sub hover:text-strong cursor-pointer">Pricing</button>
         <div className="bg-white-12 w-px h-[12px]"></div>
       </div>
 

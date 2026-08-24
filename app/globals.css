@@ -46,6 +46,62 @@
   --color-pure-dark: var(--color-neutral-900);
   --color-pure-light: hsla(0, 0%, 100%, 1);
 
+  /* ---- Semantics — Solid / Green ----
+     Named `semantic-*` (not bare `green-*`) so this doesn't collide with
+     Tailwind's own built-in green-300/400/etc. palette, which several
+     debug/placeholder classes elsewhere in the app already rely on. */
+  --color-semantic-green-50: #E4FCEA;
+  --color-semantic-green-100: #C0EFCF;
+  --color-semantic-green-200: #81D8A8;
+  --color-semantic-green-400: #3AC186;
+  --color-semantic-green-600: #139466;
+  --color-semantic-green-700: #147B58;
+  --color-semantic-green-800: #06523A;
+
+  /* ---- Semantics — Solid / Red ---- */
+  --color-semantic-red-50: #F8F4F4;
+  --color-semantic-red-100: #FBDCDB;
+  --color-semantic-red-200: #FDB5B4;
+  --color-semantic-red-400: #FC8989;
+  --color-semantic-red-600: #E82B47;
+  --color-semantic-red-700: #C32D3F;
+  --color-semantic-red-800: #82272D;
+
+  /* ---- Semantics — Solid / Orange ---- */
+  --color-semantic-orange-50: #FFF4D8;
+  --color-semantic-orange-100: #FEE0AC;
+  --color-semantic-orange-200: #F9BC72;
+  --color-semantic-orange-400: #F7915F;
+  --color-semantic-orange-600: #DD530F;
+  --color-semantic-orange-700: #BA3D06;
+  --color-semantic-orange-800: #812E19;
+
+  /* ---- Semantics — Solid / Blue ---- */
+  --color-semantic-blue-50: #E2FAFF;
+  --color-semantic-blue-100: #B0EDFD;
+  --color-semantic-blue-200: #79D5EF;
+  --color-semantic-blue-400: #4BB8E8;
+  --color-semantic-blue-600: #0A88CC;
+  --color-semantic-blue-700: #0672BE;
+  --color-semantic-blue-800: #054A8B;
+
+  /* ---- Semantics — Alpha / Blue (base 0672BE) ---- */
+  --color-semantic-blue-alpha-25: rgb(6 114 190 / 25%);
+  --color-semantic-blue-alpha-50: rgb(6 114 190 / 50%);
+
+  /* ---- Semantics — Alpha / Orange (base BA3D06) ---- */
+  --color-semantic-orange-alpha-20: rgb(186 61 6 / 20%);
+  --color-semantic-orange-alpha-25: rgb(186 61 6 / 25%);
+  --color-semantic-orange-alpha-50: rgb(186 61 6 / 50%);
+
+  /* ---- Semantics — Alpha / Red (base C32D3F) ---- */
+  --color-semantic-red-alpha-25: rgb(195 45 63 / 25%);
+  --color-semantic-red-alpha-50: rgb(195 45 63 / 50%);
+
+  /* ---- Semantics — Alpha / Green (base 147B58) ---- */
+  --color-semantic-green-alpha-25: rgb(20 123 88 / 25%);
+  --color-semantic-green-alpha-50: rgb(20 123 88 / 50%);
+
   /* ---- Semantic — foreground (text + icons) ---- */
   --color-strong: var(--color-white-97);
   --color-sub: var(--color-neutral-100);

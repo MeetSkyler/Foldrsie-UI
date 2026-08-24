@@ -12,6 +12,8 @@ import { GenerationsProvider } from "./context/generations-context";
 import { ZoomProvider } from "./context/zoom-context";
 import { FeedbackModalProvider } from "./context/feedback-modal-context";
 import FeedbackModal from "./components/FeedbackModal";
+import { PricingModalProvider } from "./context/pricing-modal-context";
+import PricingModal from "./components/PricingModal";
 
 export const metadata: Metadata = {
   title: "Foldrise",
@@ -39,10 +41,13 @@ export default async function RootLayout({
               <GenerationsProvider>
                 <ZoomProvider>
                   <FeedbackModalProvider>
-                    <Appshell initialSidebarCollapsed={initialSidebarCollapsed}>{children}</Appshell>
-                    <LoginModal />
-                    <FreeCreditModal />
-                    <FeedbackModal />
+                    <PricingModalProvider>
+                      <Appshell initialSidebarCollapsed={initialSidebarCollapsed}>{children}</Appshell>
+                      <LoginModal />
+                      <FreeCreditModal />
+                      <FeedbackModal />
+                      <PricingModal />
+                    </PricingModalProvider>
                   </FeedbackModalProvider>
                 </ZoomProvider>
               </GenerationsProvider>

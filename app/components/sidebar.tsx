@@ -147,11 +147,14 @@ const Sidebar = ({ initialCollapsed }: { initialCollapsed: boolean }) => {
              }
              </>
              );
-          return isFeedback ? (
-               <button key={link.href} onClick={openFeedback} className={className}>
-                 {content}
-               </button>
-          ) : (
+          if (isFeedback) {
+            return (
+              <button key={link.href} onClick={openFeedback} className={className}>
+                {content}
+              </button>
+            );
+          }
+          return (
                <Link key={link.href} href={link.href} className={className}>
                  {content}
                </Link>

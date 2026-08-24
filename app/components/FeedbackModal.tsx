@@ -75,11 +75,16 @@ const FeedbackModal = () => {
               <button
                 key={t}
                 onClick={() => setType(t)}
-                className={`px-[12px] py-[8px] rounded-[8px] cursor-pointer ${
-                  type === t ? "bg-surface-light text-strong border border-surface-light text-label-sm" : " text-sub text-paragraph-sm hover:text-strong hover:border-surface-light border border-line-strong"
+                // Same font-weight (text-label-sm) in both states — the
+                // active state used to switch to a heavier weight than the
+                // inactive one, which rendered slightly wider and made
+                // every button's width jitter as the active one changed.
+                // Only color/background/border now carry the active state.
+                className={`px-[12px] py-[8px] rounded-[8px] border cursor-pointer text-label-sm ${
+                  type === t ? "bg-surface-light text-strong  border-surface-light" : " text-sub hover:text-strong hover:border-surface-light  border-line-strong"
                 }`}
               >
-                {t}
+              <p> {t} </p>
               </button>
             ))}
           </div>
@@ -104,7 +109,7 @@ const FeedbackModal = () => {
                 }
               }}
               placeholder="Share what happened, what you were trying to do, or what you'd like to see."
-              className={`w-full h-[182px] p-[12px] text-paragraph-sm ${
+              className={`w-full h-[182px] p-[12px]  text-paragraph-sm ${
                 isAutofilled || isFilled ? "text-strong" : "text-soft"
               } border-none hover:bg-surface-alpha-light-soft focus:hover:bg-surface-weak focus:text-white outline-none resize-none autofill:bg-surface-soft`}
             />
