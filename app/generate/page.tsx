@@ -179,6 +179,14 @@ const GenerateContent = () => {
       {phase === 'done' && viewing && (
         <>
           <motion.div
+            // Without this, Framer still has to resolve a starting point for
+            // the very first mount, and any transient/stale doneCard value on
+            // that first render becomes a real scale-up animation into place.
+            // `initial={false}` guarantees the very first paint jumps
+            // straight to the final size — no scale-in — while later size
+            // changes (switching to a different-ratio thumbnail) still
+            // animate normally via `animate`.
+            initial={false}
             animate={{ width: doneCard.width, height: doneCard.height }}
             transition={{ duration: 0.35, ease: "easeOut" }}
             className='relative rounded-[18.67px] overflow-hidden bg-surface-soft'

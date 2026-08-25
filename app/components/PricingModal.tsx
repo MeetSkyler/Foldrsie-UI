@@ -176,8 +176,8 @@ const PricingModal = () => {
   if (!isPricingOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black-90 flex flex-col pt-[60px] px-[120px] items-center ">
-      <div className="bg-surface-weak w-full rounded-tr-[24px] rounded-tl-[24px] overflow-hidden border border-line-sub flex flex-col">
+    <div onClick={closePricing} className="fixed inset-0 z-50 bg-black-90 flex flex-col pt-[60px] px-[120px] items-center ">
+      <div onClick={(e) => e.stopPropagation()} className="bg-surface-weak w-full rounded-tr-[24px] rounded-tl-[24px] overflow-hidden border border-line-sub flex flex-col">
 
         {/* shrink-0 keeps this pinned at the top — only the block below it
             (the cards) scrolls. */}
@@ -334,7 +334,7 @@ const PricingModal = () => {
                           </div>
                         </div>
 
-                        <div className={`flex items-center justify-center text-label-sm text-strong ${planbtn?"p-btn-noicon-36":"s-btn-noicon-36"}`}><p>Choose {plan.name}</p></div>
+                        <div className={`flex items-center justify-center text-label-sm text-strong cursor-pointer ${planbtn?"p-btn-noicon-36":"s-btn-noicon-36"}`}><p>Choose {plan.name}</p></div>
                       </div>
                     );
                   })}
@@ -405,11 +405,15 @@ const PricingModal = () => {
               {FAQ_ITEMS.map((item, index) => {
                 const isOpen = openFaqIndex === index;
                 return (
-                  <div key={item.question} className={`w-full rounded-[16px] border border-line-sub p-[20px] ${isOpen ? "bg-surface-alpha-light-weak" : "bg-surface-alpha-light-soft"}`}>
-                    <button
-                      onClick={() => setOpenFaqIndex(isOpen ? null : index)}
-                      className="w-full flex flex-row items-center justify-between cursor-pointer"
-                    >
+                  <div
+                    key={item.question}
+                    onClick={() => setOpenFaqIndex(isOpen ? null : index)}
+                    // Click target is the whole card now, not just the
+                    // question+icon strip — clicking anywhere in this
+                    // padded area (including the padding itself) toggles it.
+                    className={`w-full rounded-[16px] border border-line-sub p-[20px] cursor-pointer ${isOpen ? "bg-surface-alpha-light-weak" : "bg-surface-alpha-light-soft"}`}
+                  >
+                    <div className="w-full flex flex-row items-center justify-between">
                       <p className="text-label-sm text-strong text-left">{item.question}</p>
                     <div className=" w-[20px] h-[20px] flex items-center justify-center">
                         <motion.svg
@@ -428,7 +432,7 @@ const PricingModal = () => {
                         <path d="M4.5 11.25L9 6.75L13.5 11.25" stroke="#8C8E91" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                       </motion.svg>
                     </div>
-                    </button>
+                    </div>
                     {/* height:auto isn't directly animatable, so Framer
                         measures the real content height each time this
                         mounts/unmounts and tweens to/from it — a smooth
