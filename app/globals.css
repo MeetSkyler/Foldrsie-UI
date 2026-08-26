@@ -1018,5 +1018,14 @@
     background: var(--color-surface-soft);
 }
 
-
-
+.upgradebtn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgb(6 7 8 / 12%);
+  pointer-events: none;
+  opacity: 0;
+}
+.upgradebtn:hover::before {
+  opacity: 1;
+}

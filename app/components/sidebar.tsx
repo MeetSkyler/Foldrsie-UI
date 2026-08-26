@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from "react"
 import Link from 'next/link';
 import { useFeedbackModal } from '@/app/context/feedback-modal-context';
+import { useSettingsModal } from '@/app/context/settings-modal-context';
 
 
 
@@ -12,6 +13,7 @@ import { useFeedbackModal } from '@/app/context/feedback-modal-context';
 const Sidebar = ({ initialCollapsed }: { initialCollapsed: boolean }) => {
   const pathname=usePathname();
   const { openFeedback } = useFeedbackModal();
+  const { openSettings } = useSettingsModal();
 
   // Seeded from the cookie the server already read (see app/layout.tsx), so
   // the first client render matches the server HTML exactly — there is no
@@ -133,6 +135,7 @@ const Sidebar = ({ initialCollapsed }: { initialCollapsed: boolean }) => {
         {BottomNavLinks.map((link)=>{
              const isActive=pathname===link.href;
              const isFeedback = link.href === "/feedback";
+             const isSettings = link.href === "/settings";
              const className = `w-full  py-[8px] px-[10px] relative cursor-pointer group flex items-center gap-[8px]  ${isActive?"bg-surface-soft":" hover:bg-surface-alpha-light-soft"} rounded-[10px]`;
              const content = (
                <>
@@ -150,6 +153,13 @@ const Sidebar = ({ initialCollapsed }: { initialCollapsed: boolean }) => {
           if (isFeedback) {
             return (
               <button key={link.href} onClick={openFeedback} className={className}>
+                {content}
+              </button>
+            );
+          }
+          if (isSettings) {
+            return (
+              <button key={link.href} onClick={openSettings} className={className}>
                 {content}
               </button>
             );
