@@ -113,11 +113,11 @@ const Sidebar = ({ initialCollapsed }: { initialCollapsed: boolean }) => {
       
           return(
             
-             <Link key={link.href} href={link.href} className={`w-full relative cursor-pointer py-[8px] group px-[10px] flex items-center gap-[8px] rounded-[10px] ${isActive?"bg-surface-soft":" hover:bg-surface-alpha-light-soft"}`}>
+             <Link key={link.href} href={link.href} className={`w-full relative transition-colors duration-200 ease-out cursor-pointer py-[8px] group px-[10px] flex items-center gap-[8px] rounded-[10px] ${isActive?"bg-surface-soft":" hover:bg-surface-alpha-light-soft"}`}>
              <i className={`shrink-0 ${isActive?"text-strong":"text-sub group-hover:text-strong"} `}>{link.icon}</i>
              <p className={`text-paragraph-sm whitespace-nowrap overflow-hidden transition-all duration-200 ease-in-out ${isActive?"text-strong":"text-sub group-hover:text-strong"}  ${iscollapsed ? "max-w-0 opacity-0" : "max-w-[160px] opacity-100"}`}>{link.label}</p>
             {iscollapsed && (
-              <div className='absolute z-20 items-center text-nowrap  justify-center left-full ml-[20px] transition-opacity text-white text-label-xs bg-surface-light duration-150  pointer-events-none bg-green-300 px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover:opacity-100 '>
+              <div className='absolute z-20 items-center text-nowrap transition-colors duration-200 ease-out  justify-center left-full ml-[20px] transition-opacity text-white text-label-xs bg-surface-light duration-150  pointer-events-none bg-green-300 px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover:opacity-100 '>
                 {link.label}
               </div>
             )

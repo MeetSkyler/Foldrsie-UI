@@ -95,6 +95,7 @@
   --color-semantic-orange-alpha-50: rgb(186 61 6 / 50%);
 
   /* ---- Semantics — Alpha / Red (base C32D3F) ---- */
+   --color-semantic-red-alpha-15: rgb(195 45 63 / 15%);
   --color-semantic-red-alpha-25: rgb(195 45 63 / 25%);
   --color-semantic-red-alpha-50: rgb(195 45 63 / 50%);
 
@@ -1028,4 +1029,10 @@
 }
 .upgradebtn:hover::before {
   opacity: 1;
+}
+
+
+.removedisabled:disabled{
+  color: var(  --color-disabled);
+  cursor: not-allowed;
 }
