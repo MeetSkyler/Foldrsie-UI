@@ -5,6 +5,7 @@ import { useSettingsModal } from "@/app/context/settings-modal-context";
 import Image from 'next/image';
 import profile from '@/public/Profilesimple.svg'
 
+
 const SETTINGS_TABS = [
   {
     id: "account",
@@ -44,6 +45,61 @@ const SETTINGS_TABS = [
   },
 ] as const;
 
+// Each row shares the same label+wrapper markup — only the value content
+// (plain text, a date range, a badge, etc.) differs — so the row shell is
+// written once here and reused via .map() below.
+const PLAN_DETAILS = [
+  {
+    label: "Plan",
+    value: (
+      <div className="flex flex-row gap-[12px] items-center">
+        <p className="text-paragraph-sm text-strong">Growth</p>
+        <button className="px-[6px] py-[2px] bg-white-12 rounded-[6px] text-white-60 flex items-center justify-center text-label-xs">Billed monthly</button>
+      </div>
+    ),
+  },
+  {
+    label: "Monthly charge",
+    value: (
+      <div className="flex flex-row items-center">
+        <p className="text-paragraph-sm text-strong">$49</p>
+        <p className="text-paragraph-sm text-sub">/month</p>
+      </div>
+    ),
+  },
+  {
+    label: "Included credits",
+    value: (
+      <div className="flex flex-row items-center gap-[4px]">
+        <p className="text-paragraph-sm text-strong">80 image credits</p>
+        <p className="text-paragraph-sm text-sub">each month</p>
+      </div>
+    ),
+  },
+  {
+    label: "Billing period",
+    value: (
+      <div className="flex flex-row items-center  gap-[4px]">
+        <p className="text-paragraph-sm text-strong">Aug 14, 2026 – </p>
+        <p className="text-paragraph-sm text-strong">Sep 14, 2026</p>
+      </div>
+    ),
+  },
+  {
+    label: "Renewal date",
+    value: <p className="text-paragraph-sm text-strong">Sep 19, 2026</p>,
+  },
+];
+
+// Same idea for the billing history table — one row shell, one array of
+// real values, reused via .map() so adding a new invoice is just one more
+// object here.
+const BILLING_HISTORY = [
+  { date: "July 28, 2026", plan: "Starter", status: "Paid", amount: "$9" },
+  { date: "August 15, 2026", plan: "40 credits", status: "Paid", amount: "$15" },
+  { date: "September 10, 2026", plan: "30 credits", status: "Paid", amount: "$12" },
+];
+
 // Reads the viewport height. SettingsModal itself is always mounted (it's
 // rendered unconditionally in layout.tsx, only its own JSX output is gated
 // behind isSettingsOpen), so this hook's very first call can happen during
@@ -79,7 +135,7 @@ const SettingsModal = () => {
   const [understandPermanentConfirmed, setUnderstandPermanentConfirmed] = useState(false);
   const ACCOUNT_EMAIL = "aqibbismillah@gmail.com";
   const isDeleteValid = keepImagesConfirmed && understandPermanentConfirmed && deleteConfirmEmail.trim().toLowerCase() === ACCOUNT_EMAIL;
-  const [billingData, setbillingData] = useState(false);
+  const [billingData, setbillingData] = useState(true);
 
 
   // Reset the confirm dialog's own state whenever it closes, so it doesn't
@@ -246,7 +302,7 @@ const SettingsModal = () => {
 
 
 
-              <div className="w-full h-fit overflow-y-auto pt-[32px]  justify-center flex">
+              <div className="w-full flex-1 min-h-0 overflow-y-auto pt-[32px]  justify-center items-start flex">
                 {activeTab === "account" && (
                   <div className="w-full max-w-[840px]  flex flex-col gap-[32px]">
                    
@@ -319,17 +375,84 @@ const SettingsModal = () => {
                 )}
 
                 {activeTab === "billing" && (
-                  <div className="w-full max-w-[840px] flex flex-col gap-[20px]"> 
+                  <div className="w-full max-w-[840px] pb-[60px] flex flex-col gap-[20px]"> 
                   {billingData ? (
                     <>
                     {/* .......topDiv....... */}
-                      <div className="w-full bg-purple-500 p-[4px] flex flex-col">
-                        <p className="px-[16px] pb-[16px] pt-[12px] bg-amber-300 text-label-sm text-sub">Current plan</p>
+                      <div className="w-full bg-surface-alpha-light-soft p-[4px] border border-line-sub rounded-[20px] overflow-hidden flex flex-col">
+                       <div className="w-full px-[16px] pb-[16px] pt-[12px] flex flex-row items-center gap-[8px] ">
+                         <p className=" text-label-sm text-sub">Current plan</p>
+                         <button className="px-[6px] py-[2px] bg-semantic-green-alpha-25 text-semantic-green-200 rounded-[6px] flex items-center justify-center text-label-xs">Active</button>
+                       </div>
+
+                       <div className="px-[24px] w-full pt-[24px] pb-[16px] bg-surface-alpha-light-soft rounded-[16px] border border-line-sub gap-[32px] flex flex-col ">
+                        {PLAN_DETAILS.map((row) => (
+                          <div key={row.label} className="flex flex-col w-full gap-[24px]">
+                            <div className="w-full flex flex-row items-center">
+                              <p className="w-[210px] h-full text-paragraph-sm text-sub ">{row.label}</p>
+                              {row.value}
+                            </div>
+                          </div>
+                        ))}
+                        {/* ..........................bootombtnbar......................... */}
+                        <div className="w-full  pt-[24px] border-t border-line-sub flex items-end justify-end">
+                          <button className="p-btn-noicon-32 text-label-sm flex items-center justify-center transition-all duration-200 ease-out active:scale-[0.98] active:translate-y-px cursor-pointer"><p className="px-[4px]">Manage billing</p></button>
+                        </div>
+                       </div>
 
                       </div>
 
+                     {/* ...........CenterDiv......... */}
+                     <div className="w-full bg-surface-alpha-light-soft border border-line-sub p-[4px] rounded-[20px] flex overflow-hidden flex-col">
+                      <div className="w-full  pt-[12px] pb-[16px] px-[16px] flex items-center">
+                        <p className="text-label-sm text-sub">Payment method</p>
+                      </div>
+                      <div className="p-[24px] w-full bg-surface-alpha-light-soft rounded-[16px] border border-line-sub flex flex-row items-center justify-between">
+                      <div className="flex flex-row gap-[12px] items-center justify-center">
+                      
+                      
+                    <svg  width="32" height="24" viewBox="0 0 32 24" fill="none">
+                     <rect width="32" height="24" rx="4" fill="#1B39C3"/>
+                     <path d="M26.222 15.9115L25.997 14.7434H23.483L23.083 15.9032L21.068 15.9073C22.0273 13.5122 22.9886 11.1179 23.952 8.72449C24.116 8.31853 24.407 8.11191 24.836 8.11399C25.164 8.1171 25.699 8.1171 26.442 8.11502L28 15.9084L26.222 15.9115ZM24.049 13.1434H25.669L25.064 10.2155L24.049 13.1434ZM11.06 8.11295L13.086 8.11502L9.954 15.9125L7.903 15.9104C7.38725 13.8508 6.87791 11.7895 6.375 9.72644C6.275 9.31528 6.077 9.02767 5.696 8.89166C5.357 8.77018 4.792 8.58329 4 8.32891V8.11606H7.237C7.797 8.11606 8.124 8.39744 8.229 8.97472C8.335 9.55304 8.601 11.0253 9.029 13.3916L11.06 8.11295ZM15.87 8.11502L14.268 15.9104L12.34 15.9084L13.94 8.11295L15.87 8.11502ZM19.78 7.9707C20.357 7.9707 21.084 8.15759 21.502 8.32891L21.164 9.94551C20.786 9.7877 20.164 9.57485 19.641 9.58212C18.881 9.59561 18.411 9.92682 18.411 10.2445C18.411 10.7616 19.227 11.0222 20.067 11.587C21.026 12.2308 21.152 12.8091 21.14 13.4373C21.127 14.7413 20.067 16.0278 17.831 16.0278C16.811 16.0122 16.443 15.9229 15.611 15.6166L15.963 13.9294C16.81 14.298 17.169 14.4153 17.893 14.4153C18.556 14.4153 19.125 14.1371 19.13 13.6522C19.134 13.3075 18.93 13.1362 18.186 12.7105C17.442 12.2837 16.398 11.6929 16.412 10.5072C16.429 8.98926 17.814 7.9707 19.781 7.9707H19.78Z" fill="white"/>
+                    </svg>
+                      <p className="text-paragraph-sm text-strong">Visa card ending in 4242</p>
+                      </div>
+                      <p className="underline underline-offset-[3.40px] text-label-sm text-sub cursor-pointer hover:text-strong transition-colors duration-100 ease-out">Change card</p>
+                      </div>
+                     </div>
+
                       {/* .........BottomDiv........ */}
-                      <div></div>
+                    <div className="w-full bg-surface-alpha-light-soft border border-line-sub p-[4px] rounded-[20px] flex overflow-hidden flex-col">
+                      <div className="w-full pt-[12px] pb-[16px] px-[16px] flex items-center">
+                        <p className="text-label-sm text-sub">Billing history</p>
+                      </div>
+                      <div className="py-[8px] w-full bg-surface-alpha-light-soft border border-line-sub rounded-[16px] flex flex-col  gap-[16px]">
+                        {/* Header row */}
+                        <div className="grid grid-cols-[1.4fr_1fr_1fr_0.7fr_0.7fr] gap-[16px] px-[24px] pb-[8px] items-center  border-b border-line-sub">
+                          <p className="text-subheading-xs text-soft uppercase  ">Date</p>
+                          <p className="text-subheading-xs text-soft uppercase ">Plan</p>
+                          <p className="text-subheading-xs text-soft uppercase ">Status</p>
+                          <p className="text-label-sm text-sub">Amount</p>
+                          <p className="text-label-sm text-sub">Actions</p>
+                        </div>
+
+                        {/* Rows */}
+                        {BILLING_HISTORY.map((row, index) => (
+                          <div
+                            key={row.date}
+                            className={`grid grid-cols-[1.4fr_1fr_1fr_0.7fr_0.7fr] gap-[16px] px-[24px] items-center ${
+                              index !== BILLING_HISTORY.length - 1 ? "pb-[16px]  border-b border-line-sub" : "pb-[16px] "
+                            }`}
+                          >
+                            <p className="text-paragraph-sm text-sub">{row.date}</p>
+                            <p className="text-paragraph-sm text-strong">{row.plan}</p>
+                            <span className="px-[6px] py-[2px] w-fit rounded-[6px] bg-semantic-green-alpha-25 text-semantic-green-200 text-label-xs">{row.status}</span>
+                            <p className="text-label-sm text-strong">{row.amount}</p>
+                            <p className="text-label-sm text-sub underline underline-offset-[2px] cursor-pointer hover:text-strong transition-colors duration-100 ease-out">View</p>
+                          </div>
+                        ))}
+                      </div>
+                     </div>
                     </>
                   ) : (
                          <>
