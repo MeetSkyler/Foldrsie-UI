@@ -302,7 +302,7 @@ const SettingsModal = () => {
 
 
 
-              <div className="w-full flex-1 min-h-0 overflow-y-auto pt-[32px]  justify-center items-start flex">
+              <div className="w-full flex-1 min-h-0 overflow-y-auto no-scrollbar pt-[32px]  justify-center items-start flex">
                 {activeTab === "account" && (
                   <div className="w-full max-w-[840px]  flex flex-col gap-[32px]">
                    
@@ -382,7 +382,7 @@ const SettingsModal = () => {
                       <div className="w-full bg-surface-alpha-light-soft p-[4px] border border-line-sub rounded-[20px] overflow-hidden flex flex-col">
                        <div className="w-full px-[16px] pb-[16px] pt-[12px] flex flex-row items-center gap-[8px] ">
                          <p className=" text-label-sm text-sub">Current plan</p>
-                         <button className="px-[6px] py-[2px] bg-semantic-green-alpha-25 text-semantic-green-200 rounded-[6px] flex items-center justify-center text-label-xs">Active</button>
+                         <button className="px-[6px] py-[2px] bg-semantic-green-alpha-25 text-semantic-green-20`0 rounded-[6px] flex items-center justify-center text-label-xs">Active</button>
                        </div>
 
                        <div className="px-[24px] w-full pt-[24px] pb-[16px] bg-surface-alpha-light-soft rounded-[16px] border border-line-sub gap-[32px] flex flex-col ">
