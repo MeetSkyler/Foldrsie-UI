@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from "motion/react";
 import { useSettingsModal } from "@/app/context/settings-modal-context";
 import Image from 'next/image';
 import profile from '@/public/Profilesimple.svg'
+import usageThumb1 from '@/public/img1.jpg'
+import usageThumb2 from '@/public/img4.jpg'
+import { div } from "motion/react-client";
 
 
 const SETTINGS_TABS = [
@@ -100,6 +103,31 @@ const BILLING_HISTORY = [
   { date: "September 10, 2026", plan: "30 credits", status: "Paid", amount: "$12" },
 ];
 
+// Same table pattern for the usage history — a null `image` renders the
+// red "failed" icon instead of a thumbnail.
+const USAGE_HISTORY = [
+  { date: "Aug 24, 11:31 AM", image: usageThumb1, type: "Standard 2K", status: "Completed", credits: "-1 credit" },
+  { date: "Aug 24", image: null, type: "Standard 2K", status: "Failed", credits: "+1 credit returned" },
+  { date: "Aug 24", image: usageThumb2, type: "Special 4K", status: "Completed", credits: "-2 credits" },
+];
+
+// The label + hover-tooltip-icon pairing is copied identically for every
+// credit-breakdown row, in both the "has usage" and "no usage yet" states —
+// pulled into one component so each row only has to supply its own
+// description text.
+function InfoTooltip({ text }: { text: string }) {
+  return (
+    <div className="relative group cursor-pointer">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M8 6H8.00667M7.33333 8H8V10.6667H8.66667M2 8C2 8.78793 2.15519 9.56815 2.45672 10.2961C2.75825 11.0241 3.20021 11.6855 3.75736 12.2426C4.31451 12.7998 4.97595 13.2418 5.7039 13.5433C6.43185 13.8448 7.21207 14 8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2418 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2418 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 6.4087 13.3679 4.88258 12.2426 3.75736C11.1174 2.63214 9.5913 2 8 2C6.4087 2 4.88258 2.63214 3.75736 3.75736C2.63214 4.88258 2 6.4087 2 8Z" stroke="#8C8E91" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      <div className="absolute p-[10px] pointer-events-none group-hover:opacity-100 transition-opacity duration-200 ease-out rounded-[12px] border border-line-sub opacity-0 bg-surface-light w-[209px] bottom-[18px]">
+        <p className="text-paragraph-xs text-sub ">{text}</p>
+      </div>
+    </div>
+  );
+}
+
 // Reads the viewport height. SettingsModal itself is always mounted (it's
 // rendered unconditionally in layout.tsx, only its own JSX output is gated
 // behind isSettingsOpen), so this hook's very first call can happen during
@@ -126,6 +154,7 @@ const SettingsModal = () => {
   const [isTopHovered, setIsTopHovered] = useState(false);
   const viewportHeight = useViewportHeight();
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [isExtraCreditsOpen, setIsExtraCreditsOpen] = useState(false);
   // Same hover/fill/autofill states as the login email input (see
   // loginPortion.tsx and globals.css's onAutofillDetect keyframe).
   const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
@@ -136,6 +165,8 @@ const SettingsModal = () => {
   const ACCOUNT_EMAIL = "aqibbismillah@gmail.com";
   const isDeleteValid = keepImagesConfirmed && understandPermanentConfirmed && deleteConfirmEmail.trim().toLowerCase() === ACCOUNT_EMAIL;
   const [billingData, setbillingData] = useState(true);
+  const [usagedata, setusagedata] = useState(true)
+  const [isAnnualPlan, setIsAnnualPlan] = useState(true)
 
 
   // Reset the confirm dialog's own state whenever it closes, so it doesn't
@@ -204,7 +235,7 @@ const SettingsModal = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className={`fixed inset-0 z-50 flex flex-col justify-end items-center pt-[46px] transition-colors duration-300 ${isDeleteConfirmOpen ? "bg-black-40" : "bg-black-90"}`}
+          className={`fixed inset-0 z-50 flex flex-col justify-end items-center pt-[46px] transition-colors duration-300 ${isDeleteConfirmOpen || isExtraCreditsOpen ? "bg-black-40" : "bg-black-90"}`}
         >
           {/* Hovering this top strip of exposed backdrop hints that it closes
               the modal, and nudges the panel down a touch so the hint reads
@@ -214,6 +245,7 @@ const SettingsModal = () => {
             onMouseLeave={() => setIsTopHovered(false)}
             className="absolute top-0 left-0 right-0 h-[60px] flex items-center justify-center"
           >
+            {/* ......Exit settings bar ......... */}
             <AnimatePresence>
               {isTopHovered && (
                 <motion.div
@@ -245,13 +277,13 @@ const SettingsModal = () => {
             transition={{ duration: 0.35, ease: "easeOut" }}
             className="bg-surface-weak w-full rounded-tr-[24px] rounded-tl-[24px] overflow-hidden border border-line-sub flex flex-row"
           >
-     
-            <div className="w-[230px]  h-full flex flex-col items-center border-r border-line-sub">
-                 <div className="w-full h-[57px] shrink-0 px-[24px] py-[16px] text-label-lg text-strong border-b border-line-sub">Settings</div>
+          {/* .................SideBar............... */}
+            <div className="w-[240px]  h-full  flex flex-col items-center border-r border-line-sub">
+                 <div className="w-full h-[56px] shrink-0 px-[24px] py-[16px] text-label-lg text-strong border-b border-line-sub">Settings</div>
                  <div className="w-full h-full  flex flex-col justify-between">
 
                   {/* .........toplinks........... */}
-                  <div className="flex flex-col gap-[8px] w-full  px-[24px] pt-[24px]">
+                  <div className="flex flex-col gap-[8px] w-full  px-[16px] pt-[24px]">
                     {SETTINGS_TABS.map((tab)=>{
                       const isActive = activeTab === tab.id;
                       return(
@@ -269,7 +301,7 @@ const SettingsModal = () => {
                   </div>
 
                   {/* .............bottomlinks......... */}
-                  <div className="w-full pb-[16px] px-[24px] ">
+                  <div className="w-full pb-[16px] px-[16px] ">
                    <div
                      onClick={() => setActiveTab("logout")}
                      className={`w-full px-[10px] py-[8px] cursor-pointer group flex flex-row gap-[8px] items-center text-paragraph-sm rounded-[10px] ${activeTab === "logout" ? "bg-surface-soft" : " hover:bg-surface-alpha-light-soft"}`}
@@ -286,7 +318,7 @@ const SettingsModal = () => {
             </div>
 
             <div className="w-full h-full flex flex-col items-center">
-              <div className="w-full shrink-0 h-[57px] border-b border-line-sub pr-[18px] items-center flex justify-end">
+              <div className="w-full shrink-0 h-[56px] border-b border-line-sub pr-[18px] items-center flex justify-end">
                <div onClick={closeSettings} className="w-[20px] h-[20px] items-center flex justify-center cursor-pointer"> <svg  width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path d="M15 5L5 15M5 5L15 15" stroke="#8C8E91" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg></div>
@@ -325,7 +357,7 @@ const SettingsModal = () => {
                         </div>
                         <div className="py-[12px]  flex flex-row gap-[12px] items-center">
                          <input ref={photoInputRef} type="file" accept="image/png, image/jpeg" onChange={handlePhotoSelected} className="hidden" />
-                         <button onClick={() => photoInputRef.current?.click()} className="s-btn-noicon-36 text-label-sm text-strong items-center flex justify-center  transition-all duration-200 ease-out active:scale-[0.98] active:translate-y-px cursor-pointer"><p className="px-[4px]">Upload photo</p></button>
+                         <button onClick={() => photoInputRef.current?.click()} className="s-btn-noicon-36 text-label-sm text-strong items-center flex justify-center  transition-all duration-200 ease-out active:scale-[0.98] active:translate-y-px cursor-pointer"><p className="px-[4px]">{profileImage ? "Change photo" : "Upload photo"}</p></button>
                          <button onClick={handleRemovePhoto} className="removedisabled text-label-sm text-strong items-center flex justify-center cursor-pointer" disabled={!profileImage}>Remove</button>
                         </div>
                       </div>
@@ -382,7 +414,7 @@ const SettingsModal = () => {
                       <div className="w-full bg-surface-alpha-light-soft p-[4px] border border-line-sub rounded-[20px] overflow-hidden flex flex-col">
                        <div className="w-full px-[16px] pb-[16px] pt-[12px] flex flex-row items-center gap-[8px] ">
                          <p className=" text-label-sm text-sub">Current plan</p>
-                         <button className="px-[6px] py-[2px] bg-semantic-green-alpha-25 text-semantic-green-20`0 rounded-[6px] flex items-center justify-center text-label-xs">Active</button>
+                         <button className="px-[6px] py-[2px] bg-semantic-green-alpha-25 text-semantic-green-200 rounded-[6px] flex items-center justify-center text-label-xs">Active</button>
                        </div>
 
                        <div className="px-[24px] w-full pt-[24px] pb-[16px] bg-surface-alpha-light-soft rounded-[16px] border border-line-sub gap-[32px] flex flex-col ">
@@ -484,10 +516,223 @@ const SettingsModal = () => {
                 )}
 
                 {activeTab === "usage" && (
-                  <div className="p-[24px]">
-                    <p className="text-label-lg text-strong">Usage</p>
-                    <p className="text-paragraph-sm text-sub mt-[8px]">Usage stats will go here.</p>
+                  <div className="w-full max-w-[840px]  pb-[32px]  flex flex-col gap-[32px]">
+                    {usagedata?(
+                      <>
+                          {/* .........UserHasData....... */}
+                      {/* .........TopPart....... */}
+                      <div className="flex flex-col w-full gap-[12px]">
+                        {/* .........TopPart....... */}
+                        <div className="w-full bg-surface-alpha-light-soft rounded-[16px] border border-line-sub overflow-hidden flex flex-col p-[4px]">
+                          <div className=" px-[16px] pb-[16px] pt-[12px] flex w-full items-center">
+                            <p className="text-paragraph-sm text-sub">Credit breakdown</p>
+                          </div>
+                          <div className="w-full  rounded-[12px] border border-line-sub px-[16px] pb-[24px] pt-[20px] gap-[24px] flex flex-col">
+
+                           <div className="pb-[20px] w-full border-b border-line-sub">
+                            <div className="w-[242px] flex flex-row items-center justify-between">
+                              <p className="text-paragraph-sm text-sub">Available credits</p>
+                              <p className="text-label-lg text-sub">104</p>
+                            </div>
+                           </div>
+                       
+                          <div className="w-full flex flex-col gap-[20px] ">
+                            {/* .............PlanCredits............. */}
+                            <div className="w-full flex flex-row ">
+                              <div className="w-[210px]  flex flex-row items-center gap-[4px]">
+                                <p className="text-paragraph-sm text-sub">Plan credits</p>
+                                <InfoTooltip text="Credits included in your plan and added each month" />
+                              </div>
+                              <div className="flex flex-row gap-[12px]">
+                               <div className="flex flex-row  w-[120px] "> 
+                                <p className="text-paragraph-sm  text-sub">68</p>
+                                <p className="text-paragraph-sm text-sub">/80</p>
+                               </div>
+                                <p className="text-paragraph-sm text-sub">Expires Nov 12, 2026</p>
+                              </div>
+                            </div>
+                               {/* .............RollerCredits............. */}
+                              <div className="w-full  flex flex-row">
+                              <div className="w-[210px] flex flex-row items-center gap-[4px]">
+                                <p className="text-paragraph-sm text-sub">Rolled-over credits</p>
+                                <InfoTooltip text="Unused plan credits from previous months. Valid for 90 days." />
+                              </div>
+                                <div className="flex flex-row gap-[12px]">  
+                                <p className="text-paragraph-sm   w-[120px]  text-sub">24</p>
+                                <p className="text-paragraph-sm text-sub">Expires Oct 12, 2026</p>
+                              </div>
+                            </div>
+                               {/* .............FreeCredits............. */}
+                              <div className="w-full flex flex-row">
+                              <div className="w-[210px] flex flex-row items-center gap-[4px]">
+                                <p className="text-paragraph-sm text-sub">Free credits</p>
+                                <InfoTooltip text="Credits received through a free trial or promotion." />
+                              </div>
+                                   <div className="flex flex-row ">  
+                                <p className="text-paragraph-sm   w-[120px]  text-sub">0</p>                             
+                              </div>
+                            </div>
+                               {/* .............TopUpCredits............. */}
+                              <div className="w-full flex flex-row">
+                              <div className="w-[210px] flex flex-row items-center gap-[4px]">
+                                <p className="text-paragraph-sm text-sub">Top-up credits</p>
+                                <InfoTooltip text="Extra credits purchased separately. Valid for 12 months." />
+                              </div>
+                                 <div className="flex flex-row gap-[12px]">  
+                                <p className="text-paragraph-sm   w-[120px]  text-sub">12</p>
+                                <p className="text-paragraph-sm text-sub">Expires Aug 21, 2027</p>
+                              </div>
+                           
+                            </div>
+                          </div>
+
+                          </div>
+
+                        </div>
+                        {/* .........BottomBtnPart....... */}
+                        <div className={`w-full flex items-center px-[16px] ${isAnnualPlan ? "justify-between" : "justify-end"}`}>
+                          {isAnnualPlan && (
+                            <div className="flex flex-row gap-[8px] items-center">
+                              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                               <path d="M8 6H8.00667M7.33333 8H8V10.6667H8.66667M2 8C2 8.78793 2.15519 9.56815 2.45672 10.2961C2.75825 11.0241 3.20021 11.6855 3.75736 12.2426C4.31451 12.7998 4.97595 13.2418 5.7039 13.5433C6.43185 13.8448 7.21207 14 8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2418 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2418 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 6.4087 13.3679 4.88258 12.2426 3.75736C11.1174 2.63214 9.5913 2 8 2C6.4087 2 4.88258 2.63214 3.75736 3.75736C2.63214 4.88258 2 6.4087 2 8Z" stroke="#8C8E91" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
+                              <p className="text-paragraph-xs text-sub">Your next 80 plan credits will be added on Sep 14, 2026.</p>
+                            </div>
+                          )}
+                          <button onClick={() => setIsExtraCreditsOpen(true)} className="p-btn-noicon-32 flex items-center justify-center transition-all duration-200 ease-out cursor-pointer active:scale-[0.98] active:translate-y-px"><p className="px-[4px] text-label-sm">Buy extra credits</p></button>
+                        </div>
+                      </div>
+
+                      {/* .........BottomPart....... */}
+                        <div className="w-full bg-surface-alpha-light-soft rounded-[16px] border border-line-sub overflow-hidden flex flex-col p-[4px]">
+                          <div className=" px-[16px] pb-[16px] pt-[12px] flex w-full items-center">
+                            <p className="text-paragraph-sm text-sub">Usage history</p>
+                          </div>
+                          <div className="w-full bg-surface-alpha-light-soft rounded-[12px] border border-line-sub  py-[8px] gap-[16px] flex flex-col">
+                            {/* Header row */}
+                            <div className="grid grid-cols-[1.3fr_0.7fr_1fr_1fr_1.1fr] gap-[16px] items-center pb-[8px] px-[24px] border-b border-line-sub">
+                              <p className="text-subheading-xs text-soft uppercase ">Date</p>
+                              <p className="text-subheading-xs text-soft uppercase ">Image</p>
+                              <p className="text-subheading-xs text-soft uppercase">Type</p>
+                              <p className="text-subheading-xs text-soft uppercase ">Status</p>
+                              <p className="text-label-sm text-sub">Credits</p>
+                            </div>
+
+                            {/* Rows */}
+                            {USAGE_HISTORY.map((row, index) => (
+                              <div
+                                key={index}
+                                className={`grid grid-cols-[1.3fr_0.7fr_1fr_1fr_1.1fr] gap-[16px] items-center pb-[16px] px-[24px] ${
+                                  index !== USAGE_HISTORY.length - 1 ? " border-b border-line-sub" : ""
+                                }`}
+                              >
+                                <p className="text-paragraph-sm text-sub">{row.date}</p>
+                                {row.image ? (
+                                  <div className="w-[32px] h-[32px] rounded-[6px] overflow-hidden">
+                                    <Image src={row.image} alt={row.type} width={80} height={80} className="w-full h-full object-cover" />
+                                  </div>
+                                ) : (
+                                  <div className="w-[32px] h-[32px] rounded-[6px] bg-semantic-red-alpha-25 flex items-center justify-center">
+                                   <svg  width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M3.79948 3.79948L12.1995 12.1995M2 8C2 8.78793 2.15519 9.56815 2.45672 10.2961C2.75825 11.0241 3.20021 11.6855 3.75736 12.2426C4.31451 12.7998 4.97595 13.2418 5.7039 13.5433C6.43185 13.8448 7.21207 14 8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2418 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2418 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2418 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C7.21207 2 6.43185 2.15519 5.7039 2.45672C4.97595 2.75825 4.31451 3.20021 3.75736 3.75736C3.20021 4.31451 2.75825 4.97595 2.45672 5.7039C2.15519 6.43185 2 7.21207 2 8Z" stroke="#FDB5B4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                                   </svg>
+                                  </div>
+                                )}
+                                <p className="text-paragraph-sm text-strong">{row.type}</p>
+                                <span
+                                  className={`px-[6px] py-[2px] w-fit rounded-[6px] text-label-xs flex items-center justify-center ${
+                                    row.status === "Completed" ? "bg-semantic-green-alpha-25 text-semantic-green-200" : "bg-semantic-red-alpha-25 text-semantic-red-200"
+                                  }`}
+                                >
+                                  {row.status}
+                                </span>
+                                <p className="text-paragraph-sm text-sub">{row.credits}</p>
+                              </div>
+                            ))}
+                          </div>
+
+                        </div>
+                      </>
+                    ):(
+                      <>
+                      {/* .........UserIsFirst WithNoData....... */}
+                      {/* .........TopPart....... */}
+                      <div className="flex flex-col w-full gap-[12px]">
+                        {/* .........TopPart....... */}
+                        <div className="w-full bg-surface-alpha-light-soft rounded-[16px] border border-line-sub overflow-hidden flex flex-col p-[4px]">
+                          <div className=" px-[16px] pb-[16px] pt-[12px] flex w-full items-center">
+                            <p className="text-paragraph-sm text-sub">Credit breakdown</p>
+                          </div>
+                          <div className="w-full bg-surface-alpha-light-soft rounded-[12px] border border-line-sub px-[16px] pb-[24px] pt-[20px] gap-[24px] flex flex-col">
+
+                           <div className="pb-[20px] w-full border-b border-line-sub">
+                            <div className="w-[222px] flex flex-row items-center justify-between">
+                              <p className="text-paragraph-sm text-sub">Available credits</p>
+                              <p className="text-label-lg text-sub">0</p>
+                            </div>
+                           </div>
+                       
+                          <div className="w-full flex flex-col gap-[20px] ">
+                            {/* .............PlanCredits............. */}
+                            <div className="w-full flex flex-row">
+                              <div className="w-[210px] flex flex-row items-center gap-[4px]">
+                                <p className="text-paragraph-sm text-sub">Plan credits</p>
+                                <InfoTooltip text="Credits included in your plan and added each month" />
+                              </div>
+                              <p className="text-paragraph-sm text-sub">0</p>
+                            </div>
+                               {/* .............RollerCredits............. */}
+                              <div className="w-full  flex flex-row">
+                              <div className="w-[210px] flex flex-row items-center gap-[4px]">
+                                <p className="text-paragraph-sm text-sub">Rolled-over credits</p>
+                                <InfoTooltip text="Unused plan credits from previous months. Valid for 90 days." />
+                              </div>
+                              <p className="text-paragraph-sm text-sub">0</p>
+                            </div>
+                               {/* .............FreeCredits............. */}
+                              <div className="w-full flex flex-row">
+                              <div className="w-[210px] flex flex-row items-center gap-[4px]">
+                                <p className="text-paragraph-sm text-sub">Free credits</p>
+                                <InfoTooltip text="Credits received through a free trial or promotion." />
+                              </div>
+                              <p className="text-paragraph-sm text-sub">0</p>
+                            </div>
+                               {/* .............TopUpCredits............. */}
+                              <div className="w-full flex flex-row">
+                              <div className="w-[210px] flex flex-row items-center gap-[4px]">
+                                <p className="text-paragraph-sm text-sub">Top-up credits</p>
+                                <InfoTooltip text="Extra credits purchased separately. Valid for 12 months." />
+                              </div>
+                              <p className="text-paragraph-sm text-sub">0</p>
+                            </div>
+                          </div>
+
+                          </div>
+
+                        </div>
+                        {/* .........BottomBtnPart....... */}
+                        <div className="w-full  flex justify-end px-[16px]">
+                          <button className="p-btn-noicon-32 flex items-center justify-center transition-all duration-200 ease-out cursor-pointer active:scale-[0.98] active:translate-y-px"><p className="px-[4px] text-label-sm">View plans</p></button>
+                        </div>
+                      </div>
+
+                      {/* .........BottomPart....... */}
+                        <div className="w-full bg-surface-alpha-light-soft rounded-[16px] border border-line-sub overflow-hidden flex flex-col p-[4px]">
+                          <div className=" px-[16px] pb-[16px] pt-[12px] flex w-full items-center">
+                            <p className="text-paragraph-sm text-sub">Usage history</p>
+                          </div>
+                          <div className="w-full bg-surface-alpha-light-soft rounded-[12px] border border-line-sub px-[24px]  gap-[8px] flex flex-col items-center justify-center h-[200px]">
+                           <p className="text-paragraph-sm text-sub">No usage yet</p>
+                           <p className="text-paragraph-xs text-soft">Your generated images and credit activity will appear here.</p>
+                          </div>
+
+                        </div>
+                      </>
+                    )
+
+                    }
                   </div>
+                
                 )}
 
                 {activeTab === "logout" && (
@@ -613,6 +858,93 @@ const SettingsModal = () => {
           </div>
         </div>
 
+      </div>
+    )}
+
+    {/* "Buy extra credits" dialog — same simple pop in/out pattern as the
+        delete-confirm dialog: full-screen bg-black-90 overlay (z-[65], above
+        the delete dialog's z-[60]) with a smaller centered card, while the
+        Settings backdrop behind it dims to bg-black-40 (see
+        isExtraCreditsOpen in the backdrop className above). Dummy colors —
+        shell only, no design/content given yet. */}
+    {isExtraCreditsOpen && (
+      <div
+        onClick={() => setIsExtraCreditsOpen(false)}
+        className="fixed inset-0 z-[65] bg-black-90 flex items-center justify-center"
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="bg-surface-weak w-full max-w-[917px] rounded-[24px] border border-line-sub p-[24px] flex flex-col gap-[24px]"
+        >
+          <div className="w-full flex flex-row justify-between">
+           <div className="flex flex-col w-full gap-[12px]">
+            <p className="text-label-lg text-strong">Buy extra credits</p>
+            <p className="text-paragraph-sm text-sub">Add credits to your plan. One-time purchase, valid for 12 months.</p>
+           </div>
+            <div onClick={() => setIsExtraCreditsOpen(false)} className="w-[24px] h-[24px] cursor-pointer flex items-center justify-center">
+             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M12 4L4 12M4 4L12 12" stroke="#8C8E91" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+             </svg>
+            </div>
+          </div>
+            {/* ............Cards............ */}
+          <div className="w-full h-[350px] flex flex-row gap-[12px]">
+         {/* ..........Card1........... */}
+            <div className="p-[20px] w-full  flex flex-col bg-surface-alpha-light-weak  rounded-[16px] border border-line-sub items-center justify-between">
+              <div className="pb-[24px] flex flex-col gap-[80px] w-full items-center  ">
+                <div className="flex flex-col w-full gap-[12px] items-center">
+                 <div className="px-[8px] py-[2px] bg-surface-alpha-light-white text-label-xs h-[24px] items-center justify-center flex text-strong rounded-[6px]">20 credits</div>
+                 <p className="text-paragraph-sm text-sub">$0.95 per credit</p>
+                </div>
+                <p className="text-strong text-title-h3">$19</p>
+              </div>
+             <button className="p-btn-noicon-36 flex items-center justify-center w-full">Buy 20 credits</button>
+            </div>
+               
+          {/* ..........Card2........... */}
+               <div className="p-[20px] w-full  flex flex-col bg-surface-alpha-light-weak  rounded-[16px] border border-line-sub items-center justify-between">
+              <div className="pb-[24px] flex flex-col gap-[80px] w-full items-center  ">
+                <div className="flex flex-col w-full gap-[12px] items-center">
+                 <div className="px-[8px] py-[2px] bg-surface-alpha-light-white text-label-xs h-[24px] items-center justify-center flex text-strong rounded-[6px]">60 credits</div>
+                 <p className="text-paragraph-sm text-sub">$0.82 per credit</p>
+                </div>
+                <p className="text-strong text-title-h3">$49</p>
+              </div>
+             <button className="p-btn-noicon-36 flex items-center justify-center w-full">Buy 60 credits</button>
+            </div>
+          {/* ..........Card3........... */}
+               <div className="p-[20px] w-full bg-surface-alpha-light-weak flex flex-col rounded-[16px] border border-line-sub items-center justify-between">
+              <div className="pb-[24px] flex flex-col gap-[80px] w-full items-center  ">
+                <div className="flex flex-col w-full gap-[12px] items-center">
+                 <div className="px-[8px] py-[2px] bg-surface-alpha-light-white text-label-xs h-[24px] items-center justify-center flex text-strong rounded-[6px]">150 credits</div>
+                 <p className="text-paragraph-sm text-sub">$0.73 per credit</p>
+                </div>
+                <p className="text-strong text-title-h3">$109</p>
+              </div>
+             <button className="p-btn-noicon-36 flex items-center justify-center w-full">Buy 150 credits</button>
+            </div>
+
+          </div>
+          
+           {/* ............BottomArea............ */}
+          <div className="w-full pt-[8px] flex items-center justify-center">
+            <div className="flex flex-row gap-[6px]">
+              <svg  width="20" height="20" viewBox="0 0 20 20" fill="none">
+               <g clip-path="url(#clip0_1164_25708)">
+                 <rect x="3.96875" y="8.53516" width="12.0605" height="9.16514" rx="1.66667" stroke="#6F7073" stroke-width="1.2" stroke-linejoin="round"/>
+                 <path d="M13.3346 9.16667V5.83333C13.3346 3.99238 11.8423 2.5 10.0013 2.5C8.16035 2.5 6.66797 3.99238 6.66797 5.83333V9.16667" stroke="#6F7073" stroke-width="1.2" stroke-linejoin="round"/>
+                 <line opacity="0.9" x1="9.98672" y1="12.8344" x2="9.98672" y2="13.7177" stroke="#6F7073" stroke-width="1.2" stroke-linecap="round"/>
+               </g>
+               <defs>
+               <clipPath id="clip0_1164_25708">
+                 <rect width="20" height="20" fill="white"/>
+               </clipPath>
+               </defs>
+              </svg>
+              <p className="text-paragraph-sm text-soft">Secure checkout via Polar</p>
+            </div>
+          </div>
+        </div>
       </div>
     )}
     </>
