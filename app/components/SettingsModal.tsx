@@ -532,7 +532,7 @@ const SettingsModal = () => {
                            <div className="pb-[20px] w-full border-b border-line-sub">
                             <div className="w-[242px] flex flex-row items-center justify-between">
                               <p className="text-paragraph-sm text-sub">Available credits</p>
-                              <p className="text-label-lg text-sub">104</p>
+                              <p className="text-label-lg text-strong">104</p>
                             </div>
                            </div>
                        
@@ -545,7 +545,7 @@ const SettingsModal = () => {
                               </div>
                               <div className="flex flex-row gap-[12px]">
                                <div className="flex flex-row  w-[120px] "> 
-                                <p className="text-paragraph-sm  text-sub">68</p>
+                                <p className="text-paragraph-sm text-strong">68</p>
                                 <p className="text-paragraph-sm text-sub">/80</p>
                                </div>
                                 <p className="text-paragraph-sm text-sub">Expires Nov 12, 2026</p>
@@ -558,7 +558,7 @@ const SettingsModal = () => {
                                 <InfoTooltip text="Unused plan credits from previous months. Valid for 90 days." />
                               </div>
                                 <div className="flex flex-row gap-[12px]">  
-                                <p className="text-paragraph-sm   w-[120px]  text-sub">24</p>
+                                <p className="text-paragraph-sm   w-[120px]  text-strong">24</p>
                                 <p className="text-paragraph-sm text-sub">Expires Oct 12, 2026</p>
                               </div>
                             </div>
@@ -579,7 +579,7 @@ const SettingsModal = () => {
                                 <InfoTooltip text="Extra credits purchased separately. Valid for 12 months." />
                               </div>
                                  <div className="flex flex-row gap-[12px]">  
-                                <p className="text-paragraph-sm   w-[120px]  text-sub">12</p>
+                                <p className="text-paragraph-sm   w-[120px]  text-strong">12</p>
                                 <p className="text-paragraph-sm text-sub">Expires Aug 21, 2027</p>
                               </div>
                            
@@ -898,7 +898,7 @@ const SettingsModal = () => {
                 </div>
                 <p className="text-strong text-title-h3">$19</p>
               </div>
-             <button className="p-btn-noicon-36 flex items-center justify-center w-full">Buy 20 credits</button>
+             <button className="p-btn-noicon-36 flex items-center justify-center text-label-sm  w-full">Buy 20 credits</button>
             </div>
                
           {/* ..........Card2........... */}
@@ -910,7 +910,7 @@ const SettingsModal = () => {
                 </div>
                 <p className="text-strong text-title-h3">$49</p>
               </div>
-             <button className="p-btn-noicon-36 flex items-center justify-center w-full">Buy 60 credits</button>
+             <button className="p-btn-noicon-36 flex items-center justify-center text-label-sm  w-full">Buy 60 credits</button>
             </div>
           {/* ..........Card3........... */}
                <div className="p-[20px] w-full bg-surface-alpha-light-weak flex flex-col rounded-[16px] border border-line-sub items-center justify-between">
@@ -921,7 +921,7 @@ const SettingsModal = () => {
                 </div>
                 <p className="text-strong text-title-h3">$109</p>
               </div>
-             <button className="p-btn-noicon-36 flex items-center justify-center w-full">Buy 150 credits</button>
+             <button className="p-btn-noicon-36 flex items-center justify-center text-label-sm w-full">Buy 150 credits</button>
             </div>
 
           </div>
