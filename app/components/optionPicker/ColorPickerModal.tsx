@@ -228,7 +228,7 @@ export default function ColorPickerModal({
           </button>
           <button
             onClick={() => onAdd(hex)}
-            className="p-btn-noicon-36 cursor-pointer text-label-sm"
+            className="p-btn-noicon-36 transition-all duration-200 ease-out active:scale-[0.95]  cursor-pointer text-label-sm"
           >
             Add color
           </button>

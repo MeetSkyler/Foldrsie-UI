@@ -3,6 +3,7 @@ import { usePathname } from "next/navigation"
 import Navbar from "./navbar"
 import SideDrawer from "./sideDrawer"
 import Sidebar from "./sidebar"
+import MobileAppshell from "./mobile/MobileAppshell"
 
 export default function Appshell({
   children,
@@ -16,10 +17,11 @@ export default function Appshell({
 
   return(
    <>
-   <div className="w-full h-screen flex overflow-hidden flex-row ">
+   {/* ..........DesktopShell.......... (md and up) */}
+   <div className="hidden md:flex w-full h-screen overflow-hidden flex-row ">
       {/* ....LeftBar//Sidebar.... */}
      <Sidebar initialCollapsed={initialSidebarCollapsed}/>
-    
+
   <div className="flex-1 min-w-0 flex flex-col min-h-0">
 
      {/* ....Navbar.... */}
@@ -32,12 +34,17 @@ export default function Appshell({
 
        {/* ....Rightbar//Side Drawer.... */}
        {!hideSideDrawer && <SideDrawer/>}
-     
+
       </div>
-  
+
 
   </div>
-   
+
+   </div>
+
+   {/* ..........MobileShell.......... (below md) */}
+   <div className="flex md:hidden w-full h-screen overflow-hidden">
+     <MobileAppshell>{children}</MobileAppshell>
    </div>
    </>
   )

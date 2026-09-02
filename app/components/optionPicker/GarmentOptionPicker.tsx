@@ -263,7 +263,7 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                 setEditingItem(null);
                 setShowUploadModal(true);
               }}
-              className={`aspect-[5/6] min-w-[184px] relative border-[1px] border-white/50 bg-white/8 hover:bg-white-12 cursor-pointer ${
+              className={`aspect-[5/6] min-w-[184px] group relative border-[1px] border-white/50 bg-white/8 hover:bg-white-12 cursor-pointer ${
                 "rounded-[16px] min-[1441px]:rounded-[24px]"
               }`}
               style={{ boxShadow: "0 0 24px 0 rgba(255, 255, 255, 0.24) inset, 0 0 4px 0 rgba(255, 255, 255, 0.40) inset" }}
@@ -274,7 +274,7 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                   pinned to the bottom edge, so neither can push the other. */}
               <div className="absolute inset-0 flex flex-col items-center justify-center px-[12px]" style={{ gap: FIRST_CARD_ICON_LABEL_GAP }}>
                 <div
-                  className="rounded-full flex items-center bg-surface-alpha-light-white justify-center text-strong leading-none"
+                  className="rounded-full  group-active:scale-[0.95] group-active:translate-y-px transition-all duration-200 ease-out flex items-center bg-surface-alpha-light-white justify-center text-strong leading-none"
                   style={{
                     width: FIRST_CARD_ICON_SIZE,
                     height: FIRST_CARD_ICON_SIZE,
@@ -346,7 +346,7 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                     )}
                   </div>
 
-                  <div className="absolute bottom-[12px] left-[12px] flex flex-row gap-[12px]">
+                  <div className="absolute bottom-[12px] left-[12px]  flex flex-row gap-[12px]">
                     <Thumb
                       image={item.back}
                       alt={`${config.label} back`}

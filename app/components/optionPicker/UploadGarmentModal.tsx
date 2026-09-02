@@ -78,7 +78,7 @@ function UploadSlot({
 
           <div
             onClick={handleClick}
-            className="absolute bottom-[16px] left-1/2 flex items-center justify-center hover:bg-surface-mid -translate-x-1/2 px-[10px] py-[6px] rounded-[8px] bg-surface-light text-label-sm text-strong cursor-pointer"
+            className="absolute bottom-[16px]  active:scale-[0.98] active:translate-y-px transition-all duration-200 ease-out left-1/2 flex items-center justify-center hover:bg-surface-mid -translate-x-1/2 px-[10px] py-[6px] rounded-[8px] bg-surface-light text-label-sm text-strong cursor-pointer"
           >
             Re-upload
           </div>
@@ -100,9 +100,9 @@ function UploadSlot({
      <>
         <button
           onClick={handleClick}
-          className="w-full h-[350px] rounded-[16px] bg-surface-alpha-light-weak hover:bg-surface-alpha-light-white transition-colors flex flex-col items-center justify-center gap-[12px] cursor-pointer"
+          className="w-full h-[350px] group rounded-[16px] bg-surface-alpha-light-weak hover:bg-surface-alpha-light-white transition-colors flex flex-col items-center justify-center gap-[12px] cursor-pointer"
         >
-          <div  className="w-[32px] h-[32px] rounded-full flex p-[6px] items-center bg-surface-alpha-light-white justify-center text-strong text-[20px] leading-none"
+          <div  className="w-[32px] h-[32px]   group-active:scale-[0.95] group-active:translate-y-px transition-all duration-200 ease-out rounded-full flex p-[6px] items-center bg-surface-alpha-light-white justify-center text-strong text-[20px] leading-none"
                   style={{ boxShadow:
     "0 0 0.5px 0.5px var(--color-white-20, rgba(235, 237, 240, 0.20)) inset, " +
     "0 8px 8px -4px rgba(0, 0, 0, 0.05), " +

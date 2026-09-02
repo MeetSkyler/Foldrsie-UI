@@ -242,7 +242,7 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
               />
               <button
                 onClick={handleUploadClick}
-                className={`aspect-[5/6] min-w-[184px] relative border border-white/50 bg-white/8 hover:bg-white-12 cursor-pointer ${
+                className={`aspect-[5/6] min-w-[184px] group  relative border border-white/50 bg-white/8 hover:bg-white-12 cursor-pointer ${
                   "rounded-[16px] min-[1441px]:rounded-[24px]"
                 }`}
                 style={{boxShadow:"0 0 24px 0 rgba(255, 255, 255, 0.24) inset, 0 0 4px 0 rgba(255, 255, 255, 0.40) inset"}}>
@@ -257,10 +257,10 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
                         from the card's bottom edge instead, so neither can
                         push the other. */}
                     <div
-                      className="absolute left-1/2 top-1/2 flex flex-col items-center px-[12px]"
+                      className="absolute group left-1/2 top-1/2 flex flex-col items-center px-[12px]"
                       style={{ gap: FIRST_CARD_ICON_LABEL_GAP, transform: "translate(-50%, -50%)" }}
                     >
-                        <div className="rounded-full flex items-center bg-surface-alpha-light-white justify-center text-strong leading-none"
+                        <div className="rounded-full  group-active:scale-[0.95] group-active:translate-y-px transition-all duration-200 ease-out flex items-center bg-surface-alpha-light-white justify-center text-strong leading-none"
                         style={{
                           width: FIRST_CARD_ICON_SIZE,
                           height: FIRST_CARD_ICON_SIZE,
@@ -293,7 +293,7 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
                         pinned 32px from the bottom at every zoom level, so
                         neither can push the other. */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center px-[12px]" style={{ gap: FIRST_CARD_ICON_LABEL_GAP }}>
-                      <div className="rounded-full flex items-center bg-surface-alpha-light-white justify-center text-strong leading-none"
+                      <div className="rounded-full flex items-center  group-active:scale-[0.95] group-active:translate-y-px transition-all duration-200 ease-out  bg-surface-alpha-light-white justify-center text-strong leading-none"
                       style={{
                         width: FIRST_CARD_ICON_SIZE,
                         height: FIRST_CARD_ICON_SIZE,
@@ -312,7 +312,7 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
                     </div>
                     <p className="text-label-sm text-strong text-center whitespace-nowrap">{config.uploadLabel ?? `Upload new ${config.label}`}</p>
                     </div>
-                    <p className="absolute left-0 right-0 text-label-xs text-sub text-center underline underline-offset-3 hover:text-strong" style={{ bottom: FIRST_CARD_GUIDE_BOTTOM }}>Photo guide</p>
+                    <p className="absolute left-0  right-0 text-label-xs text-sub text-center underline underline-offset-3 hover:text-strong" style={{ bottom: FIRST_CARD_GUIDE_BOTTOM }}>Photo guide</p>
                   </>
                 )}
               </button>
@@ -323,11 +323,11 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
           {config.colorPickerEnabled && (
             <button
               onClick={() => setShowColorModal(true)}
-              className={`aspect-[5/6] min-w-[184px] relative border border-white/50 bg-white/8 hover:bg-white-12 flex flex-col items-center justify-center cursor-pointer ${
+              className={`aspect-[5/6] min-w-[184px] group relative border border-white/50 bg-white/8 hover:bg-white-12 flex flex-col items-center justify-center cursor-pointer ${
                 "rounded-[16px] min-[1441px]:rounded-[24px]"
               }`}
               style={{boxShadow:"0 0 24px 0 rgba(255, 255, 255, 0.24) inset, 0 0 4px 0 rgba(255, 255, 255, 0.40) inset"}}>
-              <div className="flex flex-col items-center justify-center px-[12px]" style={{ gap: FIRST_CARD_ICON_LABEL_GAP }}>
+              <div className="flex flex-col  group-active:scale-[0.95] group-active:translate-y-px transition-all duration-200 ease-out items-center justify-center px-[12px]" style={{ gap: FIRST_CARD_ICON_LABEL_GAP }}>
                   <div className="rounded-full flex items-center bg-surface-alpha-light-white justify-center text-strong leading-none"
                   style={{
                     width: FIRST_CARD_ICON_SIZE,

@@ -111,6 +111,68 @@ const USAGE_HISTORY = [
   { date: "Aug 24", image: usageThumb2, type: "Special 4K", status: "Completed", credits: "-2 credits" },
 ];
 
+// Every credit-breakdown row shares the same label+tooltip+wrapper shell —
+// only the value differs — so, same as PLAN_DETAILS above, the shell is
+// written once and reused via .map(). Two arrays because the "has usage"
+// and "no usage yet" states show different values for the same 4 rows.
+const CREDIT_ROWS_WITH_DATA = [
+  {
+    label: "Plan credits",
+    tooltip: "Credits included in your plan and added each month",
+    value: (
+      <div className="flex flex-row gap-[12px]">
+        <div className="flex flex-row w-[120px]">
+          <p className="text-paragraph-sm text-strong">68</p>
+          <p className="text-paragraph-sm text-sub">/80</p>
+        </div>
+        <p className="text-paragraph-sm text-sub">Expires Nov 12, 2026</p>
+      </div>
+    ),
+  },
+  {
+    label: "Rolled-over credits",
+    tooltip: "Unused plan credits from previous months. Valid for 90 days.",
+    value: (
+      <div className="flex flex-row gap-[12px]">
+        <p className="text-paragraph-sm w-[120px] text-strong">24</p>
+        <p className="text-paragraph-sm text-sub">Expires Oct 12, 2026</p>
+      </div>
+    ),
+  },
+  {
+    label: "Free credits",
+    tooltip: "Credits received through a free trial or promotion.",
+    value: <p className="text-paragraph-sm w-[120px] text-sub">0</p>,
+  },
+  {
+    label: "Top-up credits",
+    tooltip: "Extra credits purchased separately. Valid for 12 months.",
+    value: (
+      <div className="flex flex-row gap-[12px]">
+        <p className="text-paragraph-sm w-[120px] text-strong">12</p>
+        <p className="text-paragraph-sm text-sub">Expires Aug 21, 2027</p>
+      </div>
+    ),
+  },
+];
+
+const CREDIT_ROWS_EMPTY = [
+  { label: "Plan credits", tooltip: "Credits included in your plan and added each month" },
+  { label: "Rolled-over credits", tooltip: "Unused plan credits from previous months. Valid for 90 days." },
+  { label: "Free credits", tooltip: "Credits received through a free trial or promotion." },
+  { label: "Top-up credits", tooltip: "Extra credits purchased separately. Valid for 12 months." },
+];
+
+// The section-title bar ("Credit breakdown", "Usage history", ...) is the
+// same wrapper in every card, in both usage states — just the text differs.
+function SectionHeader({ title }: { title: string }) {
+  return (
+    <div className=" px-[16px] pb-[16px] pt-[12px] flex w-full items-center">
+      <p className="text-paragraph-sm text-sub">{title}</p>
+    </div>
+  );
+}
+
 // The label + hover-tooltip-icon pairing is copied identically for every
 // credit-breakdown row, in both the "has usage" and "no usage yet" states —
 // pulled into one component so each row only has to supply its own
@@ -169,6 +231,7 @@ const SettingsModal = () => {
   const [isAnnualPlan, setIsAnnualPlan] = useState(true)
 
 
+
   // Reset the confirm dialog's own state whenever it closes, so it doesn't
   // remember a stale typed email or checked boxes the next time it opens.
   useEffect(() => {
@@ -225,7 +288,9 @@ const SettingsModal = () => {
   }, [isSettingsOpen]);
 
   return (
+  
     <>
+    
     <AnimatePresence>
       {isSettingsOpen && (
         <motion.div
@@ -233,8 +298,8 @@ const SettingsModal = () => {
           onClick={closeSettings}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
+          exit={{ opacity: 1 }}
+          transition={{ duration: 0.1, ease: "easeOut" }}
           className={`fixed inset-0 z-50 flex flex-col justify-end items-center pt-[46px] transition-colors duration-300 ${isDeleteConfirmOpen || isExtraCreditsOpen ? "bg-black-40" : "bg-black-90"}`}
         >
           {/* Hovering this top strip of exposed backdrop hints that it closes
@@ -243,7 +308,7 @@ const SettingsModal = () => {
           <div
             onMouseEnter={() => setIsTopHovered(true)}
             onMouseLeave={() => setIsTopHovered(false)}
-            className="absolute top-0 left-0 right-0 h-[60px] flex items-center justify-center"
+            className="absolute top-[16px] left-0 right-0 h-[40px]  flex items-center justify-center"
           >
             {/* ......Exit settings bar ......... */}
             <AnimatePresence>
@@ -253,9 +318,9 @@ const SettingsModal = () => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -6, scale: 0.96 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="px-[12px] py-[6px] rounded-full bg-surface-light text-label-sm text-strong pointer-events-none"
+                  className={`px-[12px] py-[6px] rounded-full text-label-sm cursor-pointer text-strong  bg-surface-light`}
                 >
-                  Exit Setting
+                  Exit Settings
                 </motion.div>
               )}
             </AnimatePresence>
@@ -271,10 +336,10 @@ const SettingsModal = () => {
               open. The "- 46" matches the backdrop's own pt-[46px]. */}
           <motion.div
             onClick={(e) => e.stopPropagation()}
-            initial={{ height: 0 }}
+            initial={{ height: 200 }}
             animate={{ height: isTopHovered ? viewportHeight - 46 - 24 : viewportHeight - 46 }}
-            exit={{ height: 0 }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
+          
+            transition={{ duration: 0.27, ease: "easeOut" }}
             className="bg-surface-weak w-full rounded-tr-[24px] rounded-tl-[24px] overflow-hidden border border-line-sub flex flex-row"
           >
           {/* .................SideBar............... */}
@@ -524,9 +589,7 @@ const SettingsModal = () => {
                       <div className="flex flex-col w-full gap-[12px]">
                         {/* .........TopPart....... */}
                         <div className="w-full bg-surface-alpha-light-soft rounded-[16px] border border-line-sub overflow-hidden flex flex-col p-[4px]">
-                          <div className=" px-[16px] pb-[16px] pt-[12px] flex w-full items-center">
-                            <p className="text-paragraph-sm text-sub">Credit breakdown</p>
-                          </div>
+                          <SectionHeader title="Credit breakdown" />
                           <div className="w-full  rounded-[12px] border border-line-sub px-[16px] pb-[24px] pt-[20px] gap-[24px] flex flex-col">
 
                            <div className="pb-[20px] w-full border-b border-line-sub">
@@ -535,55 +598,17 @@ const SettingsModal = () => {
                               <p className="text-label-lg text-strong">104</p>
                             </div>
                            </div>
-                       
+
                           <div className="w-full flex flex-col gap-[20px] ">
-                            {/* .............PlanCredits............. */}
-                            <div className="w-full flex flex-row ">
-                              <div className="w-[210px]  flex flex-row items-center gap-[4px]">
-                                <p className="text-paragraph-sm text-sub">Plan credits</p>
-                                <InfoTooltip text="Credits included in your plan and added each month" />
+                            {CREDIT_ROWS_WITH_DATA.map((row) => (
+                              <div key={row.label} className="w-full flex flex-row">
+                                <div className="w-[210px] flex flex-row items-center gap-[4px]">
+                                  <p className="text-paragraph-sm text-sub">{row.label}</p>
+                                  <InfoTooltip text={row.tooltip} />
+                                </div>
+                                {row.value}
                               </div>
-                              <div className="flex flex-row gap-[12px]">
-                               <div className="flex flex-row  w-[120px] "> 
-                                <p className="text-paragraph-sm text-strong">68</p>
-                                <p className="text-paragraph-sm text-sub">/80</p>
-                               </div>
-                                <p className="text-paragraph-sm text-sub">Expires Nov 12, 2026</p>
-                              </div>
-                            </div>
-                               {/* .............RollerCredits............. */}
-                              <div className="w-full  flex flex-row">
-                              <div className="w-[210px] flex flex-row items-center gap-[4px]">
-                                <p className="text-paragraph-sm text-sub">Rolled-over credits</p>
-                                <InfoTooltip text="Unused plan credits from previous months. Valid for 90 days." />
-                              </div>
-                                <div className="flex flex-row gap-[12px]">  
-                                <p className="text-paragraph-sm   w-[120px]  text-strong">24</p>
-                                <p className="text-paragraph-sm text-sub">Expires Oct 12, 2026</p>
-                              </div>
-                            </div>
-                               {/* .............FreeCredits............. */}
-                              <div className="w-full flex flex-row">
-                              <div className="w-[210px] flex flex-row items-center gap-[4px]">
-                                <p className="text-paragraph-sm text-sub">Free credits</p>
-                                <InfoTooltip text="Credits received through a free trial or promotion." />
-                              </div>
-                                   <div className="flex flex-row ">  
-                                <p className="text-paragraph-sm   w-[120px]  text-sub">0</p>                             
-                              </div>
-                            </div>
-                               {/* .............TopUpCredits............. */}
-                              <div className="w-full flex flex-row">
-                              <div className="w-[210px] flex flex-row items-center gap-[4px]">
-                                <p className="text-paragraph-sm text-sub">Top-up credits</p>
-                                <InfoTooltip text="Extra credits purchased separately. Valid for 12 months." />
-                              </div>
-                                 <div className="flex flex-row gap-[12px]">  
-                                <p className="text-paragraph-sm   w-[120px]  text-strong">12</p>
-                                <p className="text-paragraph-sm text-sub">Expires Aug 21, 2027</p>
-                              </div>
-                           
-                            </div>
+                            ))}
                           </div>
 
                           </div>
@@ -605,9 +630,7 @@ const SettingsModal = () => {
 
                       {/* .........BottomPart....... */}
                         <div className="w-full bg-surface-alpha-light-soft rounded-[16px] border border-line-sub overflow-hidden flex flex-col p-[4px]">
-                          <div className=" px-[16px] pb-[16px] pt-[12px] flex w-full items-center">
-                            <p className="text-paragraph-sm text-sub">Usage history</p>
-                          </div>
+                          <SectionHeader title="Usage history" />
                           <div className="w-full bg-surface-alpha-light-soft rounded-[12px] border border-line-sub  py-[8px] gap-[16px] flex flex-col">
                             {/* Header row */}
                             <div className="grid grid-cols-[1.3fr_0.7fr_1fr_1fr_1.1fr] gap-[16px] items-center pb-[8px] px-[24px] border-b border-line-sub">
@@ -660,9 +683,7 @@ const SettingsModal = () => {
                       <div className="flex flex-col w-full gap-[12px]">
                         {/* .........TopPart....... */}
                         <div className="w-full bg-surface-alpha-light-soft rounded-[16px] border border-line-sub overflow-hidden flex flex-col p-[4px]">
-                          <div className=" px-[16px] pb-[16px] pt-[12px] flex w-full items-center">
-                            <p className="text-paragraph-sm text-sub">Credit breakdown</p>
-                          </div>
+                          <SectionHeader title="Credit breakdown" />
                           <div className="w-full bg-surface-alpha-light-soft rounded-[12px] border border-line-sub px-[16px] pb-[24px] pt-[20px] gap-[24px] flex flex-col">
 
                            <div className="pb-[20px] w-full border-b border-line-sub">
@@ -671,40 +692,17 @@ const SettingsModal = () => {
                               <p className="text-label-lg text-sub">0</p>
                             </div>
                            </div>
-                       
+
                           <div className="w-full flex flex-col gap-[20px] ">
-                            {/* .............PlanCredits............. */}
-                            <div className="w-full flex flex-row">
-                              <div className="w-[210px] flex flex-row items-center gap-[4px]">
-                                <p className="text-paragraph-sm text-sub">Plan credits</p>
-                                <InfoTooltip text="Credits included in your plan and added each month" />
+                            {CREDIT_ROWS_EMPTY.map((row) => (
+                              <div key={row.label} className="w-full flex flex-row">
+                                <div className="w-[210px] flex flex-row items-center gap-[4px]">
+                                  <p className="text-paragraph-sm text-sub">{row.label}</p>
+                                  <InfoTooltip text={row.tooltip} />
+                                </div>
+                                <p className="text-paragraph-sm text-sub">0</p>
                               </div>
-                              <p className="text-paragraph-sm text-sub">0</p>
-                            </div>
-                               {/* .............RollerCredits............. */}
-                              <div className="w-full  flex flex-row">
-                              <div className="w-[210px] flex flex-row items-center gap-[4px]">
-                                <p className="text-paragraph-sm text-sub">Rolled-over credits</p>
-                                <InfoTooltip text="Unused plan credits from previous months. Valid for 90 days." />
-                              </div>
-                              <p className="text-paragraph-sm text-sub">0</p>
-                            </div>
-                               {/* .............FreeCredits............. */}
-                              <div className="w-full flex flex-row">
-                              <div className="w-[210px] flex flex-row items-center gap-[4px]">
-                                <p className="text-paragraph-sm text-sub">Free credits</p>
-                                <InfoTooltip text="Credits received through a free trial or promotion." />
-                              </div>
-                              <p className="text-paragraph-sm text-sub">0</p>
-                            </div>
-                               {/* .............TopUpCredits............. */}
-                              <div className="w-full flex flex-row">
-                              <div className="w-[210px] flex flex-row items-center gap-[4px]">
-                                <p className="text-paragraph-sm text-sub">Top-up credits</p>
-                                <InfoTooltip text="Extra credits purchased separately. Valid for 12 months." />
-                              </div>
-                              <p className="text-paragraph-sm text-sub">0</p>
-                            </div>
+                            ))}
                           </div>
 
                           </div>
@@ -718,9 +716,7 @@ const SettingsModal = () => {
 
                       {/* .........BottomPart....... */}
                         <div className="w-full bg-surface-alpha-light-soft rounded-[16px] border border-line-sub overflow-hidden flex flex-col p-[4px]">
-                          <div className=" px-[16px] pb-[16px] pt-[12px] flex w-full items-center">
-                            <p className="text-paragraph-sm text-sub">Usage history</p>
-                          </div>
+                          <SectionHeader title="Usage history" />
                           <div className="w-full bg-surface-alpha-light-soft rounded-[12px] border border-line-sub px-[24px]  gap-[8px] flex flex-col items-center justify-center h-[200px]">
                            <p className="text-paragraph-sm text-sub">No usage yet</p>
                            <p className="text-paragraph-xs text-soft">Your generated images and credit activity will appear here.</p>
