@@ -126,12 +126,12 @@ export const poseConfig: OptionPickerConfig = {
 
 export const aspectRatioConfig: AspectRatioConfig = {
   key: "aspectRatio",
-  label: "aspect ratio",
-  description: "aspect ratios",
+  label: "an aspect ratio",
+  description: "ratios",
   items: [
-    { id: "1", name: "Classic", ratioLabel: "2:3", ratio: 2 / 3 },
-    { id: "2", name: "Portrait", ratioLabel: "1:1", ratio: 1 },
-    { id: "3", name: "Portrait", ratioLabel: "4:5", ratio: 4 / 5 },
+    { id: "1", name: "Tall", ratioLabel: "2:3", ratio: 2 / 3 },
+    { id: "2", name: "Square", ratioLabel: "1:1", ratio: 1 },
+    { id: "3", name: "Standard", ratioLabel: "4:5", ratio: 4 / 5 },
     { id: "4", name: "Vertical", ratioLabel: "9:16", ratio: 9 / 16 },
     { id: "5", name: "Landscape", ratioLabel: "16:9", ratio: 16 / 9 },
     { id: "6", name: "Portrait", ratioLabel: "3:4", ratio: 3 / 4 },

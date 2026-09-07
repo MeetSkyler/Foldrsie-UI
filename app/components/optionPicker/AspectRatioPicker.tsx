@@ -103,13 +103,13 @@ const AspectRatioPicker = ({ config }: { config: AspectRatioConfig }) => {
   return (
     <div className="w-full h-full pb-[24px] px-[20px] bg-neutral-900 overflow-y-auto no-scrollbar">
       <div className="w-full mt-[24px] rounded-[20px] bg-surface-weak border border-line-sub flex flex-col">
-        <p className="text-label-lg text-strong capitalize px-[20px] pt-[24px] pb-[16px]">Choose a {config.label}</p>
+        <p className="text-label-lg text-strong  px-[20px] pt-[24px] pb-[16px]">Choose {config.label}</p>
 
         {/* This row sticks to the top of the scroll container once the title
             scrolls past it, so only the card grid keeps scrolling under it. */}
         <div className="sticky -top-[2px] z-10 bg-surface-weak px-[20px] py-[12px]">
           <div className="w-full h-[32px] flex flex-row items-center justify-between">
-            <p className="text-label-sm text-white capitalize">All {config.description}</p>
+            <p className="text-label-sm text-white">All {config.description}</p>
             <div className="h-full py-[6px] flex flex-row items-center justify-center gap-[12px]">
               <input
                 type="range"
@@ -141,13 +141,15 @@ const AspectRatioPicker = ({ config }: { config: AspectRatioConfig }) => {
 
           <div ref={gridRef} className="grid gap-[16px] px-[20px] pb-[24px] pt-[16px]" style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}>
             {config.items.map((item, index) => (
+            
               <button
                 key={item.id}
                 onClick={() => handleSelect(item)}
                 style={{ minWidth: MIN_CARD_WIDTH }}
+                
                 className="group aspect-[5/6] relative rounded-[16px] min-[1441px]:rounded-[24px] border border-line-sub bg-surface-weak hover:bg-surface-alpha-light-soft flex flex-col items-center justify-center  cursor-pointer"
               >
-
+                 
                 {selectedId === item.id && (
                   <div className="absolute z-10 top-[12px] flex items-center justify-center gap-[4px] flex-row left-[12px] pl-[4px] pr-[8px] py-[4px] rounded-[6px] bg-surface-light">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" className="text-strong">
@@ -167,7 +169,8 @@ const AspectRatioPicker = ({ config }: { config: AspectRatioConfig }) => {
                       className="object-contain"
                     />
                   </div>
-                  <p className="text-label-sm text-strong text-center">{item.name}</p>
+               
+                  <p className={`text-label-sm text-center ${selectedId===item.id ? "text-strong":" text-sub"}`}>{item.name}</p>
                 </div>
               </button>
             ))}

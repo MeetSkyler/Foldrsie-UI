@@ -4,6 +4,8 @@ import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useOptionSelection } from '@/app/context/option-selection-context';
+import { useGenerations } from '@/app/context/generations-context';
+import Spinner from '@/app/components/Spinner';
 
 const ALL_OPTION_KEYS = ["face", "bodyType", "top", "bottom", "footwear", "pose", "background", "aspectRatio"];
 
@@ -91,6 +93,14 @@ const SideDrawer = () => {
   const [isselected, setisselected] = useState(false)
   const { selections } = useOptionSelection();
   const allOptionsSelected = ALL_OPTION_KEYS.every((k) => k in selections);
+  const { isGenerating, startGeneration } = useGenerations();
+  const ratio = selections.aspectRatio?.ratio ?? 3 / 4;
+
+  function handleGenerateClick() {
+    if (!allOptionsSelected || isGenerating) return;
+    startGeneration(ratio);
+    router.push('/generate');
+  }
 
   // The route can take a beat to actually swap (server round-trip, dev-mode
   // compile, etc). Highlighting the clicked item immediately — instead of
@@ -217,19 +227,33 @@ const SideDrawer = () => {
           {/* ...........Bottom Generate Area......... */}
       <div className="p-[16px] border-t border-l bg-surface-weak border-line-sub w-full h-[80px]">
       <button
-        onClick={() => allOptionsSelected && router.push('/generate?generating=1')}
-        disabled={!allOptionsSelected}
+        onClick={handleGenerateClick}
+        disabled={!allOptionsSelected || isGenerating}
         className='p-btn-righticon-48 flex flex-row items-center justify-center w-full'
       >
-        <p className='text-label-sm px-[4px]'>Generate</p>
+        {isGenerating ? (
+          <>
+            <Spinner size={16} />
+            <p className='text-label-sm px-[4px]'>
+              Generating
+              <span className='loading-dot' style={{ animationDelay: '0s' }}>.</span>
+              <span className='loading-dot' style={{ animationDelay: '0.2s' }}>.</span>
+              <span className='loading-dot' style={{ animationDelay: '0.4s' }}>.</span>
+            </p>
+          </>
+        ) : (
+          <>
+            <p className='text-label-sm px-[4px]'>Generate</p>
 
-        <div className='flex flex-row items-center justify-center gap-[2px]'>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-           <path d="M13.2699 0.12942C13.2616 0.0557573 13.1993 7.58744e-05 13.1251 7.71494e-08C13.051 -7.55636e-05 12.9886 0.0554785 12.9801 0.129124C12.8935 0.880068 12.6676 1.41987 12.2937 1.79374C11.9199 2.16761 11.3801 2.39351 10.6291 2.48013C10.5555 2.48862 10.4999 2.55102 10.5 2.62515C10.5001 2.69928 10.5558 2.76156 10.6294 2.76991C11.3682 2.85359 11.9188 3.07935 12.301 3.45466C12.6823 3.82909 12.9133 4.36934 12.9797 5.11707C12.9864 5.19238 13.0496 5.25008 13.1252 5.25C13.2008 5.24992 13.2638 5.19207 13.2703 5.11674C13.334 4.381 13.5647 3.83011 13.9474 3.44742C14.3301 3.06474 14.881 2.83398 15.6167 2.77029C15.6921 2.76377 15.7499 2.70077 15.75 2.62516C15.7501 2.54956 15.6924 2.48643 15.6171 2.47974C14.8693 2.41332 14.3291 2.18231 13.9547 1.80099C13.5794 1.41877 13.3536 0.868216 13.2699 0.12942Z" fill="currentColor"/>
-           <path d="M7.12262 2.58279C7.10116 2.39338 6.94101 2.2502 6.75038 2.25C6.55975 2.24981 6.39931 2.39266 6.37747 2.58203C6.15475 4.51303 5.57387 5.90109 4.61248 6.86248C3.65109 7.82387 2.26303 8.40475 0.332033 8.62747C0.142659 8.64931 -0.000194306 8.80975 1.98385e-07 9.00038C0.000195106 9.19101 0.143376 9.35116 0.332794 9.37262C2.23255 9.5878 3.64827 10.1683 4.63111 11.1334C5.61166 12.0962 6.20567 13.4854 6.37647 15.4082C6.39367 15.6018 6.55601 15.7502 6.75042 15.75C6.94483 15.7498 7.10684 15.601 7.1236 15.4073C7.28737 13.5154 7.88076 12.0989 8.8648 11.1148C9.84885 10.1308 11.2654 9.53737 13.1573 9.3736C13.351 9.35684 13.4998 9.19483 13.5 9.00042C13.5002 8.80601 13.3518 8.64367 13.1582 8.62647C11.2354 8.45568 9.84624 7.86166 8.88341 6.88111C7.91834 5.89827 7.3378 4.48255 7.12262 2.58279Z" fill="currentColor"/>
-           </svg>
-          <p className='text-label-sm px-[4px]'>24</p>
-        </div>
+            <div className='flex flex-row items-center justify-center gap-[2px]'>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+               <path d="M13.2699 0.12942C13.2616 0.0557573 13.1993 7.58744e-05 13.1251 7.71494e-08C13.051 -7.55636e-05 12.9886 0.0554785 12.9801 0.129124C12.8935 0.880068 12.6676 1.41987 12.2937 1.79374C11.9199 2.16761 11.3801 2.39351 10.6291 2.48013C10.5555 2.48862 10.4999 2.55102 10.5 2.62515C10.5001 2.69928 10.5558 2.76156 10.6294 2.76991C11.3682 2.85359 11.9188 3.07935 12.301 3.45466C12.6823 3.82909 12.9133 4.36934 12.9797 5.11707C12.9864 5.19238 13.0496 5.25008 13.1252 5.25C13.2008 5.24992 13.2638 5.19207 13.2703 5.11674C13.334 4.381 13.5647 3.83011 13.9474 3.44742C14.3301 3.06474 14.881 2.83398 15.6167 2.77029C15.6921 2.76377 15.7499 2.70077 15.75 2.62516C15.7501 2.54956 15.6924 2.48643 15.6171 2.47974C14.8693 2.41332 14.3291 2.18231 13.9547 1.80099C13.5794 1.41877 13.3536 0.868216 13.2699 0.12942Z" fill="currentColor"/>
+               <path d="M7.12262 2.58279C7.10116 2.39338 6.94101 2.2502 6.75038 2.25C6.55975 2.24981 6.39931 2.39266 6.37747 2.58203C6.15475 4.51303 5.57387 5.90109 4.61248 6.86248C3.65109 7.82387 2.26303 8.40475 0.332033 8.62747C0.142659 8.64931 -0.000194306 8.80975 1.98385e-07 9.00038C0.000195106 9.19101 0.143376 9.35116 0.332794 9.37262C2.23255 9.5878 3.64827 10.1683 4.63111 11.1334C5.61166 12.0962 6.20567 13.4854 6.37647 15.4082C6.39367 15.6018 6.55601 15.7502 6.75042 15.75C6.94483 15.7498 7.10684 15.601 7.1236 15.4073C7.28737 13.5154 7.88076 12.0989 8.8648 11.1148C9.84885 10.1308 11.2654 9.53737 13.1573 9.3736C13.351 9.35684 13.4998 9.19483 13.5 9.00042C13.5002 8.80601 13.3518 8.64367 13.1582 8.62647C11.2354 8.45568 9.84624 7.86166 8.88341 6.88111C7.91834 5.89827 7.3378 4.48255 7.12262 2.58279Z" fill="currentColor"/>
+               </svg>
+              <p className='text-label-sm px-[4px]'>24</p>
+            </div>
+          </>
+        )}
       </button>
       </div>
       </div>

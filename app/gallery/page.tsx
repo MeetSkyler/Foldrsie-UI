@@ -2,6 +2,7 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { useGenerations } from '@/app/context/generations-context';
+import MobileGalleryHome from '@/app/components/mobile/MobileGalleryHome';
 
 // Same column-stop approach as the option-picker pages: every zoom stop the
 // slider can land on is guaranteed to look different from its neighbors.
@@ -50,7 +51,8 @@ const Page = () => {
   const viewing = items.find((g) => g.id === fullscreenId);
 
   return (
-    <div className="w-full h-full pb-[24px] px-[20px] bg-neutral-900 overflow-y-auto no-scrollbar">
+    <>
+    <div className="hidden md:block w-full h-full pb-[24px] px-[20px] bg-neutral-900 overflow-y-auto no-scrollbar">
       <div className="w-full mt-[24px] rounded-[20px] bg-surface-weak border border-line-sub flex flex-col">
         <p className="text-label-lg text-strong px-[20px] pt-[24px] pb-[16px]">Gallery</p>
 
@@ -132,6 +134,8 @@ const Page = () => {
         </div>
       )}
     </div>
+    <MobileGalleryHome />
+    </>
   );
 };
 

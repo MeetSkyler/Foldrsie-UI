@@ -1,14 +1,13 @@
 "use client";
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from "motion/react";
 import modalimg from '@/public/modalimg.svg'
-import dummyResult from '@/public/img4.jpg'
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import { useOptionSelection } from '@/app/context/option-selection-context';
-import { useGenerations, GenerationItem } from '@/app/context/generations-context';
+import { useGenerations } from '@/app/context/generations-context';
+import MobileGenerateHome from '@/app/components/mobile/MobileGenerateHome';
 
 const CARD_MAX_H_LARGE = 540; // >= 1441px screens
 const CARD_MAX_H_SMALL = 460; // <= 1440px screens
@@ -95,44 +94,53 @@ function useIsLargeScreen() {
 }
 
 const GenerateContent = () => {
-  const searchParams = useSearchParams();
-  const isGenerating = searchParams.get('generating') === '1';
+  // Actually starting a generation is an explicit action (the sidebar's
+  // "Generate" button / the mobile flow's last step call `startGeneration`
+  // directly) — this page only ever *reads* context state to decide what
+  // to show. It used to key off a `?generating=1` URL param instead, which
+  // meant simply reloading the page (or clicking "View results" from the
+  // toast, which navigates back here) re-ran the "start" effect and kicked
+  // off a brand new generation. Deriving everything from real state avoids
+  // that entirely: a reload just re-renders whatever's actually true.
   const { selections } = useOptionSelection();
-  const { generations, addGeneration } = useGenerations();
+  const { generations, isGenerating } = useGenerations();
   const ratio = selections.aspectRatio?.ratio ?? 3 / 4;
 
-  const [phase, setPhase] = useState<'loading' | 'done'>('loading');
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const isLargeScreen = useIsLargeScreen();
   const windowSize = useWindowSize();
 
+  // Auto-view the newest result once a generation finishes — runs
+  // harmlessly in both mounted instances since it only ever sets each
+  // instance's own local UI state.
+  const prevIsGeneratingRef = useRef(isGenerating);
   useEffect(() => {
-    if (!isGenerating) return;
-    setPhase('loading');
-    // Dummy 3s stand-in for the real generation API — swap the timeout +
-    // dummyResult for the actual request/response once it's wired up.
-    const timer = setTimeout(() => {
-      const newItem: GenerationItem = { id: `gen-${Date.now()}`, image: dummyResult.src, ratio };
-      addGeneration(newItem);
-      setViewingId(newItem.id);
-      setPhase('done');
-    }, 6000);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isGenerating]);
+    if (prevIsGeneratingRef.current && !isGenerating) {
+      const newest = generations[generations.length - 1];
+      if (newest) setViewingId(newest.id);
+    }
+    prevIsGeneratingRef.current = isGenerating;
+  }, [isGenerating, generations]);
 
-  if (!isGenerating) {
+  const viewing = generations.find((g) => g.id === viewingId) ?? generations[generations.length - 1];
+  const phase: 'loading' | 'done' = isGenerating ? 'loading' : 'done';
+  const showIdle = !isGenerating && !viewing;
+
+  if (showIdle) {
     return (
-      <div className='w-full h-full flex items-center justify-center bg-neutral-900'>
-        <div className='relative w-[377px] h-[493px] items-center flex mb-[80px] justify-center'>
-          <Image src={modalimg} alt="Model shot preview" fill className='object-cover' />
-          <div className='absolute h-[76px]  -bottom-[36px] flex flex-col items-center justify-center gap-[8px]'>
-            <p className='text-title-h6 text-strong'>Create your model shot</p>
-            <p className='text-center text-sub text-paragraph-sm'>Select your options from the right to <br /> create your shot.</p>
+      <>
+        <div className='hidden md:flex w-full h-full items-center justify-center bg-neutral-900'>
+          <div className='relative w-[377px] h-[493px] items-center flex mb-[80px] justify-center'>
+            <Image src={modalimg} alt="Model shot preview" fill className='object-cover' />
+            <div className='absolute h-[76px]  -bottom-[36px] flex flex-col items-center justify-center gap-[8px]'>
+              <p className='text-title-h6 text-strong'>Create your model shot</p>
+              <p className='text-center text-sub text-paragraph-sm'>Select your options from the right to <br /> create your shot.</p>
+            </div>
           </div>
         </div>
-      </div>
+        <MobileGenerateHome />
+      </>
     );
   }
 
@@ -143,7 +151,6 @@ const GenerateContent = () => {
   // since an older thumbnail with a different ratio can be clicked back into
   // view without touching the current selection.
   const loadingCard = fitBox(ratio, cardMaxH);
-  const viewing = generations.find((g) => g.id === viewingId) ?? generations[generations.length - 1];
   const doneCard = viewing ? fitBox(viewing.ratio, cardMaxH) : loadingCard;
 
   const total = generations.length;

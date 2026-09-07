@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { inter } from "./fonts";
 import "./globals.css";
@@ -20,6 +20,15 @@ import SettingsModal from "./components/SettingsModal";
 export const metadata: Metadata = {
   title: "Foldrise",
   description: "",
+};
+
+// `viewport-fit=cover` is what makes `env(safe-area-inset-*)` report the
+// device's real notch/home-indicator size instead of always resolving to
+// 0px — without it, every `max(12px, env(safe-area-inset-bottom))` used
+// across the mobile UI silently collapses to a flat 12px on every device,
+// which isn't enough to clear the real gesture bar on notched phones.
+export const viewport: Viewport = {
+  viewportFit: "cover",
 };
 
 export default async function RootLayout({

@@ -4,6 +4,7 @@ import Navbar from "./navbar"
 import SideDrawer from "./sideDrawer"
 import Sidebar from "./sidebar"
 import MobileAppshell from "./mobile/MobileAppshell"
+import GenerationToast from "./GenerationToast"
 
 export default function Appshell({
   children,
@@ -30,7 +31,10 @@ export default function Appshell({
       <div className="flex-1 min-w-0 flex flex-row bg-neutral-900 min-h-0">
 
       {/* ....Main Center Screen Pages.... */}
-       <main className="flex-1 min-w-0 overflow-hidden">{children}</main>
+       <main className="relative flex-1 min-w-0 overflow-hidden">
+         {children}
+         <GenerationToast />
+       </main>
 
        {/* ....Rightbar//Side Drawer.... */}
        {!hideSideDrawer && <SideDrawer/>}
@@ -43,7 +47,7 @@ export default function Appshell({
    </div>
 
    {/* ..........MobileShell.......... (below md) */}
-   <div className="flex md:hidden w-full h-screen overflow-hidden">
+   <div className="flex md:hidden w-full h-dvh overflow-hidden">
      <MobileAppshell>{children}</MobileAppshell>
    </div>
    </>

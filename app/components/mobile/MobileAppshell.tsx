@@ -9,17 +9,17 @@ import Link from 'next/link';
 
 export default function MobileAppshell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="w-full h-screen flex flex-col">
+    <div className="w-full h-dvh flex flex-col">
       {/* ....TopNav..... */}
-      <div className="w-full shrink-0 bg-blue-400">
+      <div className="w-full shrink-0">
         <MobileTopBar />
       </div>
 
       {/* ....Center (pages render here)..... */}
-      <div className="flex-1 min-h-0 overflow-y-auto">{children}</div>
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-none [touch-action:manipulation]">{children}</div>
 
       {/* ....BottomNav..... */}
-      <div className="w-full  shrink-0 bg-green-400">
+      <div className="w-full  shrink-0 ">
         <MobileBottomNav />
       </div>
     </div>

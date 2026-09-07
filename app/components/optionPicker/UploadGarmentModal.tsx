@@ -58,7 +58,7 @@ function UploadSlot({
       />
 
       {state.previewUrl && !state.uploading ? (
-        <div className="relative w-full h-[350px] rounded-[16px]">
+        <div className="relative w-full h-[350px] rounded-[16px] bg-amber-700">
           <div className="absolute inset-0 rounded-[16px] overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={state.previewUrl} alt={meta.title} className="absolute inset-0 w-full h-full object-cover" />
@@ -313,20 +313,22 @@ export default function UploadGarmentModal({
               </div>
             </div>
             <div className="flex flex-row items-center justify-end gap-[12px]">
-              <button
-                onClick={() => setShowDiscardConfirm(false)}
-                className="s-btn-noicon-36 text-label-sm cursor-pointer"
-              >
-                Keep editing
-              </button>
+         
               <button
                 onClick={() => {
                   setShowDiscardConfirm(false);
                   onClose();
                 }}
-                className="p-btn-noicon-36 text-label-sm text-darker cursor-pointer"
+                className="text-label-sm px-[12px] py-[8px] bg-semantic-red-alpha-25 rounded-[8px] flex items-center justify-center transition-all duration-100 ease-out active:scale-[0.98] active:translate-y-px text-semantic-red-200 cursor-pointer"
               >
                 Discard
+              </button>
+
+              <button
+                onClick={() => setShowDiscardConfirm(false)}
+                className="p-btn-noicon-36 transition-all duration-100 ease-out active:scale-[0.98] text-label-sm cursor-pointer"
+              >
+                Keep editing
               </button>
             </div>
           </div>

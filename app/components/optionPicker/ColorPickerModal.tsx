@@ -115,7 +115,7 @@ export default function ColorPickerModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black-90">
-      <div className="bg-surface-weak w-[780px] rounded-[24px] p-[24px] flex flex-col gap-[24px]">
+      <div className="bg-surface-weak w-[calc(100vw-32px)] max-w-[780px] rounded-[24px] p-[24px] flex flex-col gap-[24px]">
         <div className="flex flex-row items-center justify-between">
           <p className="text-label-lg text-strong">Create custom color</p>
           <div

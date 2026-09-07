@@ -778,12 +778,12 @@ const SettingsModal = () => {
                   <div className="w-[20px] h-[20px] shrink-0  flex items-center justify-center">
                     <div
                       onClick={() => setKeepImagesConfirmed((v) => !v)}
-                      className="w-[14px] h-[14px] rounded-[2px] border-strong border-[1.5px] flex items-center justify-center cursor-pointer"
+                      className={`w-[14px] h-[14px] rounded-[2px] border-strong cursor-pointer border-[1.5px] flex items-center justify-center cursor-pointer ${keepImagesConfirmed?"bg-strong":""}`}
                     >
                       {keepImagesConfirmed && (
-                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="text-sub">
-                          <path d="M2 5L4 7L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
+                       <svg  width="9" height="7" viewBox="0 0 9 7" fill="none">
+                       <path d="M0.75 3.12849L3.12849 5.50699L7.88548 0.75" stroke="#0F1113" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                       </svg>
                       )}
                     </div>
                   </div>
@@ -794,12 +794,12 @@ const SettingsModal = () => {
                   <div className="w-[20px] h-[20px] shrink-0  flex items-center justify-center">
                     <div
                       onClick={() => setUnderstandPermanentConfirmed((v) => !v)}
-                      className="w-[14px] h-[14px] rounded-[2px] border-strong border-[1.5px] flex items-center justify-center cursor-pointer"
+                      className={`w-[14px] h-[14px] rounded-[2px] border-strong border-[1.5px] cursor-pointer flex items-center justify-center cursor-pointer ${understandPermanentConfirmed?"bg-strong":""}`}
                     >
                       {understandPermanentConfirmed && (
-                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" className="text-sub">
-                          <path d="M2 5L4 7L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
+                       <svg  width="9" height="7" viewBox="0 0 9 7" fill="none">
+                       <path d="M0.75 3.12849L3.12849 5.50699L7.88548 0.75" stroke="#0F1113" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                       </svg>
                       )}
                     </div>
                   </div>
