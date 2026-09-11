@@ -14,6 +14,8 @@ import { useOptionSelection } from "@/app/context/option-selection-context";
 import type { OptionPickerConfig, OptionPickerItem } from "@/app/components/optionPicker/OptionPicker";
 import SourceFilterDropdown, { SourceFilter } from "@/app/components/optionPicker/SourceFilterDropdown";
 import MobileColorPickerSheet from "./MobileColorPickerSheet";
+import PhotoGuideSheet from "./PhotoGuideSheet";
+import { PHOTO_GUIDES } from "@/app/config/photoGuideConfig";
 
 const AUTO_ID = "auto";
 
@@ -56,6 +58,8 @@ export default function MobileOptionStep({
       ? AUTO_ID
       : selections[config.key]!.id;
   const [showColorModal, setShowColorModal] = useState(false);
+  const [showGuideSheet, setShowGuideSheet] = useState(false);
+  const guideData = PHOTO_GUIDES[config.key];
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const visibleItems = items.filter((item) => {
@@ -124,15 +128,15 @@ export default function MobileOptionStep({
             </button>
             {config.uploadNote ? (
               <p className="text-paragraph-xs text-sub text-center whitespace-pre-line">{config.uploadNote}</p>
-            ) : (
-              <p className="text-label-xs text-sub text-center underline underline-offset-3">Photo guide</p>
-            )}
+            ) : guideData ? (
+              <p onClick={() => setShowGuideSheet(true)} className="text-label-xs text-sub text-center underline underline-offset-3 cursor-pointer">Photo guide</p>
+            ) : null}
           </div>
         </>
       )}
 
       <div className="flex flex-col gap-[24px]">
-        <div className="flex flex-row items-center justify-between h-[32px] bg-surface-weak">
+        <div className="flex flex-row items-center justify-between h-[32px] ">
           <p className="text-label-sm text-strong">All {config.description}</p>
           <SourceFilterDropdown value={sourceFilter} onChange={setSourceFilter} />
         </div>
@@ -196,6 +200,7 @@ export default function MobileOptionStep({
       </div>
 
       {showColorModal && <MobileColorPickerSheet onClose={() => setShowColorModal(false)} onAdd={handleAddColor} />}
+      {guideData && <PhotoGuideSheet isOpen={showGuideSheet} onClose={() => setShowGuideSheet(false)} data={guideData} />}
     </div>
   );
 }

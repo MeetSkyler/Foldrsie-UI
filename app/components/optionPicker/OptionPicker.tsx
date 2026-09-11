@@ -7,6 +7,8 @@ import ColorPickerModal from "./ColorPickerModal";
 import { useMaxFitColumns, capAndDedupe } from "./useResponsiveColumns";
 import { useIsLargeScreen } from "./useIsLargeScreen";
 import { useZoom } from "@/app/context/zoom-context";
+import PhotoGuideModal from "@/app/components/PhotoGuideModal";
+import { PHOTO_GUIDES } from "@/app/config/photoGuideConfig";
 
 export type OptionPickerItem = {
   id: string;
@@ -85,6 +87,8 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
   const [selectedId, setSelectedId] = useState<string | null>(() => selections[config.key]?.id ?? null);
   const [items, setItems] = useState(config.items);
   const [showColorModal, setShowColorModal] = useState(false);
+  const [showGuideModal, setShowGuideModal] = useState(false);
+  const guideData = PHOTO_GUIDES[config.key];
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const gridRef = useRef<HTMLDivElement | null>(null);
   const maxFitColumns = useMaxFitColumns(gridRef, MIN_CARD_WIDTH);
@@ -312,7 +316,15 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
                     </div>
                     <p className="text-label-sm text-strong text-center whitespace-nowrap">{config.uploadLabel ?? `Upload new ${config.label}`}</p>
                     </div>
-                    <p className="absolute left-0  right-0 text-label-xs text-sub text-center underline underline-offset-3 hover:text-strong" style={{ bottom: FIRST_CARD_GUIDE_BOTTOM }}>Photo guide</p>
+                    {guideData && (
+                      <p
+                        onClick={(e) => { e.stopPropagation(); setShowGuideModal(true); }}
+                        className="absolute left-0  right-0 text-label-xs text-sub text-center underline underline-offset-3 hover:text-strong"
+                        style={{ bottom: FIRST_CARD_GUIDE_BOTTOM }}
+                      >
+                        Photo guide
+                      </p>
+                    )}
                   </>
                 )}
               </button>
@@ -429,6 +441,9 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
 
       {showColorModal && (
         <ColorPickerModal onClose={() => setShowColorModal(false)} onAdd={handleAddColor} />
+      )}
+      {guideData && (
+        <PhotoGuideModal isOpen={showGuideModal} onClose={() => setShowGuideModal(false)} data={guideData} />
       )}
     </div>
   );

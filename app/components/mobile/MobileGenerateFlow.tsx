@@ -112,8 +112,8 @@ export default function MobileGenerateFlow({ onClose }: { onClose: () => void })
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col md:hidden bg-neutral-900">
-      <div className="w-full bg-surface-weak flex flex-col gap-[24px] pb-[8px] px-[16px] pt-[12px] shrink-0">
+    <div className="fixed inset-0 z-50 flex flex-col md:hidden bg-surface-dark">
+      <div className="w-full bg-surface-dark flex flex-col gap-[24px] pb-[8px] px-[16px] pt-[12px] shrink-0">
         <div className="flex flex-row items-center justify-between ">
           <p className="text-label-lg text-strong">Choose a {step.label}</p>
           <div onClick={onClose} className="w-[32px] h-[32px] rounded-full bg-surface-soft flex items-center justify-center cursor-pointer shrink-0">
@@ -128,11 +128,11 @@ export default function MobileGenerateFlow({ onClose }: { onClose: () => void })
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar touch-manipulation overscroll-none bg-surface-weak">
+      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar touch-manipulation overscroll-none bg-surface-dark">
         {renderStep()}
       </div>
 
-      <div className="shrink-0 px-[16px] pt-[12px] pb-[max(12px,env(safe-area-inset-bottom))] flex flex-row gap-[10px] bg-surface-weak">
+      <div className="shrink-0 px-[16px] pt-[12px] pb-[max(12px,env(safe-area-inset-bottom))] flex flex-row gap-[10px] bg-surface-dark">
         {!isFirstStep && (
           <button onClick={handleBack} className="s-btn-noicon-48 flex-1 text-label-sm flex items-center justify-center cursor-pointer">
             Back

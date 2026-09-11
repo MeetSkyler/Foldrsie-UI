@@ -9,7 +9,7 @@
 // only armed from the handle (`dragListener={false}` + `dragControls`) so
 // dragging inside the picker never gets hijacked into a sheet-dismiss.
 import { useEffect, useRef, useState } from "react";
-import { motion, useDragControls, type PanInfo } from "motion/react";
+import { AnimatePresence, motion, useDragControls, type PanInfo } from "motion/react";
 
 function hsvToHex(h: number, s: number, v: number): string {
   s /= 100;
@@ -61,6 +61,10 @@ function fallbackCopy(text: string) {
 
 const DRAG_DISMISS_DISTANCE = 120;
 const DRAG_DISMISS_VELOCITY = 500;
+// A tighter, less floaty spring than a default one — quick to settle with
+// just a hint of overshoot, closer to iOS's own sheet-presentation feel
+// than a long, bouncy spring would be.
+const SHEET_SPRING = { type: "spring" as const, stiffness: 380, damping: 38, mass: 0.9 };
 
 export default function MobileColorPickerSheet({
   onClose,
@@ -74,6 +78,14 @@ export default function MobileColorPickerSheet({
   const [val, setVal] = useState(85);
   const [hexText, setHexText] = useState(() => hsvToHex(0, 12, 85));
   const [copied, setCopied] = useState(false);
+  // Plays the sheet's exit animation before actually unmounting — the
+  // parent's own onClose (which removes this component from the tree) only
+  // fires once AnimatePresence reports that animation finished.
+  const [isClosing, setIsClosing] = useState(false);
+
+  function requestClose() {
+    setIsClosing(true);
+  }
 
   const squareRef = useRef<HTMLDivElement | null>(null);
   const hueRef = useRef<HTMLDivElement | null>(null);
@@ -175,13 +187,22 @@ export default function MobileColorPickerSheet({
 
   function handleDragEnd(_: unknown, info: PanInfo) {
     if (info.offset.y > DRAG_DISMISS_DISTANCE || info.velocity.y > DRAG_DISMISS_VELOCITY) {
-      onClose();
+      requestClose();
     }
   }
 
   return (
+    <AnimatePresence onExitComplete={onClose}>
+      {!isClosing && (
     <div className="fixed inset-0 z-[60] flex flex-col justify-end md:hidden">
-      <div onClick={onClose} className="absolute inset-0 bg-black-90" />
+      <motion.div
+        onClick={requestClose}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className="absolute inset-0 bg-black-90"
+      />
 
       <motion.div
         drag="y"
@@ -192,7 +213,8 @@ export default function MobileColorPickerSheet({
         onDragEnd={handleDragEnd}
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
-        transition={{ type: "spring", damping: 32, stiffness: 300 }}
+        exit={{ y: "100%" }}
+        transition={SHEET_SPRING}
         className="relative w-full h-[calc(100dvh-80px)] bg-surface-weak rounded-t-[24px] flex flex-col"
       >
         {/* Fixed header — only this area can start a sheet-drag, so the
@@ -207,7 +229,7 @@ export default function MobileColorPickerSheet({
           <div className="flex flex-row items-start justify-between">
             <p className="text-label-md text-strong pt-[11px]">Create custom color</p>
           
-            <div onClick={onClose} className="w-[32px] h-[32px] rounded-full bg-surface-soft flex items-center justify-center cursor-pointer shrink-0">
+            <div onClick={requestClose} className="w-[32px] h-[32px] rounded-full bg-surface-soft flex items-center justify-center cursor-pointer shrink-0">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path d="M15 5L5 15M5 5L15 15" stroke="#8C8E91" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -310,7 +332,7 @@ export default function MobileColorPickerSheet({
           className="shrink-0 flex flex-row items-center gap-[12px] pt-[12px] px-[16px]"
           style={{ paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}
         >
-          <button onClick={onClose} className="s-btn-noicon-48 flex-1 text-label-sm flex items-center justify-center cursor-pointer">
+          <button onClick={requestClose} className="s-btn-noicon-48 flex-1 text-label-sm flex items-center justify-center cursor-pointer">
             Cancel
           </button>
           <button
@@ -322,5 +344,7 @@ export default function MobileColorPickerSheet({
         </div>
       </motion.div>
     </div>
+      )}
+    </AnimatePresence>
   );
 }

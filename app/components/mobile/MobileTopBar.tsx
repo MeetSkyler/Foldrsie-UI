@@ -1,10 +1,12 @@
 // ......MobileTopBar........//
-// Dummy content for now — real logo/links/buttons will replace this.
 import Link from 'next/link';
+import { useAuthModal } from '@/app/context/auth-modal-context';
 
 export default function MobileTopBar() {
+  const { openLogin } = useAuthModal();
+
   return (
-    <div className="w-full h-full flex flex-row items-center justify-between px-[16px] pt-[12px]">
+    <div className="w-full h-full flex flex-row items-center justify-between px-[16px] pt-[12px] bg-surface-dark">
     <Link href="/generate" className="flex flex-row gap-[8px]  items-center">
        <svg  width="32" height="32" viewBox="0 0 32 32" fill="none">
        <rect width="32" height="32" rx="6.4" fill="white"/>
@@ -15,9 +17,9 @@ export default function MobileTopBar() {
     </Link>
     <div className=' flex flex-row gap-[8px] items-center'>
       <Link href="/pricing" className=" flex items-center justify-center text-label-sm s-btn-noicon-36 "><p className='px-[4px]'>Pricing</p></Link>
-      <Link href="/try-for-free" className="p-btn-noicon-36  text-label-sm  flex items-center justify-center">
+      <button onClick={openLogin} className="p-btn-noicon-36  text-label-sm  flex items-center justify-center cursor-pointer">
       <p className='px-[4px]'> Try for free</p>
-       </Link>
+       </button>
     </div>
     </div>
   );

@@ -7,6 +7,8 @@ import SourceFilterDropdown, { SourceFilter } from "./SourceFilterDropdown";
 import { useMaxFitColumns, capAndDedupe } from "./useResponsiveColumns";
 import { useIsLargeScreen } from "./useIsLargeScreen";
 import { useZoom } from "@/app/context/zoom-context";
+import PhotoGuideModal from "@/app/components/PhotoGuideModal";
+import { PHOTO_GUIDES } from "@/app/config/photoGuideConfig";
 
 export type GarmentItem = {
   id: string;
@@ -123,6 +125,8 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
   const [selectedId, setSelectedId] = useState<string | null>(() => selections[config.key]?.id ?? null);
   const [items, setItems] = useState(config.items);
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showGuideModal, setShowGuideModal] = useState(false);
+  const guideData = PHOTO_GUIDES[config.key];
   // Set when the upload modal was reopened from a card missing an angle
   // (instead of the "Upload new {label}" first card) — the save handler
   // then updates this item in place instead of creating a new one.
@@ -298,7 +302,15 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                 </div>
                 <p className="text-label-sm text-strong text-center whitespace-nowrap">Upload new {config.label}</p>
               </div>
-              <p className="absolute left-0 right-0 text-label-xs text-sub text-center underline underline-offset-3 hover:text-strong" style={{ bottom: FIRST_CARD_GUIDE_BOTTOM }}>Photo guide</p>
+              {guideData && (
+                <p
+                  onClick={(e) => { e.stopPropagation(); setShowGuideModal(true); }}
+                  className="absolute left-0 right-0 text-label-xs text-sub text-center underline underline-offset-3 hover:text-strong"
+                  style={{ bottom: FIRST_CARD_GUIDE_BOTTOM }}
+                >
+                  Photo guide
+                </p>
+              )}
             </button>
 
             {/* Other cards — front image as the main photo, back + closeup as small
@@ -394,6 +406,9 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
           onClose={closeUploadModal}
           onAdd={handleSaveGarment}
         />
+      )}
+      {guideData && (
+        <PhotoGuideModal isOpen={showGuideModal} onClose={() => setShowGuideModal(false)} data={guideData} />
       )}
     </div>
   );

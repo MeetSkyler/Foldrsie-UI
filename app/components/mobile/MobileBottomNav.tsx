@@ -81,7 +81,7 @@ export default function MobileBottomNav() {
   const pathname = usePathname();
 
   return (
-    <div className="w-full pb-[max(8px,env(safe-area-inset-bottom))] px-[16px] flex flex-row items-center justify-around">
+    <div className="w-full pb-[max(12px,env(safe-area-inset-bottom))] px-[16px] flex flex-row items-center pt-[12px] bg-surface-dark justify-around">
       {NAV_ITEMS.map((item) => {
         const isActive = pathname === item.href || (item.activePaths?.includes(pathname) ?? false);
         const color = isActive ? "var(--color-strong)" : "#8C8E91";

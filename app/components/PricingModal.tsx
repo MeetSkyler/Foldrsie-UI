@@ -42,7 +42,7 @@ function OdometerDigit({ digit, rowHeight }: { digit: number; rowHeight: number 
 // decimal point) stays static since there's nothing to roll between two
 // dots, and if decimals appear/disappear entirely between the monthly and
 // annual state, those reels simply mount/unmount rather than rolling.
-function OdometerNumber({ value, rowHeight }: { value: number; rowHeight: number }) {
+export function OdometerNumber({ value, rowHeight }: { value: number; rowHeight: number }) {
   const formatted = Number.isInteger(value) ? value.toString() : value.toFixed(2);
   return (
     <span className="inline-flex tabular-nums" style={{ height: rowHeight }}>
@@ -61,7 +61,7 @@ function OdometerNumber({ value, rowHeight }: { value: number; rowHeight: number
 
 // Array-driven so adding a new question later is just one more object here —
 // nothing else in the accordion below needs to change.
-const FAQ_ITEMS: { question: string; answer: string }[] = [
+export const FAQ_ITEMS: { question: string; answer: string }[] = [
   {
     question: "What is an image credit?",
     answer: "One credit creates one standard 2K image. Selected 4K poses use 2 credits.",
@@ -96,14 +96,14 @@ const FAQ_ITEMS: { question: string; answer: string }[] = [
   },
 ];
 
-type BillingCycle = "monthly" | "annual";
+export type BillingCycle = "monthly" | "annual";
 
-const BILLING_OPTIONS: { key: BillingCycle; label: string; badge?: string }[] = [
+export const BILLING_OPTIONS: { key: BillingCycle; label: string; badge?: string }[] = [
   { key: "monthly", label: "Monthly" },
   { key: "annual", label: "Annually", badge: "Save 17%" },
 ];
 
-type BillingData = {
+export type BillingData = {
   price: number;
   perImage: number;
   // Only set for the annual cycle.
@@ -111,7 +111,7 @@ type BillingData = {
   saveTotal?: number;
 };
 
-type PlanTier = {
+export type PlanTier = {
   id: string;
   name: string;
   description: string;
@@ -125,7 +125,7 @@ type PlanTier = {
   annual: BillingData;
 };
 
-const PLANS: PlanTier[] = [
+export const PLANS: PlanTier[] = [
   {
     id: "starter",
     name: "Starter",

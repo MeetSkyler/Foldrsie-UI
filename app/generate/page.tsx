@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useOptionSelection } from '@/app/context/option-selection-context';
 import { useGenerations } from '@/app/context/generations-context';
 import MobileGenerateHome from '@/app/components/mobile/MobileGenerateHome';
+import MobileGenerationScreen from '@/app/components/mobile/MobileGenerationScreen';
 
 const CARD_MAX_H_LARGE = 540; // >= 1441px screens
 const CARD_MAX_H_SMALL = 460; // <= 1440px screens
@@ -103,11 +104,18 @@ const GenerateContent = () => {
   // off a brand new generation. Deriving everything from real state avoids
   // that entirely: a reload just re-renders whatever's actually true.
   const { selections } = useOptionSelection();
-  const { generations, isGenerating } = useGenerations();
+  const { generations, isGenerating, markToastViewed } = useGenerations();
   const ratio = selections.aspectRatio?.ratio ?? 3 / 4;
 
   const [viewingId, setViewingId] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  // Mobile-only: closing the "Image generation" screen's X should drop
+  // back to the idle home view even though a generation may still be
+  // running in the background (it keeps going regardless — this only
+  // hides the big screen for THIS visit). Reset whenever a fresh
+  // generation starts so the next one shows the big screen again instead
+  // of staying hidden from a stale dismiss.
+  const [mobileScreenDismissed, setMobileScreenDismissed] = useState(false);
   const isLargeScreen = useIsLargeScreen();
   const windowSize = useWindowSize();
 
@@ -116,6 +124,21 @@ const GenerateContent = () => {
   // instance's own local UI state.
   const prevIsGeneratingRef = useRef(isGenerating);
   useEffect(() => {
+    // Clear the moment a NEW generation starts (not when it finishes) —
+    // this whole card unmounts during the loading phase and remounts once
+    // it's done, but `viewingId` is local state that survives that
+    // remount. Left pointing at whatever was being viewed before, the
+    // freshly-mounted card would first paint at that old item's size,
+    // then jump to the new item once the effect below updates it — and
+    // since the card is already mounted by then, Framer smoothly
+    // *animates* that size change, which reads as an unwanted scale-in on
+    // every generation after the first. Clearing it here means the `??`
+    // fallback to the newest item is already correct on the very first
+    // paint, every time — no stale-then-corrected jump to animate.
+    if (!prevIsGeneratingRef.current && isGenerating) {
+      setViewingId(null);
+      setMobileScreenDismissed(false);
+    }
     if (prevIsGeneratingRef.current && !isGenerating) {
       const newest = generations[generations.length - 1];
       if (newest) setViewingId(newest.id);
@@ -126,6 +149,14 @@ const GenerateContent = () => {
   const viewing = generations.find((g) => g.id === viewingId) ?? generations[generations.length - 1];
   const phase: 'loading' | 'done' = isGenerating ? 'loading' : 'done';
   const showIdle = !isGenerating && !viewing;
+
+  // The user is looking at a finished result right now — on this page,
+  // whether they waited for it or came back to it later — so the floating
+  // toast shouldn't bother them with it again on other pages.
+  useEffect(() => {
+    if (phase === 'done' && viewing) markToastViewed();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, viewing?.id]);
 
   if (showIdle) {
     return (
@@ -160,7 +191,20 @@ const GenerateContent = () => {
   const latest = generations[total - 1];
 
   return (
-    <div className='w-full h-full flex flex-col items-center justify-center bg-neutral-900 gap-[24px]'>
+    <>
+    {mobileScreenDismissed ? (
+      <MobileGenerateHome />
+    ) : (
+      <MobileGenerationScreen
+        phase={phase}
+        viewing={viewing}
+        generations={generations}
+        ratio={ratio}
+        onSelectViewing={setViewingId}
+        onClose={() => setMobileScreenDismissed(true)}
+      />
+    )}
+    <div className='hidden md:flex w-full h-full flex-col items-center justify-center bg-neutral-900 gap-[24px]'>
       {phase === 'loading' && (
         <div
           style={{ width: loadingCard.width, height: loadingCard.height }}
@@ -313,6 +357,7 @@ const GenerateContent = () => {
         document.body
       )}
     </div>
+    </>
   )
 }
 

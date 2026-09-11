@@ -7,16 +7,7 @@
 // of it. Desktop only for now; mobile gets its own treatment later.
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useGenerations, type GenerationToastStatus } from "@/app/context/generations-context";
-import dummyResult from "@/public/img4.jpg";
-
-// ---- TEMP DEBUG SWITCH ----
-// Set to "error" or "offline" to preview that state without wiring a real
-// trigger — flip back to null to resume the normal flow. Remove this whole
-// block (and the `?? activeToast` fallback below) once those states have
-// a real trigger.
-const DEBUG_FORCE_STATUS: GenerationToastStatus | null = null;
-// ---- END TEMP DEBUG SWITCH ----
+import { useGenerations } from "@/app/context/generations-context";
 
 const THUMB_HEIGHT = 58;
 
@@ -30,13 +21,11 @@ const COPY = {
 export default function GenerationToast() {
   const pathname = usePathname();
   const router = useRouter();
-  const { activeToast: realToast, dismissToast } = useGenerations();
-  // TEMP: see DEBUG_FORCE_STATUS above — falls back to the real toast when null.
-  const activeToast = DEBUG_FORCE_STATUS
-    ? { id: "debug", ratio: 3 / 4, status: DEBUG_FORCE_STATUS, image: dummyResult.src }
-    : realToast;
+  const { activeToast, dismissToast } = useGenerations();
 
   if (!activeToast || pathname === "/generate") return null;
+  // The user already saw this result on /generate — nothing new to surface.
+  if (activeToast.status === "done" && activeToast.viewed) return null;
 
   const thumbWidth = THUMB_HEIGHT * activeToast.ratio;
   const copy = COPY[activeToast.status];
@@ -44,8 +33,7 @@ export default function GenerationToast() {
   return (
     <div className="hidden md:flex absolute inset-x-0 bottom-[16px] justify-center px-[16px] z-40 pointer-events-none">
       <div
-        className="pointer-events-auto relative flex flex-row items-center justify-between gap-[12px] bg-surface-weak w-[480px] border border-line-strong rounded-[16px] py-[12px] pl-[12px] pr-[20px]"
-        style={{ boxShadow: "0 12px 24px -8px rgba(0, 0, 0, 0.4)" }}
+        className="pointer-events-auto relative flex flex-row items-center justify-between  bg-surface-weak w-[480px] border border-line-strong rounded-[16px] py-[12px] pl-[12px] pr-[20px]"
       >
 
      {/* .......Block1..... */}
@@ -96,7 +84,7 @@ export default function GenerationToast() {
           onClick={() => router.push("/generate")}
           className={`${activeToast.status === "loading" ? "s-btn-noicon-32 " : "p-btn-noicon-32"} text-label-sm shrink-0 items-center flex justify-center whitespace-nowrap cursor-pointer transition-all duration-200 ease-out active:scale-[0.98] active:translate-y-px`}
         >
-          {copy.action.label}
+          <p className={copy.action.className}>{copy.action.label}</p>
         </button>
 
 

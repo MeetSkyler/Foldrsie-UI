@@ -16,7 +16,7 @@ export default function MobileGenerateHome() {
   }
 
   return (
-    <div className='flex md:hidden w-full h-full items-center justify-center bg-neutral-900'>
+    <div className='flex md:hidden w-full h-full items-center justify-center bg-surface-dark'>
       <div className='relative w-full h-[493px] items-center  flex mb-[80px] justify-center '>
         <Image src={modalimg} alt="Model shot preview" fill className='object-cover scale-[0.90] overflow-visible'  />
 

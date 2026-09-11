@@ -6,7 +6,7 @@
 // drag handle, and can be dragged down (with elastic resistance) to dismiss
 // instead of desktop's centered dialog.
 import { useEffect, useRef, useState } from "react";
-import { motion, type PanInfo } from "motion/react";
+import { AnimatePresence, motion, type PanInfo } from "motion/react";
 
 export type GarmentUploadResult = {
   front?: string;
@@ -138,6 +138,10 @@ function slotFromInitial(url: string | undefined): SlotState {
 // dismisses it — matching the standard iOS sheet "flick to dismiss" feel.
 const DRAG_DISMISS_DISTANCE = 120;
 const DRAG_DISMISS_VELOCITY = 500;
+// A tighter, less floaty spring than a default one — quick to settle with
+// just a hint of overshoot, closer to iOS's own sheet-presentation feel
+// than a long, bouncy spring would be.
+const SHEET_SPRING = { type: "spring" as const, stiffness: 380, damping: 38, mass: 0.9 };
 
 export default function MobileGarmentUploadSheet({
   label,
@@ -156,6 +160,10 @@ export default function MobileGarmentUploadSheet({
     closeup: slotFromInitial(initial?.closeup),
   });
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
+  // Plays the sheet's exit animation before actually unmounting — the
+  // parent's own onClose (which removes this component from the tree) only
+  // fires once AnimatePresence reports that animation finished.
+  const [isClosing, setIsClosing] = useState(false);
   const timersRef = useRef<Record<SlotKey, ReturnType<typeof setInterval> | null>>({
     front: null,
     back: null,
@@ -211,7 +219,7 @@ export default function MobileGarmentUploadSheet({
     if (hasAnyImage) {
       setShowDiscardConfirm(true);
     } else {
-      onClose();
+      setIsClosing(true);
     }
   }
 
@@ -231,8 +239,17 @@ export default function MobileGarmentUploadSheet({
   }
 
   return (
+    <AnimatePresence onExitComplete={onClose}>
+      {!isClosing && (
     <div className="fixed inset-0 z-[60] flex flex-col justify-end md:hidden">
-      <div onClick={requestClose} className="absolute inset-0 bg-black-90" />
+      <motion.div
+        onClick={requestClose}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className="absolute inset-0 bg-black-90"
+      />
 
       <motion.div
         drag="y"
@@ -241,7 +258,8 @@ export default function MobileGarmentUploadSheet({
         onDragEnd={handleDragEnd}
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
-        transition={{ type: "spring", damping: 32, stiffness: 300 }}
+        exit={{ y: "100%" }}
+        transition={SHEET_SPRING}
         className="relative w-full h-[calc(100dvh-80px)] bg-surface-weak rounded-t-[24px] flex flex-col"
       >
       {/* Fixed header — drag handle + title never scroll away. */}
@@ -312,7 +330,7 @@ export default function MobileGarmentUploadSheet({
               <button
                 onClick={() => {
                   setShowDiscardConfirm(false);
-                  onClose();
+                  setIsClosing(true);
                 }}
                 className="text-label-sm w-full px-[12px] py-[8px] bg-semantic-red-alpha-25 rounded-[8px] flex items-center justify-center active:scale-[0.98] text-semantic-red-200 cursor-pointer"
               >
@@ -326,5 +344,7 @@ export default function MobileGarmentUploadSheet({
         </div>
       )}
     </div>
+      )}
+    </AnimatePresence>
   );
 }

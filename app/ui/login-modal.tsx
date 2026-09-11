@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useAuthModal } from "@/app/context/auth-modal-context";
 import { LoginForm } from "./login-form";
 import SuccessPortion from "./successPortion";
+import MobileLoginForm from "@/app/components/mobile/MobileLoginForm";
 import img1 from "@/public/img1.jpg";
 import img3 from "@/public/img3.jpg";
 import img4 from "@/public/img4.jpg";
@@ -41,18 +42,27 @@ export function LoginModal() {
       </div>
 
       {isLoginOpen && (
-        <div
-          onClick={closeLogin}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black-90"
-        >
-          <div onClick={(e) => e.stopPropagation()}>
-            {showSuccess ? (
-              <SuccessPortion />
-            ) : (
-              <LoginForm onSuccess={() => setShowSuccess(true)} />
-            )}
+        <>
+          <div
+            onClick={closeLogin}
+            className="hidden md:flex fixed inset-0 z-50 items-center justify-center bg-black-90"
+          >
+            <div onClick={(e) => e.stopPropagation()}>
+              {showSuccess ? (
+                <SuccessPortion />
+              ) : (
+                <LoginForm onSuccess={() => setShowSuccess(true)} />
+              )}
+            </div>
           </div>
-        </div>
+
+          {/* Mobile: full-screen takeover instead of a centered dialog —
+              MobileLoginForm owns its own login/verify/success steps, so no
+              showSuccess wiring is needed here. */}
+          <div className="flex md:hidden fixed inset-0 z-50 bg-surface-weak">
+            <MobileLoginForm />
+          </div>
+        </>
       )}
     </>
   );

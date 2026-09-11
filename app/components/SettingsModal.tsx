@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useSettingsModal } from "@/app/context/settings-modal-context";
+import { useAuthModal } from "@/app/context/auth-modal-context";
 import Image from 'next/image';
 import profile from '@/public/Profilesimple.svg'
 import usageThumb1 from '@/public/img1.jpg'
@@ -213,6 +214,8 @@ function useViewportHeight() {
 
 const SettingsModal = () => {
   const { isSettingsOpen, closeSettings } = useSettingsModal();
+  const { openLogin } = useAuthModal();
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isTopHovered, setIsTopHovered] = useState(false);
   const viewportHeight = useViewportHeight();
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
@@ -242,7 +245,13 @@ const SettingsModal = () => {
       setUnderstandPermanentConfirmed(false);
     }
   }, [isDeleteConfirmOpen]);
-  const [activeTab, setActiveTab] = useState<(typeof SETTINGS_TABS)[number]["id"] | "logout">("account");
+  const [activeTab, setActiveTab] = useState<(typeof SETTINGS_TABS)[number]["id"]>("account");
+
+  function handleConfirmLogout() {
+    setIsLogoutConfirmOpen(false);
+    closeSettings();
+    openLogin();
+  }
   const [savedName, setSavedName] = useState("Aqib Javed");
   const [fullName, setFullName] = useState(savedName);
   const isSaveDisabled = fullName.trim() === "" || fullName === savedName;
@@ -300,7 +309,7 @@ const SettingsModal = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 1 }}
           transition={{ duration: 0.1, ease: "easeOut" }}
-          className={`fixed inset-0 z-50 flex flex-col justify-end items-center pt-[46px] transition-colors duration-300 ${isDeleteConfirmOpen || isExtraCreditsOpen ? "bg-black-40" : "bg-black-90"}`}
+          className={`fixed inset-0 z-50 flex flex-col justify-end items-center pt-[46px] transition-colors duration-300 ${isDeleteConfirmOpen || isExtraCreditsOpen || isLogoutConfirmOpen ? "bg-black-40" : "bg-black-90"}`}
         >
           {/* Hovering this top strip of exposed backdrop hints that it closes
               the modal, and nudges the panel down a touch so the hint reads
@@ -368,13 +377,13 @@ const SettingsModal = () => {
                   {/* .............bottomlinks......... */}
                   <div className="w-full pb-[16px] px-[16px] ">
                    <div
-                     onClick={() => setActiveTab("logout")}
-                     className={`w-full px-[10px] py-[8px] cursor-pointer group flex flex-row gap-[8px] items-center text-paragraph-sm rounded-[10px] ${activeTab === "logout" ? "bg-surface-soft" : " hover:bg-surface-alpha-light-soft"}`}
+                     onClick={() => setIsLogoutConfirmOpen(true)}
+                     className="w-full px-[10px] py-[8px] cursor-pointer group flex flex-row gap-[8px] items-center text-paragraph-sm rounded-[10px] hover:bg-surface-alpha-light-soft"
                    >
-                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className={`shrink-0 ${activeTab === "logout" ? "text-strong" : "text-sub group-hover:text-strong"}`}>
+                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="shrink-0 text-sub group-hover:text-strong">
                      <path d="M8.33333 6.66536V4.9987C8.33333 4.55667 8.50893 4.13275 8.82149 3.82019C9.13405 3.50763 9.55797 3.33203 10 3.33203H15.8333C16.2754 3.33203 16.6993 3.50763 17.0118 3.82019C17.3244 4.13275 17.5 4.55667 17.5 4.9987V14.9987C17.5 15.4407 17.3244 15.8646 17.0118 16.1772C16.6993 16.4898 16.2754 16.6654 15.8333 16.6654H10C9.55797 16.6654 9.13405 16.4898 8.82149 16.1772C8.50893 15.8646 8.33333 15.4407 8.33333 14.9987V13.332M12.5 9.9987H2.5M5 12.4987L2.5 9.9987L5 7.4987" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                   <p className={activeTab === "logout" ? "text-strong" : "text-sub group-hover:text-strong"}>Logout</p>
+                   <p className="text-sub group-hover:text-strong">Logout</p>
                    </div>
 
                   </div>
@@ -730,13 +739,6 @@ const SettingsModal = () => {
                   </div>
                 
                 )}
-
-                {activeTab === "logout" && (
-                  <div className="p-[24px]">
-                    <p className="text-label-lg text-strong">Logout</p>
-                    <p className="text-paragraph-sm text-sub mt-[8px]">Logout options will go here.</p>
-                  </div>
-                )}
               </div>
 
             </div>
@@ -854,6 +856,43 @@ const SettingsModal = () => {
           </div>
         </div>
 
+      </div>
+    )}
+
+    {/* Logout confirm — same simple pop in/out pattern as the delete-confirm
+        dialog above, just far shorter: logging out isn't destructive, so
+        there's no email-typed confirmation or checkboxes, just a plain
+        "are you sure" with a Cancel / Log out choice. */}
+    {isLogoutConfirmOpen && (
+      <div
+        onClick={() => setIsLogoutConfirmOpen(false)}
+        className="fixed inset-0 z-[60] flex items-center justify-center bg-black-90"
+      >
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="bg-surface-weak w-full max-w-[400px] rounded-[16px] p-[24px] border border-line-sub flex flex-col gap-[24px]"
+        >
+          <div className="w-full flex flex-row items-start justify-between">
+            <div className="flex flex-col gap-[8px]">
+              <p className="text-label-lg text-strong">Log out of Foldrise?</p>
+              <p className="text-paragraph-sm text-sub">You'll need to sign in again to access your account.</p>
+            </div>
+            <div onClick={() => setIsLogoutConfirmOpen(false)} className="w-[24px] h-[24px] cursor-pointer flex items-center justify-center shrink-0">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M12 4L4 12M4 4L12 12" stroke="#8C8E91" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="flex flex-row justify-end gap-[12px]">
+            <button onClick={() => setIsLogoutConfirmOpen(false)} className="s-btn-noicon-36 items-center flex justify-center text-label-sm transition-all duration-200 ease-out active:scale-[0.98] active:translate-y-px cursor-pointer">
+              <p className="px-[4px]">Cancel</p>
+            </button>
+            <button onClick={handleConfirmLogout} className="p-btn-noicon-36 items-center flex justify-center text-label-sm transition-all duration-200 ease-out active:scale-[0.98] active:translate-y-px cursor-pointer">
+              <p className="px-[4px]">Log out</p>
+            </button>
+          </div>
+        </div>
       </div>
     )}
 

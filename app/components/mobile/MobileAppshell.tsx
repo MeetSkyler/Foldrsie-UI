@@ -4,6 +4,7 @@
 // MobileBottomNav), so styling each one is separate from this layout.
 import MobileTopBar from "./MobileTopBar";
 import MobileBottomNav from "./MobileBottomNav";
+import MobileGenerationToast from "./MobileGenerationToast";
 import Link from 'next/link';
 
 
@@ -16,7 +17,14 @@ export default function MobileAppshell({ children }: { children: React.ReactNode
       </div>
 
       {/* ....Center (pages render here)..... */}
-      <div className="flex-1 min-h-0 overflow-y-auto overscroll-none [touch-action:manipulation]">{children}</div>
+      {/* The toast sits in this wrapper (not inside the scrolling div
+          itself) so it stays pinned to the content area's own bottom edge —
+          i.e. 16px above the bottom nav — instead of scrolling away with
+          the page underneath it. */}
+      <div className="relative flex-1 min-h-0">
+        <div className="w-full h-full overflow-y-auto overscroll-none [touch-action:manipulation]">{children}</div>
+        <MobileGenerationToast />
+      </div>
 
       {/* ....BottomNav..... */}
       <div className="w-full  shrink-0 ">

@@ -15,6 +15,11 @@ export type GenerationToast = {
   ratio: number;
   status: GenerationToastStatus;
   image?: string;
+  // Whether the user has already seen this result on the generate page
+  // itself (either by being there when it finished, or visiting it
+  // afterward) — once true, the floating toast stops showing for this
+  // generation on other pages, since there's nothing new left to surface.
+  viewed: boolean;
 };
 
 // Dummy stand-in for the real generation API — swap this out once a real
@@ -41,6 +46,7 @@ type GenerationsContextValue = {
   // yet, cleared entirely once the user dismisses it.
   activeToast: GenerationToast | null;
   dismissToast: () => void;
+  markToastViewed: () => void;
 };
 
 const GenerationsContext = createContext<GenerationsContextValue | null>(null);
@@ -60,12 +66,12 @@ export function GenerationsProvider({ children }: { children: React.ReactNode })
     inFlightRef.current = true;
     const id = `gen-${Date.now()}`;
     setIsGenerating(true);
-    setActiveToast({ id, ratio, status: "loading" });
+    setActiveToast({ id, ratio, status: "loading", viewed: false });
     setTimeout(() => {
       const item: GenerationItem = { id, image: dummyResult.src, ratio };
       addGeneration(item);
       setIsGenerating(false);
-      setActiveToast({ id, ratio, status: "done", image: item.image });
+      setActiveToast({ id, ratio, status: "done", image: item.image, viewed: false });
       inFlightRef.current = false;
     }, GENERATE_DURATION_MS);
   }
@@ -74,9 +80,13 @@ export function GenerationsProvider({ children }: { children: React.ReactNode })
     setActiveToast(null);
   }
 
+  function markToastViewed() {
+    setActiveToast((prev) => (prev ? { ...prev, viewed: true } : prev));
+  }
+
   return (
     <GenerationsContext.Provider
-      value={{ generations, addGeneration, isGenerating, startGeneration, activeToast, dismissToast }}
+      value={{ generations, addGeneration, isGenerating, startGeneration, activeToast, dismissToast, markToastViewed }}
     >
       {children}
     </GenerationsContext.Provider>

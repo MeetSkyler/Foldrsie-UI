@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   // silently blocking every JS chunk (hydration, event handlers, everything)
   // while HTML/CSS still rendered fine — that's why touch/:active worked but
   // no onClick/console ever fired. If your phone's IP changes, update this.
-  allowedDevOrigins: ["192.168.1.6"],
+  allowedDevOrigins: ["192.168.1.7"],
 };
 
 export default nextConfig;

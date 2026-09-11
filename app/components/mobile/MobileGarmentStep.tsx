@@ -13,6 +13,8 @@ import Image, { StaticImageData } from "next/image";
 import { useOptionSelection } from "@/app/context/option-selection-context";
 import SourceFilterDropdown, { SourceFilter } from "@/app/components/optionPicker/SourceFilterDropdown";
 import MobileGarmentUploadSheet, { GarmentUploadResult } from "./MobileGarmentUploadSheet";
+import PhotoGuideSheet from "./PhotoGuideSheet";
+import { PHOTO_GUIDES } from "@/app/config/photoGuideConfig";
 import type { GarmentItem, GarmentPickerConfig } from "@/app/components/optionPicker/GarmentOptionPicker";
 
 function primaryImage(item: GarmentItem): StaticImageData | string | undefined {
@@ -107,6 +109,8 @@ export default function MobileGarmentStep({
   // state) — see the same note in MobileOptionStep for why.
   const selectedId = selections[config.key]?.id ?? null;
   const [showUploadSheet, setShowUploadSheet] = useState(false);
+  const [showGuideSheet, setShowGuideSheet] = useState(false);
+  const guideData = PHOTO_GUIDES[config.key];
   // Set when the sheet was reopened from a card missing an angle (instead of
   // the "Upload new {label}" card) — handleSaveGarment then updates this
   // item in place instead of creating a new one, matching desktop.
@@ -174,7 +178,9 @@ export default function MobileGarmentStep({
           </div>
           <p className="text-label-sm text-strong">Upload new {config.label}</p>
         </button>
-        <p className="text-label-xs text-sub text-center underline underline-offset-3">Photo guide</p>
+        {guideData && (
+          <p onClick={() => setShowGuideSheet(true)} className="text-label-xs text-sub text-center underline underline-offset-3 cursor-pointer">Photo guide</p>
+        )}
       </div>
 
 
@@ -239,6 +245,7 @@ export default function MobileGarmentStep({
           onAdd={handleSaveGarment}
         />
       )}
+      {guideData && <PhotoGuideSheet isOpen={showGuideSheet} onClose={() => setShowGuideSheet(false)} data={guideData} />}
     </div>
   );
 }
