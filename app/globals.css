@@ -147,6 +147,26 @@
        own `active:` states for real tap feedback, so this native one is
        pure visual noise on top of ours. */
     -webkit-tap-highlight-color: transparent;
+    /* App-like feel across the whole site (web + mobile) — nothing is
+       text-selectable or draggable by default, matching how a native app
+       behaves. Re-enabled explicitly below for the few elements where
+       selection is actually needed (typed/pasted text in inputs). */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none; /* iOS: suppresses the long-press copy/save callout */
+  }
+
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  img {
+    -webkit-user-drag: none;
+    user-drag: none;
+    pointer-events: auto;
   }
 
   body {

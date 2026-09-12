@@ -1,12 +1,18 @@
 "use client"
+import { useState } from "react";
 import profile from '@/public/Profilesimple.svg'
 import Image from 'next/image';
+import { useSettingsModal, type SettingsTab } from "@/app/context/settings-modal-context";
+import { useAuthModal } from "@/app/context/auth-modal-context";
+import LogoutConfirmDialog from "@/app/components/LogoutConfirmDialog";
 
 // Same row markup repeated 3x before — pulled into one array so adding a
-// new menu item later is just one more object here.
-const MENU_ITEMS = [
+// new menu item later is just one more object here. `tab` is which
+// SettingsModal tab clicking this row should open straight to.
+const MENU_ITEMS: { label: string; tab: SettingsTab; icon: React.ReactNode }[] = [
   {
     label: "My account",
+    tab: "account",
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <path d="M5 17.5V15.8333C5 14.9493 5.35119 14.1014 5.97631 13.4763C6.60143 12.8512 7.44928 12.5 8.33333 12.5H11.6667C12.5507 12.5 13.3986 12.8512 14.0237 13.4763C14.6488 14.1014 15 14.9493 15 15.8333V17.5M6.66667 5.83333C6.66667 6.71739 7.01786 7.56523 7.64298 8.19036C8.2681 8.81548 9.11595 9.16667 10 9.16667C10.8841 9.16667 11.7319 8.81548 12.357 8.19036C12.9821 7.56523 13.3333 6.71739 13.3333 5.83333C13.3333 4.94928 12.9821 4.10143 12.357 3.47631C11.7319 2.85119 10.8841 2.5 10 2.5C9.11595 2.5 8.2681 2.85119 7.64298 3.47631C7.01786 4.10143 6.66667 4.94928 6.66667 5.83333Z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
@@ -15,6 +21,7 @@ const MENU_ITEMS = [
   },
   {
     label: "Billing",
+    tab: "billing",
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <g clipPath="url(#clip0_585_17998)">
@@ -32,6 +39,7 @@ const MENU_ITEMS = [
   },
   {
     label: "Usage",
+    tab: "usage",
     icon: (
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
         <path d="M4.69667 16.1373C3.64779 15.0884 2.93349 13.752 2.64411 12.2971C2.35473 10.8423 2.50326 9.33428 3.07092 7.96384C3.63858 6.5934 4.59987 5.42206 5.83324 4.59796C7.0666 3.77385 8.51665 3.33398 10 3.33398C11.4834 3.33398 12.9334 3.77385 14.1668 4.59796C15.4001 5.42206 16.3614 6.5934 16.9291 7.96384C17.4968 9.33428 17.6453 10.8423 17.3559 12.2971C17.0665 13.752 16.3522 15.0884 15.3033 16.1373M13.3333 7.50065L10 10.834" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -40,7 +48,22 @@ const MENU_ITEMS = [
   },
 ];
 
-const profiledropdown = () => {
+const profiledropdown = ({ onClose }: { onClose: () => void }) => {
+  const { openSettings } = useSettingsModal();
+  const { openLogin } = useAuthModal();
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+
+  function handleMenuItemClick(tab: SettingsTab) {
+    onClose();
+    openSettings(tab);
+  }
+
+  function handleConfirmLogout() {
+    setIsLogoutConfirmOpen(false);
+    onClose();
+    openLogin();
+  }
+
   return (
     <div
     className="absolute  w-[320px] bottom-0 h-fit flex flex-col bg-surface-soft top-[40px] z-40 right-0 rounded-[16px] pt-[16px]">
@@ -83,7 +106,7 @@ const profiledropdown = () => {
 
       <div className='w-full px-[8px]  gap-[4px] items-center flex flex-col justify-center'>
         {MENU_ITEMS.map((item) => (
-          <div key={item.label} className='px-[8px] py-[6px] flex  w-full  cursor-pointer hover:text-strong text-sub group rounded-[8px] hover:bg-surface-alpha-light-weak  items-center flex-row  gap-[8px]'>
+          <div key={item.label} onClick={() => handleMenuItemClick(item.tab)} className='px-[8px] py-[6px] flex  w-full  cursor-pointer hover:text-strong text-sub group rounded-[8px] hover:bg-surface-alpha-light-weak  items-center flex-row  gap-[8px]'>
             {item.icon}
             <p className='text-paragraph-sm text-sub group-hover:text-strong'>{item.label}</p>
           </div>
@@ -91,7 +114,7 @@ const profiledropdown = () => {
       </div>
 
       <div className='py-[12px] px-[8px] flex  border-t border-line-strong items-center '>
-        <div className='px-[8px] py-[6px] w-full cursor-pointer group rounded-[8px] hover:bg-surface-alpha-light-weak flex items-center flex-row gap-[8px]'>
+        <div onClick={() => setIsLogoutConfirmOpen(true)} className='px-[8px] py-[6px] w-full cursor-pointer group rounded-[8px] hover:bg-surface-alpha-light-weak flex items-center flex-row gap-[8px]'>
           <svg  width="20" height="20" viewBox="0 0 20 20" fill="none" className='text-sub group-hover:text-strong'>
           <path d="M8.33333 6.66536V4.9987C8.33333 4.55667 8.50893 4.13275 8.82149 3.82019C9.13405 3.50763 9.55797 3.33203 10 3.33203H15.8333C16.2754 3.33203 16.6993 3.50763 17.0118 3.82019C17.3244 4.13275 17.5 4.55667 17.5 4.9987V14.9987C17.5 15.4407 17.3244 15.8646 17.0118 16.1772C16.6993 16.4898 16.2754 16.6654 15.8333 16.6654H10C9.55797 16.6654 9.13405 16.4898 8.82149 16.1772C8.50893 15.8646 8.33333 15.4407 8.33333 14.9987V13.332M12.5 9.9987H2.5M5 12.4987L2.5 9.9987L5 7.4987" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -111,6 +134,12 @@ const profiledropdown = () => {
     <p className='text-paragraph-xs text-sub cursor-pointer hover:text-strong'>Terms</p>
      </div>
      </div>
+
+    <LogoutConfirmDialog
+      isOpen={isLogoutConfirmOpen}
+      onCancel={() => setIsLogoutConfirmOpen(false)}
+      onConfirm={handleConfirmLogout}
+    />
 
     </div>
   )

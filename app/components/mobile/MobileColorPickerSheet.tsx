@@ -65,6 +65,12 @@ const DRAG_DISMISS_VELOCITY = 500;
 // just a hint of overshoot, closer to iOS's own sheet-presentation feel
 // than a long, bouncy spring would be.
 const SHEET_SPRING = { type: "spring" as const, stiffness: 380, damping: 38, mass: 0.9 };
+// The open animation runs while the sheet's own content is still laying
+// out for the first time — a JS-driven spring shares the main thread with
+// that work and can visibly stutter. A plain tween with this iOS-style
+// curve is WAAPI-compatible, so the browser can run it on the compositor
+// thread regardless of what the main thread is doing.
+const SHEET_ENTER = { type: "tween" as const, duration: 0.32, ease: [0.32, 0.72, 0, 1] as const };
 
 export default function MobileColorPickerSheet({
   onClose,
@@ -212,9 +218,9 @@ export default function MobileColorPickerSheet({
         dragElastic={{ top: 0, bottom: 0.5 }}
         onDragEnd={handleDragEnd}
         initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={SHEET_SPRING}
+        animate={{ y: 0, transition: SHEET_ENTER }}
+        exit={{ y: "100%", transition: SHEET_SPRING }}
+        style={{ willChange: "transform" }}
         className="relative w-full h-[calc(100dvh-80px)] bg-surface-weak rounded-t-[24px] flex flex-col"
       >
         {/* Fixed header — only this area can start a sheet-drag, so the

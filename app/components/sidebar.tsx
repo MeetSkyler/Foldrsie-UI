@@ -159,7 +159,7 @@ const Sidebar = ({ initialCollapsed }: { initialCollapsed: boolean }) => {
           }
           if (isSettings) {
             return (
-              <button key={link.href} onClick={openSettings} className={className}>
+              <button key={link.href} onClick={() => openSettings()} className={className}>
                 {content}
               </button>
             );

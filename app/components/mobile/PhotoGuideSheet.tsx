@@ -13,8 +13,15 @@ const DRAG_DISMISS_DISTANCE = 120;
 const DRAG_DISMISS_VELOCITY = 500;
 // A tighter, less floaty spring than a default one — quick to settle with
 // just a hint of overshoot, closer to iOS's own sheet-presentation feel
-// than a long, bouncy spring would be.
+// than a long, bouncy spring would be. Used for the exit (close) animation,
+// where nothing new needs to paint — it's already smooth.
 const SHEET_SPRING = { type: "spring" as const, stiffness: 380, damping: 38, mass: 0.9 };
+// The open animation runs while the sheet's own content (images etc.) is
+// still decoding/laying out for the first time — a JS-driven spring shares
+// the main thread with that work and can visibly stutter. A plain tween
+// with this iOS-style curve is WAAPI-compatible, so the browser can run it
+// on the compositor thread regardless of what the main thread is doing.
+const SHEET_ENTER = { type: "tween" as const, duration: 0.32, ease: [0.32, 0.72, 0, 1] as const };
 
 function ExampleGrid({ items }: { items: PhotoGuideData["doItems"] }) {
   return (
@@ -65,9 +72,9 @@ export default function PhotoGuideSheet({
         dragElastic={{ top: 0, bottom: 0.5 }}
         onDragEnd={handleDragEnd}
         initial={{ y: "100%" }}
-        animate={{ y: 0 }}
-        exit={{ y: "100%" }}
-        transition={SHEET_SPRING}
+        animate={{ y: 0, transition: SHEET_ENTER }}
+        exit={{ y: "100%", transition: SHEET_SPRING }}
+        style={{ willChange: "transform" }}
         className="relative w-full h-[calc(100dvh-80px)] bg-surface-weak rounded-t-[24px] flex flex-col"
       >
         {/* Fixed header — drag handle + title never scroll away. */}

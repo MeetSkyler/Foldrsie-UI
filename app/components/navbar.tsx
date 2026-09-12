@@ -93,7 +93,7 @@ const Navbar = () => {
              // of its own.
              style={{ transformOrigin: "top right" }}
            >
-             <Profiledrop/>
+             <Profiledrop onClose={() => setIsProfileOpen(false)}/>
            </motion.div>
          )}
        </AnimatePresence>

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useSettingsModal } from "@/app/context/settings-modal-context";
 import { useAuthModal } from "@/app/context/auth-modal-context";
+import LogoutConfirmDialog from "@/app/components/LogoutConfirmDialog";
 import Image from 'next/image';
 import profile from '@/public/Profilesimple.svg'
 import usageThumb1 from '@/public/img1.jpg'
@@ -213,7 +214,7 @@ function useViewportHeight() {
 }
 
 const SettingsModal = () => {
-  const { isSettingsOpen, closeSettings } = useSettingsModal();
+  const { isSettingsOpen, closeSettings, activeTab, setActiveTab } = useSettingsModal();
   const { openLogin } = useAuthModal();
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isTopHovered, setIsTopHovered] = useState(false);
@@ -245,7 +246,6 @@ const SettingsModal = () => {
       setUnderstandPermanentConfirmed(false);
     }
   }, [isDeleteConfirmOpen]);
-  const [activeTab, setActiveTab] = useState<(typeof SETTINGS_TABS)[number]["id"]>("account");
 
   function handleConfirmLogout() {
     setIsLogoutConfirmOpen(false);
@@ -859,42 +859,11 @@ const SettingsModal = () => {
       </div>
     )}
 
-    {/* Logout confirm — same simple pop in/out pattern as the delete-confirm
-        dialog above, just far shorter: logging out isn't destructive, so
-        there's no email-typed confirmation or checkboxes, just a plain
-        "are you sure" with a Cancel / Log out choice. */}
-    {isLogoutConfirmOpen && (
-      <div
-        onClick={() => setIsLogoutConfirmOpen(false)}
-        className="fixed inset-0 z-[60] flex items-center justify-center bg-black-90"
-      >
-        <div
-          onClick={(e) => e.stopPropagation()}
-          className="bg-surface-weak w-full max-w-[400px] rounded-[16px] p-[24px] border border-line-sub flex flex-col gap-[24px]"
-        >
-          <div className="w-full flex flex-row items-start justify-between">
-            <div className="flex flex-col gap-[8px]">
-              <p className="text-label-lg text-strong">Log out of Foldrise?</p>
-              <p className="text-paragraph-sm text-sub">You'll need to sign in again to access your account.</p>
-            </div>
-            <div onClick={() => setIsLogoutConfirmOpen(false)} className="w-[24px] h-[24px] cursor-pointer flex items-center justify-center shrink-0">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M12 4L4 12M4 4L12 12" stroke="#8C8E91" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-          </div>
-
-          <div className="flex flex-row justify-end gap-[12px]">
-            <button onClick={() => setIsLogoutConfirmOpen(false)} className="s-btn-noicon-36 items-center flex justify-center text-label-sm transition-all duration-200 ease-out active:scale-[0.98] active:translate-y-px cursor-pointer">
-              <p className="px-[4px]">Cancel</p>
-            </button>
-            <button onClick={handleConfirmLogout} className="p-btn-noicon-36 items-center flex justify-center text-label-sm transition-all duration-200 ease-out active:scale-[0.98] active:translate-y-px cursor-pointer">
-              <p className="px-[4px]">Log out</p>
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
+    <LogoutConfirmDialog
+      isOpen={isLogoutConfirmOpen}
+      onCancel={() => setIsLogoutConfirmOpen(false)}
+      onConfirm={handleConfirmLogout}
+    />
 
     {/* "Buy extra credits" dialog — same simple pop in/out pattern as the
         delete-confirm dialog: full-screen bg-black-90 overlay (z-[65], above
