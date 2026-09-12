@@ -129,5 +129,5 @@ export default function PhotoGuideSheet({
     </div>
       )}
     </AnimatePresence>
-  );
+  )
 }

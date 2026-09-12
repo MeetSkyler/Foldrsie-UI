@@ -7,6 +7,7 @@
 // of desktop's left sidebar, and stacked cards instead of desktop's
 // multi-column tables.
 import { useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useAuthModal } from "@/app/context/auth-modal-context";
 import profile from "@/public/Profilesimple.svg";
@@ -74,12 +75,27 @@ function CardShell({ title, children }: { title: string; children: React.ReactNo
   );
 }
 
+const TAB_IDS = SETTINGS_TABS.map((t) => t.id);
+
 export default function MobileSettingsHome() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { openLogin } = useAuthModal();
-  const [activeTab, setActiveTab] = useState<(typeof SETTINGS_TABS)[number]["id"]>("account");
+  // MobileProfileSheet (the mobile top bar's signed-in profile sheet) links
+  // straight here with ?tab=billing etc — this is a routed page, not a
+  // modal reading shared context like desktop's SettingsModal, so the
+  // initial tab travels via the URL instead.
+  const requestedTab = searchParams.get("tab");
+  const initialTab = TAB_IDS.includes(requestedTab as (typeof TAB_IDS)[number]) ? (requestedTab as (typeof SETTINGS_TABS)[number]["id"]) : "account";
+  const [activeTab, setActiveTab] = useState<(typeof SETTINGS_TABS)[number]["id"]>(initialTab);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [isExtraCreditsOpen, setIsExtraCreditsOpen] = useState(false);
+  // Same dummy "has data vs. empty" toggles as SettingsModal.tsx (desktop) —
+  // kept in sync so both platforms preview the same states off the same
+  // on/off switch instead of mobile only ever showing the populated view.
+  const [billingData, setBillingData] = useState(false);
+  const [usagedata, setUsagedata] = useState(true);
 
   const [deleteConfirmEmail, setDeleteConfirmEmail] = useState("");
   const [keepImagesConfirmed, setKeepImagesConfirmed] = useState(false);
@@ -219,94 +235,147 @@ export default function MobileSettingsHome() {
 
       {activeTab === "billing" && (
         <div className="w-full flex flex-col gap-[16px]">
-          <CardShell title="Current plan">
-            {PLAN_DETAILS.map((row) => (
-              <Row key={row.label} label={row.label}>{row.value}</Row>
-            ))}
-            <button className="p-btn-noicon-36 w-full text-label-sm flex items-center justify-center cursor-pointer">
-              <p className="px-[4px]">Manage billing</p>
-            </button>
-          </CardShell>
+          {billingData ? (
+            <>
+              <CardShell title="Current plan">
+                {PLAN_DETAILS.map((row) => (
+                  <Row key={row.label} label={row.label}>{row.value}</Row>
+                ))}
+                <button className="p-btn-noicon-36 w-full text-label-sm flex items-center justify-center cursor-pointer">
+                  <p className="px-[4px]">Manage billing</p>
+                </button>
+              </CardShell>
 
-          <CardShell title="Payment method">
-            <div className="flex flex-row items-center justify-between">
-              <div className="flex flex-row gap-[12px] items-center">
-                <svg width="32" height="24" viewBox="0 0 32 24" fill="none">
-                  <rect width="32" height="24" rx="4" fill="#1B39C3" />
-                  <path d="M26.222 15.9115L25.997 14.7434H23.483L23.083 15.9032L21.068 15.9073C22.0273 13.5122 22.9886 11.1179 23.952 8.72449C24.116 8.31853 24.407 8.11191 24.836 8.11399C25.164 8.1171 25.699 8.1171 26.442 8.11502L28 15.9084L26.222 15.9115ZM24.049 13.1434H25.669L25.064 10.2155L24.049 13.1434ZM11.06 8.11295L13.086 8.11502L9.954 15.9125L7.903 15.9104C7.38725 13.8508 6.87791 11.7895 6.375 9.72644C6.275 9.31528 6.077 9.02767 5.696 8.89166C5.357 8.77018 4.792 8.58329 4 8.32891V8.11606H7.237C7.797 8.11606 8.124 8.39744 8.229 8.97472C8.335 9.55304 8.601 11.0253 9.029 13.3916L11.06 8.11295ZM15.87 8.11502L14.268 15.9104L12.34 15.9084L13.94 8.11295L15.87 8.11502ZM19.78 7.9707C20.357 7.9707 21.084 8.15759 21.502 8.32891L21.164 9.94551C20.786 9.7877 20.164 9.57485 19.641 9.58212C18.881 9.59561 18.411 9.92682 18.411 10.2445C18.411 10.7616 19.227 11.0222 20.067 11.587C21.026 12.2308 21.152 12.8091 21.14 13.4373C21.127 14.7413 20.067 16.0278 17.831 16.0278C16.811 16.0122 16.443 15.9229 15.611 15.6166L15.963 13.9294C16.81 14.298 17.169 14.4153 17.893 14.4153C18.556 14.4153 19.125 14.1371 19.13 13.6522C19.134 13.3075 18.93 13.1362 18.186 12.7105C17.442 12.2837 16.398 11.6929 16.412 10.5072C16.429 8.98926 17.814 7.9707 19.781 7.9707H19.78Z" fill="white" />
-                </svg>
-                <p className="text-paragraph-sm text-strong">Visa •••• 4242</p>
-              </div>
-              <p className="underline text-label-sm text-sub cursor-pointer">Change</p>
-            </div>
-          </CardShell>
+              <CardShell title="Payment method">
+                <div className="flex flex-row items-center justify-between">
+                  <div className="flex flex-row gap-[12px] items-center">
+                    <svg width="32" height="24" viewBox="0 0 32 24" fill="none">
+                      <rect width="32" height="24" rx="4" fill="#1B39C3" />
+                      <path d="M26.222 15.9115L25.997 14.7434H23.483L23.083 15.9032L21.068 15.9073C22.0273 13.5122 22.9886 11.1179 23.952 8.72449C24.116 8.31853 24.407 8.11191 24.836 8.11399C25.164 8.1171 25.699 8.1171 26.442 8.11502L28 15.9084L26.222 15.9115ZM24.049 13.1434H25.669L25.064 10.2155L24.049 13.1434ZM11.06 8.11295L13.086 8.11502L9.954 15.9125L7.903 15.9104C7.38725 13.8508 6.87791 11.7895 6.375 9.72644C6.275 9.31528 6.077 9.02767 5.696 8.89166C5.357 8.77018 4.792 8.58329 4 8.32891V8.11606H7.237C7.797 8.11606 8.124 8.39744 8.229 8.97472C8.335 9.55304 8.601 11.0253 9.029 13.3916L11.06 8.11295ZM15.87 8.11502L14.268 15.9104L12.34 15.9084L13.94 8.11295L15.87 8.11502ZM19.78 7.9707C20.357 7.9707 21.084 8.15759 21.502 8.32891L21.164 9.94551C20.786 9.7877 20.164 9.57485 19.641 9.58212C18.881 9.59561 18.411 9.92682 18.411 10.2445C18.411 10.7616 19.227 11.0222 20.067 11.587C21.026 12.2308 21.152 12.8091 21.14 13.4373C21.127 14.7413 20.067 16.0278 17.831 16.0278C16.811 16.0122 16.443 15.9229 15.611 15.6166L15.963 13.9294C16.81 14.298 17.169 14.4153 17.893 14.4153C18.556 14.4153 19.125 14.1371 19.13 13.6522C19.134 13.3075 18.93 13.1362 18.186 12.7105C17.442 12.2837 16.398 11.6929 16.412 10.5072C16.429 8.98926 17.814 7.9707 19.781 7.9707H19.78Z" fill="white" />
+                    </svg>
+                    <p className="text-paragraph-sm text-strong">Visa •••• 4242</p>
+                  </div>
+                  <p className="underline text-label-sm text-sub cursor-pointer">Change</p>
+                </div>
+              </CardShell>
 
-          <CardShell title="Billing history">
-            {BILLING_HISTORY.map((row, index) => (
-              <div key={row.date} className={`w-full flex flex-col gap-[6px] ${index !== BILLING_HISTORY.length - 1 ? "pb-[16px] border-b border-line-sub" : ""}`}>
-                <div className="flex flex-row items-center justify-between">
-                  <p className="text-paragraph-sm text-strong">{row.plan}</p>
-                  <p className="text-label-sm text-strong">{row.amount}</p>
+              <CardShell title="Billing history">
+                {BILLING_HISTORY.map((row, index) => (
+                  <div key={row.date} className={`w-full flex flex-col gap-[6px] ${index !== BILLING_HISTORY.length - 1 ? "pb-[16px] border-b border-line-sub" : ""}`}>
+                    <div className="flex flex-row items-center justify-between">
+                      <p className="text-paragraph-sm text-strong">{row.plan}</p>
+                      <p className="text-label-sm text-strong">{row.amount}</p>
+                    </div>
+                    <div className="flex flex-row items-center justify-between">
+                      <p className="text-paragraph-sm text-sub">{row.date}</p>
+                      <span className="px-[6px] py-[2px] w-fit rounded-[6px] bg-semantic-green-alpha-25 text-semantic-green-200 text-label-xs">{row.status}</span>
+                    </div>
+                  </div>
+                ))}
+              </CardShell>
+            </>
+          ) : (
+            <>
+              <CardShell title="Current plan">
+                <div className="flex flex-col gap-[8px] items-center text-center py-[8px]">
+                  <p className="text-paragraph-sm text-sub">No active plans</p>
+                  <p className="text-paragraph-xs text-soft">Choose a plan and start creating</p>
                 </div>
-                <div className="flex flex-row items-center justify-between">
-                  <p className="text-paragraph-sm text-sub">{row.date}</p>
-                  <span className="px-[6px] py-[2px] w-fit rounded-[6px] bg-semantic-green-alpha-25 text-semantic-green-200 text-label-xs">{row.status}</span>
+                <button onClick={() => router.push("/pricing")} className="p-btn-noicon-36 w-full text-label-sm flex items-center justify-center cursor-pointer">
+                  <p className="px-[4px]">View plans</p>
+                </button>
+              </CardShell>
+
+              <CardShell title="Billing history">
+                <div className="flex flex-col gap-[8px] items-center text-center py-[8px]">
+                  <p className="text-paragraph-sm text-sub">No billing history yet</p>
+                  <p className="text-paragraph-xs text-soft">Your payments and invoices will appear here</p>
                 </div>
-              </div>
-            ))}
-          </CardShell>
+              </CardShell>
+            </>
+          )}
         </div>
       )}
 
       {activeTab === "usage" && (
         <div className="w-full flex flex-col gap-[16px]">
-          <CardShell title="Credit breakdown">
-            <div className="pb-[16px] w-full border-b border-line-sub flex flex-row items-center justify-between">
-              <p className="text-paragraph-sm text-sub">Available credits</p>
-              <p className="text-label-lg text-strong">104</p>
-            </div>
-            {CREDIT_ROWS.map((row) => (
-              <div key={row.label} className="w-full flex flex-row items-center justify-between">
-                <p className="text-paragraph-sm text-sub">{row.label}</p>
-                <div className="flex flex-col items-end">
-                  <p className="text-paragraph-sm text-strong">{row.value}</p>
-                  {row.note && <p className="text-paragraph-xs text-soft">{row.note}</p>}
+          {usagedata ? (
+            <>
+              <CardShell title="Credit breakdown">
+                <div className="pb-[16px] w-full border-b border-line-sub flex flex-row items-center justify-between">
+                  <p className="text-paragraph-sm text-sub">Available credits</p>
+                  <p className="text-label-lg text-strong">104</p>
                 </div>
-              </div>
-            ))}
-          </CardShell>
+                {CREDIT_ROWS.map((row) => (
+                  <div key={row.label} className="w-full flex flex-row items-center justify-between">
+                    <p className="text-paragraph-sm text-sub">{row.label}</p>
+                    <div className="flex flex-col items-end">
+                      <p className="text-paragraph-sm text-strong">{row.value}</p>
+                      {row.note && <p className="text-paragraph-xs text-soft">{row.note}</p>}
+                    </div>
+                  </div>
+                ))}
+              </CardShell>
 
-          <button onClick={() => setIsExtraCreditsOpen(true)} className="p-btn-noicon-36 w-full flex items-center justify-center cursor-pointer">
-            <p className="px-[4px] text-label-sm">Buy extra credits</p>
-          </button>
+              <button onClick={() => setIsExtraCreditsOpen(true)} className="p-btn-noicon-36 w-full flex items-center justify-center cursor-pointer">
+                <p className="px-[4px] text-label-sm">Buy extra credits</p>
+              </button>
 
-          <CardShell title="Usage history">
-            {USAGE_HISTORY.map((row, index) => (
-              <div key={index} className={`w-full flex flex-row gap-[12px] items-center ${index !== USAGE_HISTORY.length - 1 ? "pb-[16px] border-b border-line-sub" : ""}`}>
-                {row.image ? (
-                  <div className="w-[36px] h-[36px] rounded-[8px] overflow-hidden shrink-0">
-                    <Image src={row.image} alt={row.type} width={80} height={80} className="w-full h-full object-cover" />
+              <CardShell title="Usage history">
+                {USAGE_HISTORY.map((row, index) => (
+                  <div key={index} className={`w-full flex flex-row gap-[12px] items-center ${index !== USAGE_HISTORY.length - 1 ? "pb-[16px] border-b border-line-sub" : ""}`}>
+                    {row.image ? (
+                      <div className="w-[36px] h-[36px] rounded-[8px] overflow-hidden shrink-0">
+                        <Image src={row.image} alt={row.type} width={80} height={80} className="w-full h-full object-cover" />
+                      </div>
+                    ) : (
+                      <div className="w-[36px] h-[36px] rounded-[8px] bg-semantic-red-alpha-25 flex items-center justify-center shrink-0">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                          <path d="M3.79948 3.79948L12.1995 12.1995M2 8C2 8.78793 2.15519 9.56815 2.45672 10.2961C2.75825 11.0241 3.20021 11.6855 3.75736 12.2426C4.31451 12.7998 4.97595 13.2418 5.7039 13.5433C6.43185 13.8448 7.21207 14 8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2418 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2418 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2418 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C7.21207 2 6.43185 2.15519 5.7039 2.45672C4.97595 2.75825 4.31451 3.20021 3.75736 3.75736C3.20021 4.31451 2.75825 4.97595 2.45672 5.7039C2.15519 6.43185 2 7.21207 2 8Z" stroke="#FDB5B4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                    )}
+                    <div className="flex-1 flex flex-col gap-[2px]">
+                      <div className="flex flex-row items-center justify-between">
+                        <p className="text-paragraph-sm text-strong">{row.type}</p>
+                        <span className={`px-[6px] py-[2px] w-fit rounded-[6px] text-label-xs ${row.status === "Completed" ? "bg-semantic-green-alpha-25 text-semantic-green-200" : "bg-semantic-red-alpha-25 text-semantic-red-200"}`}>{row.status}</span>
+                      </div>
+                      <div className="flex flex-row items-center justify-between">
+                        <p className="text-paragraph-xs text-sub">{row.date}</p>
+                        <p className="text-paragraph-xs text-sub">{row.credits}</p>
+                      </div>
+                    </div>
                   </div>
-                ) : (
-                  <div className="w-[36px] h-[36px] rounded-[8px] bg-semantic-red-alpha-25 flex items-center justify-center shrink-0">
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path d="M3.79948 3.79948L12.1995 12.1995M2 8C2 8.78793 2.15519 9.56815 2.45672 10.2961C2.75825 11.0241 3.20021 11.6855 3.75736 12.2426C4.31451 12.7998 4.97595 13.2418 5.7039 13.5433C6.43185 13.8448 7.21207 14 8 14C8.78793 14 9.56815 13.8448 10.2961 13.5433C11.0241 13.2418 11.6855 12.7998 12.2426 12.2426C12.7998 11.6855 13.2418 11.0241 13.5433 10.2961C13.8448 9.56815 14 8.78793 14 8C14 7.21207 13.8448 6.43185 13.5433 5.7039C13.2418 4.97595 12.7998 4.31451 12.2426 3.75736C11.6855 3.20021 11.0241 2.75825 10.2961 2.45672C9.56815 2.15519 8.78793 2 8 2C7.21207 2 6.43185 2.15519 5.7039 2.45672C4.97595 2.75825 4.31451 3.20021 3.75736 3.75736C3.20021 4.31451 2.75825 4.97595 2.45672 5.7039C2.15519 6.43185 2 7.21207 2 8Z" stroke="#FDB5B4" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </div>
-                )}
-                <div className="flex-1 flex flex-col gap-[2px]">
-                  <div className="flex flex-row items-center justify-between">
-                    <p className="text-paragraph-sm text-strong">{row.type}</p>
-                    <span className={`px-[6px] py-[2px] w-fit rounded-[6px] text-label-xs ${row.status === "Completed" ? "bg-semantic-green-alpha-25 text-semantic-green-200" : "bg-semantic-red-alpha-25 text-semantic-red-200"}`}>{row.status}</span>
-                  </div>
-                  <div className="flex flex-row items-center justify-between">
-                    <p className="text-paragraph-xs text-sub">{row.date}</p>
-                    <p className="text-paragraph-xs text-sub">{row.credits}</p>
-                  </div>
+                ))}
+              </CardShell>
+            </>
+          ) : (
+            <>
+              <CardShell title="Credit breakdown">
+                <div className="pb-[16px] w-full border-b border-line-sub flex flex-row items-center justify-between">
+                  <p className="text-paragraph-sm text-sub">Available credits</p>
+                  <p className="text-label-lg text-sub">0</p>
                 </div>
-              </div>
-            ))}
-          </CardShell>
+                {CREDIT_ROWS.map((row) => (
+                  <div key={row.label} className="w-full flex flex-row items-center justify-between">
+                    <p className="text-paragraph-sm text-sub">{row.label}</p>
+                    <p className="text-paragraph-sm text-sub">0</p>
+                  </div>
+                ))}
+              </CardShell>
+
+              <button onClick={() => router.push("/pricing")} className="p-btn-noicon-36 w-full flex items-center justify-center cursor-pointer">
+                <p className="px-[4px] text-label-sm">View plans</p>
+              </button>
+
+              <CardShell title="Usage history">
+                <div className="flex flex-col gap-[8px] items-center text-center py-[8px]">
+                  <p className="text-paragraph-sm text-sub">No usage yet</p>
+                  <p className="text-paragraph-xs text-soft">Your generated images and credit activity will appear here.</p>
+                </div>
+              </CardShell>
+            </>
+          )}
         </div>
       )}
 

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useSettingsModal } from "@/app/context/settings-modal-context";
 import { useAuthModal } from "@/app/context/auth-modal-context";
+import { usePricingModal } from "@/app/context/pricing-modal-context";
 import LogoutConfirmDialog from "@/app/components/LogoutConfirmDialog";
 import Image from 'next/image';
 import profile from '@/public/Profilesimple.svg'
@@ -216,6 +217,7 @@ function useViewportHeight() {
 const SettingsModal = () => {
   const { isSettingsOpen, closeSettings, activeTab, setActiveTab } = useSettingsModal();
   const { openLogin } = useAuthModal();
+  const { isPricingOpen, openPricing } = usePricingModal();
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
   const [isTopHovered, setIsTopHovered] = useState(false);
   const viewportHeight = useViewportHeight();
@@ -230,7 +232,7 @@ const SettingsModal = () => {
   const [understandPermanentConfirmed, setUnderstandPermanentConfirmed] = useState(false);
   const ACCOUNT_EMAIL = "aqibbismillah@gmail.com";
   const isDeleteValid = keepImagesConfirmed && understandPermanentConfirmed && deleteConfirmEmail.trim().toLowerCase() === ACCOUNT_EMAIL;
-  const [billingData, setbillingData] = useState(true);
+  const [billingData, setbillingData] = useState(false);
   const [usagedata, setusagedata] = useState(true)
   const [isAnnualPlan, setIsAnnualPlan] = useState(true)
 
@@ -309,7 +311,7 @@ const SettingsModal = () => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 1 }}
           transition={{ duration: 0.1, ease: "easeOut" }}
-          className={`fixed inset-0 z-50 flex flex-col justify-end items-center pt-[46px] transition-colors duration-300 ${isDeleteConfirmOpen || isExtraCreditsOpen || isLogoutConfirmOpen ? "bg-black-40" : "bg-black-90"}`}
+          className={`fixed inset-0 z-50 flex flex-col justify-end items-center pt-[46px] transition-colors duration-300 ${isDeleteConfirmOpen || isExtraCreditsOpen || isLogoutConfirmOpen || isPricingOpen ? "bg-black-40" : "bg-black-90"}`}
         >
           {/* Hovering this top strip of exposed backdrop hints that it closes
               the modal, and nudges the panel down a touch so the hint reads
@@ -570,7 +572,7 @@ const SettingsModal = () => {
                             <p className="text-paragraph-sm text-sub">No active plans</p>
                             <p className="text-paragraph-xs text-soft">Choose a plan and start creating</p>
                           </div>
-                          <button className="p-btn-noicon-32 text-label-sm flex items-center justify-center transition-all duration-200 ease-out active:scale-[0.98] active:translate-y-px cursor-pointer"><p className="px-[4px]">View plans</p></button>
+                          <button onClick={openPricing} className="p-btn-noicon-32 text-label-sm flex items-center justify-center transition-all duration-200 ease-out active:scale-[0.98] active:translate-y-px cursor-pointer"><p className="px-[4px]">View plans</p></button>
                         </div>
                       </div>
 
@@ -719,7 +721,7 @@ const SettingsModal = () => {
                         </div>
                         {/* .........BottomBtnPart....... */}
                         <div className="w-full  flex justify-end px-[16px]">
-                          <button className="p-btn-noicon-32 flex items-center justify-center transition-all duration-200 ease-out cursor-pointer active:scale-[0.98] active:translate-y-px"><p className="px-[4px] text-label-sm">View plans</p></button>
+                          <button onClick={openPricing} className="p-btn-noicon-32 flex items-center justify-center transition-all duration-200 ease-out cursor-pointer active:scale-[0.98] active:translate-y-px"><p className="px-[4px] text-label-sm">View plans</p></button>
                         </div>
                       </div>
 
@@ -934,10 +936,10 @@ const SettingsModal = () => {
           <div className="w-full pt-[8px] flex items-center justify-center">
             <div className="flex flex-row gap-[6px]">
               <svg  width="20" height="20" viewBox="0 0 20 20" fill="none">
-               <g clip-path="url(#clip0_1164_25708)">
-                 <rect x="3.96875" y="8.53516" width="12.0605" height="9.16514" rx="1.66667" stroke="#6F7073" stroke-width="1.2" stroke-linejoin="round"/>
-                 <path d="M13.3346 9.16667V5.83333C13.3346 3.99238 11.8423 2.5 10.0013 2.5C8.16035 2.5 6.66797 3.99238 6.66797 5.83333V9.16667" stroke="#6F7073" stroke-width="1.2" stroke-linejoin="round"/>
-                 <line opacity="0.9" x1="9.98672" y1="12.8344" x2="9.98672" y2="13.7177" stroke="#6F7073" stroke-width="1.2" stroke-linecap="round"/>
+               <g clipPath="url(#clip0_1164_25708)">
+                 <rect x="3.96875" y="8.53516" width="12.0605" height="9.16514" rx="1.66667" stroke="#6F7073" strokeWidth="1.2" strokeLinejoin="round"/>
+                 <path d="M13.3346 9.16667V5.83333C13.3346 3.99238 11.8423 2.5 10.0013 2.5C8.16035 2.5 6.66797 3.99238 6.66797 5.83333V9.16667" stroke="#6F7073" strokeWidth="1.2" strokeLinejoin="round"/>
+                 <line opacity="0.9" x1="9.98672" y1="12.8344" x2="9.98672" y2="13.7177" stroke="#6F7073" strokeWidth="1.2" strokeLinecap="round"/>
                </g>
                <defs>
                <clipPath id="clip0_1164_25708">

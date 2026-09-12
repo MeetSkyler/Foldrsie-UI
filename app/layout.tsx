@@ -58,8 +58,14 @@ export default async function RootLayout({
                         <LoginModal />
                         <FreeCreditModal />
                         <FeedbackModal />
-                        <PricingModal />
+                        {/* SettingsModal before PricingModal — both are
+                            z-50 fixed overlays, so DOM order decides which
+                            wins when they're open at the same time (View
+                            plans, inside Settings' Billing tab, opens
+                            Pricing on top of it). Later in the DOM = on
+                            top for equal z-index. */}
                         <SettingsModal />
+                        <PricingModal />
                       </SettingsModalProvider>
                     </PricingModalProvider>
                   </FeedbackModalProvider>

@@ -1,9 +1,21 @@
+"use client";
 // ......MobileTopBar........//
+import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuthModal } from '@/app/context/auth-modal-context';
+import profile from '@/public/Profilesimple.svg';
+import MobileProfileSheet from './MobileProfileSheet';
 
+// Same dummy "signed out vs. signed in" toggle as billingData/usagedata in
+// MobileSettingsHome.tsx — mirrors desktop navbar.tsx's own `isusernew`
+// flag (there, `true` shows Login/Try for free; here that's the default
+// since there's no real auth yet). Flip to `true` to preview the signed-in
+// nav (profile avatar + bottom sheet) instead.
 export default function MobileTopBar() {
   const { openLogin } = useAuthModal();
+  const [isLoggedIn, setIsLoggedIn] = useState(true);
+  const [isProfileSheetOpen, setIsProfileSheetOpen] = useState(false);
 
   return (
     <div className="w-full h-full flex flex-row items-center justify-between px-[16px] pt-[12px] bg-surface-dark">
@@ -15,12 +27,22 @@ export default function MobileTopBar() {
        </svg>
       <p className="text-strong text-[16px] font-medium ">Foldrise</p>
     </Link>
-    <div className=' flex flex-row gap-[8px] items-center'>
-      <Link href="/pricing" className=" flex items-center justify-center text-label-sm s-btn-noicon-36 "><p className='px-[4px]'>Pricing</p></Link>
-      <button onClick={openLogin} className="p-btn-noicon-36  text-label-sm  flex items-center justify-center cursor-pointer">
-      <p className='px-[4px]'> Try for free</p>
-       </button>
-    </div>
+
+    {isLoggedIn ? (
+      <>
+        <button onClick={() => setIsProfileSheetOpen(true)} className="w-[32px] h-[32px] rounded-full flex items-center justify-center cursor-pointer shrink-0">
+          <Image src={profile} alt="Foldrise Profile Icon" width={100} height={100} className="w-full h-full object-cover" />
+        </button>
+        <MobileProfileSheet isOpen={isProfileSheetOpen} onClose={() => setIsProfileSheetOpen(false)} />
+      </>
+    ) : (
+      <div className=' flex flex-row gap-[8px] items-center'>
+        <Link href="/pricing" className=" flex items-center justify-center text-label-sm s-btn-noicon-36 "><p className='px-[4px]'>Pricing</p></Link>
+        <button onClick={openLogin} className="p-btn-noicon-36  text-label-sm  flex items-center justify-center cursor-pointer">
+        <p className='px-[4px]'> Try for free</p>
+         </button>
+      </div>
+    )}
     </div>
   );
 }
