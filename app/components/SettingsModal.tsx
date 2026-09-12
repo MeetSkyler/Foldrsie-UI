@@ -5,6 +5,7 @@ import { useSettingsModal } from "@/app/context/settings-modal-context";
 import { useAuthModal } from "@/app/context/auth-modal-context";
 import { usePricingModal } from "@/app/context/pricing-modal-context";
 import LogoutConfirmDialog from "@/app/components/LogoutConfirmDialog";
+import { useImageDragDrop } from "@/app/hooks/useImageDragDrop";
 import Image from 'next/image';
 import profile from '@/public/Profilesimple.svg'
 import usageThumb1 from '@/public/img1.jpg'
@@ -270,13 +271,25 @@ const SettingsModal = () => {
   const photoInputRef = useRef<HTMLInputElement>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
-  function handlePhotoSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  function applyPhotoFile(file: File) {
     const reader = new FileReader();
     reader.onload = () => setProfileImage(reader.result as string);
     reader.readAsDataURL(file);
   }
+
+  function handlePhotoSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    applyPhotoFile(file);
+  }
+
+  // Same as applyPhotoFile, for an image dragged in from a webpage instead
+  // of a local file — see useImageDragDrop's onUrl for why there's no File here.
+  function applyPhotoUrl(url: string) {
+    setProfileImage(url);
+  }
+
+  const photoDragDrop = useImageDragDrop(applyPhotoFile, applyPhotoUrl);
 
   function handleRemovePhoto() {
     setProfileImage(null);
@@ -428,7 +441,12 @@ const SettingsModal = () => {
                       </div>
 
                        <div className="flex flex-1 flex-row  w-full justify-between">
-                        <div className="w-[60px] h-[60px] rounded-full overflow-hidden">
+                        <div
+                          onDragOver={photoDragDrop.onDragOver}
+                          onDragLeave={photoDragDrop.onDragLeave}
+                          onDrop={photoDragDrop.onDrop}
+                          className={`w-[60px] h-[60px] rounded-full overflow-hidden ring-offset-2 ring-offset-surface-alpha-light-soft transition-all ${photoDragDrop.isDragging ? "ring-2 ring-white" : ""}`}
+                        >
                           <Image src={profileImage ?? profile} alt="prifileicon" width={100} height={100} unoptimized className="w-full h-full object-cover"/>
                         </div>
                         <div className="py-[12px]  flex flex-row gap-[12px] items-center">

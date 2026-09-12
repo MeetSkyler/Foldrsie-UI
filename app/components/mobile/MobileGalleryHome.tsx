@@ -36,7 +36,8 @@ export default function MobileGalleryHome() {
             <button
               key={g.id}
               onClick={() => setFullscreenId(g.id)}
-              className="relative aspect-square rounded-[16px] overflow-hidden bg-surface-soft cursor-pointer"
+              style={{ aspectRatio: g.ratio }}
+              className="relative rounded-[16px] overflow-hidden bg-surface-soft cursor-pointer"
             >
               <Image src={g.image} alt="Generated result" fill unoptimized className="object-cover" />
             </button>

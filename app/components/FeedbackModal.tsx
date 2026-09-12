@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useFeedbackModal } from "@/app/context/feedback-modal-context";
+import Spinner from "@/app/components/Spinner";
 
 const FEEDBACK_TYPES = ["General", "Feature request", "Report an issue"];
 
@@ -8,6 +9,7 @@ const FeedbackModal = () => {
   const { isFeedbackOpen, closeFeedback } = useFeedbackModal();
   const [type, setType] = useState(FEEDBACK_TYPES[0]);
   const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
   // Same autofill/paste-suggestion detection as the login email input (see
   // globals.css's onAutofillDetect keyframe, now also scoped to textarea).
   const [isAutofilled, setIsAutofilled] = useState(false);
@@ -28,20 +30,27 @@ const FeedbackModal = () => {
     if (!isFeedbackOpen) {
       setType(FEEDBACK_TYPES[0]);
       setMessage("");
+      setStatus("idle");
     }
   }, [isFeedbackOpen]);
 
   if (!isFeedbackOpen) return null;
 
   function handleSend() {
-    if (!message.trim()) return;
-    // No backend yet — just close and reset like a successful submit.
-    closeFeedback();
+    if (!message.trim() || status === "sending") return;
+    setStatus("sending");
+    // No backend yet — simulate a brief send before confirming.
+    setTimeout(() => {
+      setStatus("sent");
+      setType(FEEDBACK_TYPES[0]);
+      setMessage("");
+    }, 900);
   }
 
   function handleMessageChange(value: string) {
     setMessage(value);
     setIsAutofilled(false);
+    if (status === "sent") setStatus("idle");
   }
 
   return (
@@ -116,20 +125,24 @@ const FeedbackModal = () => {
           </div>
         </div>
 
-        <div className="flex flex-row items-center justify-end gap-[12px]">
-          <button
-            onClick={closeFeedback}
-            className="s-btn-noicon-36 text-label-sm  cursor-pointer"
-          >
-           <p className="px-[4px]"> Cancel</p>
-          </button>
-          <button
-            onClick={handleSend}
-            disabled={!message.trim()}
-            className="p-btn-noicon-36 text-label-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            <p className="px-[4px]">Send feedback</p>
-          </button>
+        <div className="flex flex-row items-center justify-between gap-[12px]">
+          <p className="text-label-sm text-strong">{status === "sent" ? "Thanks! Your feedback was sent." : ""}</p>
+          <div className="flex flex-row items-center gap-[12px] shrink-0">
+            <button
+              onClick={closeFeedback}
+              className="s-btn-noicon-36 text-label-sm  cursor-pointer"
+            >
+             <p className="px-[4px]"> Cancel</p>
+            </button>
+            <button
+              onClick={handleSend}
+              disabled={!message.trim() || status === "sending"}
+              className="p-btn-noicon-36 text-label-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-[8px]"
+            >
+              {status === "sending" && <Spinner size={16} />}
+              <p className="px-[4px]">{status === "sending" ? "Sending..." : "Send feedback"}</p>
+            </button>
+          </div>
         </div>
       </div>
     </div>

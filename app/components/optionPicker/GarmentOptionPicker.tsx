@@ -9,6 +9,7 @@ import { useIsLargeScreen } from "./useIsLargeScreen";
 import { useZoom } from "@/app/context/zoom-context";
 import PhotoGuideModal from "@/app/components/PhotoGuideModal";
 import { PHOTO_GUIDES } from "@/app/config/photoGuideConfig";
+import { useImageDragDrop } from "@/app/hooks/useImageDragDrop";
 
 export type GarmentItem = {
   id: string;
@@ -116,14 +117,21 @@ function Thumb({
 }
 
 const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
-  const { selections, setSelection } = useOptionSelection();
+  const { selections, setSelection, itemsByKey, setItemsForKey } = useOptionSelection();
   const isLargeScreen = useIsLargeScreen();
   // Shared across every option-picker page so the zoom the user picks on
   // one page (e.g. Pose) carries over instead of resetting on the next.
   const { zoom, setZoom } = useZoom();
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(() => selections[config.key]?.id ?? null);
-  const [items, setItems] = useState(config.items);
+  // Backed by the shared context (not local state) so an uploaded garment
+  // survives navigating to another step's route and back — this page fully
+  // unmounts on that navigation. See option-selection-context.tsx.
+  const items = (itemsByKey[config.key] as GarmentItem[] | undefined) ?? config.items;
+  function setItems(updater: GarmentItem[] | ((prev: GarmentItem[]) => GarmentItem[])) {
+    const next = typeof updater === "function" ? (updater as (prev: GarmentItem[]) => GarmentItem[])(items) : updater;
+    setItemsForKey(config.key, next);
+  }
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const guideData = PHOTO_GUIDES[config.key];
@@ -131,6 +139,10 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
   // (instead of the "Upload new {label}" first card) — the save handler
   // then updates this item in place instead of creating a new one.
   const [editingItem, setEditingItem] = useState<GarmentItem | null>(null);
+  // Set when the upload modal was opened by dropping a file directly onto
+  // the "Upload new {label}" card (instead of clicking it) — pre-fills the
+  // front slot with the dropped image, same as reopening for a missing angle.
+  const [dropInitial, setDropInitial] = useState<GarmentUploadResult | null>(null);
   const gridRef = useRef<HTMLDivElement | null>(null);
   const maxFitColumns = useMaxFitColumns(gridRef, MIN_CARD_WIDTH);
   const COLUMN_STOPS = capAndDedupe(isLargeScreen ? COLUMN_STOPS_LARGE : COLUMN_STOPS_SMALL, maxFitColumns);
@@ -191,7 +203,24 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
   function closeUploadModal() {
     setShowUploadModal(false);
     setEditingItem(null);
+    setDropInitial(null);
   }
+
+  function handleDropFront(file: File) {
+    setEditingItem(null);
+    setDropInitial({ front: URL.createObjectURL(file) });
+    setShowUploadModal(true);
+  }
+
+  // Same as handleDropFront, for an image dragged in from a webpage instead
+  // of a local file — see useImageDragDrop's onUrl for why there's no File here.
+  function handleDropFrontUrl(url: string) {
+    setEditingItem(null);
+    setDropInitial({ front: url });
+    setShowUploadModal(true);
+  }
+
+  const dragDrop = useImageDragDrop(handleDropFront, handleDropFrontUrl);
 
   function handleSaveGarment(result: GarmentUploadResult) {
     if (editingItem) {
@@ -267,7 +296,12 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
                 setEditingItem(null);
                 setShowUploadModal(true);
               }}
+              onDragOver={dragDrop.onDragOver}
+              onDragLeave={dragDrop.onDragLeave}
+              onDrop={dragDrop.onDrop}
               className={`aspect-[5/6] min-w-[184px] group relative border-[1px] border-white/50 bg-white/8 hover:bg-white-12 cursor-pointer ${
+                dragDrop.isDragging ? "bg-white-12 border-white" : ""
+              } ${
                 "rounded-[16px] min-[1441px]:rounded-[24px]"
               }`}
               style={{ boxShadow: "0 0 24px 0 rgba(255, 255, 255, 0.24) inset, 0 0 4px 0 rgba(255, 255, 255, 0.40) inset" }}
@@ -402,7 +436,7 @@ const GarmentOptionPicker = ({ config }: { config: GarmentPickerConfig }) => {
       {showUploadModal && (
         <UploadGarmentModal
           label={config.label}
-          initial={editingItem ? toUploadResult(editingItem) : undefined}
+          initial={editingItem ? toUploadResult(editingItem) : dropInitial ?? undefined}
           onClose={closeUploadModal}
           onAdd={handleSaveGarment}
         />

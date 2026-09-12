@@ -18,7 +18,7 @@ export default function MobileTopBar() {
   const [isProfileSheetOpen, setIsProfileSheetOpen] = useState(false);
 
   return (
-    <div className="w-full h-full flex flex-row items-center justify-between px-[16px] pt-[12px] bg-surface-dark">
+    <div className="w-full h-full flex flex-row items-center justify-between px-[16px] pt-[12px] pb-[8px] bg-surface-dark">
     <Link href="/generate" className="flex flex-row gap-[8px]  items-center">
        <svg  width="32" height="32" viewBox="0 0 32 32" fill="none">
        <rect width="32" height="32" rx="6.4" fill="white"/>

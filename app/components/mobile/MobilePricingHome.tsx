@@ -170,7 +170,7 @@ export default function MobilePricingHome() {
             </div>
             <div className="w-full border-b border-line-sub" />
             <div className="flex flex-row items-center justify-between w-full">
-              <p className="text-strong text-paragraph-sm">Standard poses</p>
+              <p className="text-strong text-paragraph-sm">Special poses</p>
               <div className="px-[8px] py-[2px] h-[24px] rounded-[6px] flex items-center justify-center bg-white-20 text-label-xs text-neutral-50">2 credits</div>
             </div>
           </div>

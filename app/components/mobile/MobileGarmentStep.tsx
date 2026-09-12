@@ -16,6 +16,7 @@ import MobileGarmentUploadSheet, { GarmentUploadResult } from "./MobileGarmentUp
 import PhotoGuideSheet from "./PhotoGuideSheet";
 import { PHOTO_GUIDES } from "@/app/config/photoGuideConfig";
 import type { GarmentItem, GarmentPickerConfig } from "@/app/components/optionPicker/GarmentOptionPicker";
+import { useImageDragDrop } from "@/app/hooks/useImageDragDrop";
 
 function primaryImage(item: GarmentItem): StaticImageData | string | undefined {
   return item.front ?? item.back ?? item.closeup;
@@ -115,6 +116,9 @@ export default function MobileGarmentStep({
   // the "Upload new {label}" card) — handleSaveGarment then updates this
   // item in place instead of creating a new one, matching desktop.
   const [editingItem, setEditingItem] = useState<GarmentItem | null>(null);
+  // Same drop-to-prefill-front as desktop's GarmentOptionPicker, minus the
+  // hover highlight — a hover-style highlight doesn't make sense on a touch screen.
+  const [dropInitial, setDropInitial] = useState<GarmentUploadResult | null>(null);
 
   const visibleItems = items.filter((item) => {
     if (sourceFilter === "all") return true;
@@ -133,10 +137,32 @@ export default function MobileGarmentStep({
     setShowUploadSheet(true);
   }
 
+  function handleRemove(e: React.MouseEvent, item: GarmentItem) {
+    e.stopPropagation();
+    onItemsChange(items.filter((i) => i.id !== item.id));
+  }
+
   function closeUploadSheet() {
     setShowUploadSheet(false);
     setEditingItem(null);
+    setDropInitial(null);
   }
+
+  function handleDropFront(file: File) {
+    setEditingItem(null);
+    setDropInitial({ front: URL.createObjectURL(file) });
+    setShowUploadSheet(true);
+  }
+
+  // Same as handleDropFront, for an image dragged in from a webpage instead
+  // of a local file — see useImageDragDrop's onUrl for why there's no File here.
+  function handleDropFrontUrl(url: string) {
+    setEditingItem(null);
+    setDropInitial({ front: url });
+    setShowUploadSheet(true);
+  }
+
+  const dragDrop = useImageDragDrop(handleDropFront, handleDropFrontUrl);
 
   function handleSaveGarment(result: GarmentUploadResult) {
     if (editingItem) {
@@ -160,6 +186,9 @@ export default function MobileGarmentStep({
       <div className="flex flex-col gap-[20px]">
         <button
           onClick={() => setShowUploadSheet(true)}
+          onDragOver={dragDrop.onDragOver}
+          onDragLeave={dragDrop.onDragLeave}
+          onDrop={dragDrop.onDrop}
           className="group w-full h-[140px] rounded-[16px] border  border-white/50 bg-white/8 active:bg-white-12 flex flex-col items-center justify-center gap-[8px] cursor-pointer"
           style={{ boxShadow: "0 0 24px 0 rgba(255, 255, 255, 0.24) inset, 0 0 4px 0 rgba(255, 255, 255, 0.40) inset" }}
         >
@@ -230,6 +259,19 @@ export default function MobileGarmentStep({
               </div>
 
               {selectedId === item.id && <SelectedBadge />}
+
+              {/* Always visible (no hover on touch), unlike desktop's
+                  hover-reveal remove icon on the same card. */}
+              {isUpload && (
+                <div
+                  onClick={(e) => handleRemove(e, item)}
+                  className="absolute top-[12px] right-[12px] w-[24px] h-[24px] rounded-full bg-black-60 flex items-center justify-center cursor-pointer"
+                >
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                    <path d="M12 4L4 12M4 4L12 12" stroke="#EBEDF0" strokeOpacity="0.97" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+              )}
             </button>
           );
         })}
@@ -240,7 +282,7 @@ export default function MobileGarmentStep({
       {showUploadSheet && (
         <MobileGarmentUploadSheet
           label={config.label}
-          initial={editingItem ? toUploadResult(editingItem) : undefined}
+          initial={editingItem ? toUploadResult(editingItem) : dropInitial ?? undefined}
           onClose={closeUploadSheet}
           onAdd={handleSaveGarment}
         />

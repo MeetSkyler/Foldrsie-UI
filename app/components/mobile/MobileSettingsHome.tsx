@@ -11,6 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { useAuthModal } from "@/app/context/auth-modal-context";
 import profile from "@/public/Profilesimple.svg";
+import { useImageDragDrop } from "@/app/hooks/useImageDragDrop";
 import usageThumb1 from "@/public/img1.jpg";
 import usageThumb2 from "@/public/img4.jpg";
 
@@ -116,13 +117,27 @@ export default function MobileSettingsHome() {
   const photoInputRef = useRef<HTMLInputElement>(null);
   const [profileImage, setProfileImage] = useState<string | null>(null);
 
-  function handlePhotoSelected(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  function applyPhotoFile(file: File) {
     const reader = new FileReader();
     reader.onload = () => setProfileImage(reader.result as string);
     reader.readAsDataURL(file);
   }
+
+  function handlePhotoSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    applyPhotoFile(file);
+  }
+
+  // Same as applyPhotoFile, for an image dragged in from a webpage instead
+  // of a local file — see useImageDragDrop's onUrl for why there's no File here.
+  function applyPhotoUrl(url: string) {
+    setProfileImage(url);
+  }
+
+  // No hover highlight here — a hover-style highlight doesn't make sense on
+  // a touch screen, but a trackpad-in-mobile-viewport drop still works.
+  const photoDragDrop = useImageDragDrop(applyPhotoFile, applyPhotoUrl);
 
   function handleRemovePhoto() {
     setProfileImage(null);
@@ -171,7 +186,12 @@ export default function MobileSettingsHome() {
               <div className="pb-[20px] w-full flex flex-col gap-[12px] border-b border-line-sub">
                 <p className="text-label-sm text-sub">Profile photo</p>
                 <div className="flex flex-row items-center justify-between">
-                  <div className="w-[52px] h-[52px] rounded-full overflow-hidden">
+                  <div
+                    onDragOver={photoDragDrop.onDragOver}
+                    onDragLeave={photoDragDrop.onDragLeave}
+                    onDrop={photoDragDrop.onDrop}
+                    className="w-[52px] h-[52px] rounded-full overflow-hidden"
+                  >
                     <Image src={profileImage ?? profile} alt="profile" width={100} height={100} unoptimized className="w-full h-full object-cover" />
                   </div>
                   <div className="flex flex-row gap-[8px] items-center">

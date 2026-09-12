@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { useImageDragDrop } from "@/app/hooks/useImageDragDrop";
 
 export type GarmentUploadResult = {
   front?: string;
@@ -32,12 +33,15 @@ function UploadSlot({
 }: {
   slotKey: SlotKey;
   state: SlotState;
-  onFileSelected: (file: File) => void;
+  // Also accepts a plain URL string — dragging an image in from a webpage
+  // gives us a URL, not a File (see useImageDragDrop's onUrl).
+  onFileSelected: (fileOrUrl: File | string) => void;
   onCancelUpload: () => void;
   onRemove: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const meta = SLOT_META[slotKey];
+  const dragDrop = useImageDragDrop(onFileSelected, onFileSelected);
 
   function handleClick() {
     inputRef.current?.click();
@@ -58,7 +62,7 @@ function UploadSlot({
       />
 
       {state.previewUrl && !state.uploading ? (
-        <div className="relative w-full h-[350px] rounded-[16px] bg-amber-700">
+        <div className="relative w-full h-[350px] rounded-[16px] bg-surface-alpha-light-weak">
           <div className="absolute inset-0 rounded-[16px] overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={state.previewUrl} alt={meta.title} className="absolute inset-0 w-full h-full object-cover" />
@@ -100,7 +104,10 @@ function UploadSlot({
      <>
         <button
           onClick={handleClick}
-          className="w-full h-[350px] group rounded-[16px] bg-surface-alpha-light-weak hover:bg-surface-alpha-light-white transition-colors flex flex-col items-center justify-center gap-[12px] cursor-pointer"
+          onDragOver={dragDrop.onDragOver}
+          onDragLeave={dragDrop.onDragLeave}
+          onDrop={dragDrop.onDrop}
+          className={`w-full h-[350px] group rounded-[16px] bg-surface-alpha-light-weak hover:bg-surface-alpha-light-white transition-colors flex flex-col items-center justify-center gap-[12px] cursor-pointer ${dragDrop.isDragging ? "bg-surface-alpha-light-white" : ""}`}
         >
           <div  className="w-[32px] h-[32px]   group-active:scale-[0.95] group-active:translate-y-px transition-all duration-200 ease-out rounded-full flex p-[6px] items-center bg-surface-alpha-light-white justify-center text-strong text-[20px] leading-none"
                   style={{ boxShadow:
@@ -157,6 +164,15 @@ export default function UploadGarmentModal({
     back: slotFromInitial(initial?.back),
     closeup: slotFromInitial(initial?.closeup),
   });
+  // Snapshot of what the slots looked like when this modal opened — reopening
+  // for a missing angle pre-fills from `initial`, and closing without adding
+  // anything new shouldn't prompt to discard something that was never
+  // actually changed in this session. Captured once and never updated.
+  const [initialSlots] = useState<Record<SlotKey, SlotState>>({
+    front: slotFromInitial(initial?.front),
+    back: slotFromInitial(initial?.back),
+    closeup: slotFromInitial(initial?.closeup),
+  });
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   const timersRef = useRef<Record<SlotKey, ReturnType<typeof setInterval> | null>>({
     front: null,
@@ -173,7 +189,7 @@ export default function UploadGarmentModal({
     };
   }, []);
 
-  function startUpload(slotKey: SlotKey, file: File) {
+  function startUpload(slotKey: SlotKey, fileOrUrl: File | string) {
     setSlots((prev) => ({ ...prev, [slotKey]: { previewUrl: null, uploading: true, progress: 0 } }));
 
     // Time-based rather than fixed-increment-per-tick: progress is derived
@@ -182,13 +198,15 @@ export default function UploadGarmentModal({
     // that does fire always catches up to where it should actually be.
     const duration = 1200 + Math.random() * 600;
     const startedAt = Date.now();
+    // A dragged-in webpage image is already a URL — no blob to create.
+    const previewUrl = typeof fileOrUrl === "string" ? fileOrUrl : URL.createObjectURL(fileOrUrl);
 
     const timer = setInterval(() => {
       const pct = Math.min(100, Math.round(((Date.now() - startedAt) / duration) * 100));
       if (pct >= 100) {
         clearInterval(timer);
         timersRef.current[slotKey] = null;
-        setSlots((prev) => ({ ...prev, [slotKey]: { previewUrl: URL.createObjectURL(file), uploading: false, progress: 100 } }));
+        setSlots((prev) => ({ ...prev, [slotKey]: { previewUrl, uploading: false, progress: 100 } }));
       } else {
         setSlots((prev) => ({ ...prev, [slotKey]: { ...prev[slotKey], progress: pct } }));
       }
@@ -210,15 +228,21 @@ export default function UploadGarmentModal({
     setSlots((prev) => ({ ...prev, [slotKey]: EMPTY_SLOT }));
   }
 
-  const hasAnyImage = (Object.keys(slots) as SlotKey[]).some(
-    (k) => slots[k].previewUrl || slots[k].uploading
-  );
   // Only a finished upload counts toward "at least one photo provided" —
   // an in-progress upload shouldn't let the user submit an empty slot.
   const hasCompletedImage = (Object.keys(slots) as SlotKey[]).some((k) => slots[k].previewUrl);
+  // Whether anything actually changed since the modal opened — a slot's
+  // image was added/replaced/removed, or an upload is currently in flight.
+  // This (not hasCompletedImage) is what decides whether closing needs a
+  // discard confirmation, so reopening an already-uploaded item and closing
+  // without touching anything doesn't prompt to "discard" images that were
+  // there before this session even started.
+  const hasChanges = (Object.keys(slots) as SlotKey[]).some(
+    (k) => slots[k].previewUrl !== initialSlots[k].previewUrl || slots[k].uploading
+  );
 
   function requestClose() {
-    if (hasAnyImage) {
+    if (hasChanges) {
       setShowDiscardConfirm(true);
     } else {
       onClose();

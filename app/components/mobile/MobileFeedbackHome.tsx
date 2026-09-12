@@ -4,24 +4,29 @@
 // field, and "no backend yet" send behavior, laid out as a full routed page
 // (mobile nav links straight to /feedback) instead of a centered overlay.
 import { useState } from "react";
+import Spinner from "@/app/components/Spinner";
 
 const FEEDBACK_TYPES = ["General", "Feature request", "Report an issue"];
 
 export default function MobileFeedbackHome() {
   const [type, setType] = useState(FEEDBACK_TYPES[0]);
   const [message, setMessage] = useState("");
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
 
   function handleSend() {
-    if (!message.trim()) return;
-    setSent(true);
-    setType(FEEDBACK_TYPES[0]);
-    setMessage("");
+    if (!message.trim() || status === "sending") return;
+    setStatus("sending");
+    // No backend yet — simulate a brief send before confirming.
+    setTimeout(() => {
+      setStatus("sent");
+      setType(FEEDBACK_TYPES[0]);
+      setMessage("");
+    }, 900);
   }
 
   function handleMessageChange(value: string) {
     setMessage(value);
-    if (sent) setSent(false);
+    if (status === "sent") setStatus("idle");
   }
 
   return (
@@ -62,14 +67,15 @@ export default function MobileFeedbackHome() {
         </div>
       </div>
 
-      {sent && <p className="text-label-sm text-strong">Thanks — your feedback was sent.</p>}
+      {status === "sent" && <p className="text-label-sm text-strong">Thanks! Your feedback was sent.</p>}
 
       <button
         onClick={handleSend}
-        disabled={!message.trim()}
-        className="p-btn-noicon-48 text-label-sm flex items-center justify-center cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+        disabled={!message.trim() || status === "sending"}
+        className="p-btn-noicon-48 text-label-sm flex items-center justify-center gap-[8px] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        <p className="px-[4px]">Send feedback</p>
+        {status === "sending" && <Spinner size={16} />}
+        <p className="px-[4px]">{status === "sending" ? "Sending..." : "Send feedback"}</p>
       </button>
     </div>
   );

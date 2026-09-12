@@ -37,14 +37,19 @@ function hexToHsv(hex: string): { h: number; s: number; v: number } | null {
 export default function ColorPickerModal({
   onClose,
   onAdd,
+  initial,
 }: {
   onClose: () => void;
   onAdd: (hex: string) => void;
+  // Reopening from a color card's pencil icon seeds the picker with that
+  // card's existing color instead of the default swatch.
+  initial?: string;
 }) {
-  const [hue, setHue] = useState(0);
-  const [sat, setSat] = useState(12);
-  const [val, setVal] = useState(85);
-  const [hexText, setHexText] = useState(() => hsvToHex(0, 12, 85));
+  const seeded = initial ? hexToHsv(initial) : null;
+  const [hue, setHue] = useState(seeded?.h ?? 0);
+  const [sat, setSat] = useState(seeded?.s ?? 12);
+  const [val, setVal] = useState(seeded?.v ?? 85);
+  const [hexText, setHexText] = useState(() => hsvToHex(seeded?.h ?? 0, seeded?.s ?? 12, seeded?.v ?? 85));
   const [copied, setCopied] = useState(false);
 
   const squareRef = useRef<HTMLDivElement | null>(null);

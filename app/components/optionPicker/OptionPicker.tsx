@@ -9,6 +9,7 @@ import { useIsLargeScreen } from "./useIsLargeScreen";
 import { useZoom } from "@/app/context/zoom-context";
 import PhotoGuideModal from "@/app/components/PhotoGuideModal";
 import { PHOTO_GUIDES } from "@/app/config/photoGuideConfig";
+import { useImageDragDrop } from "@/app/hooks/useImageDragDrop";
 
 export type OptionPickerItem = {
   id: string;
@@ -76,7 +77,7 @@ const FIRST_CARD_ICON_LABEL_GAP = 12; // px — gap between the icon and its lab
 const FIRST_CARD_GUIDE_BOTTOM = 32; // px
 
 const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect?: (item: OptionPickerItem) => void;}) => {
-  const { selections, setSelection } = useOptionSelection();
+  const { selections, setSelection, itemsByKey, setItemsForKey } = useOptionSelection();
   const isLargeScreen = useIsLargeScreen();
   // Shared across every option-picker page so the zoom the user picks on
   // one page (e.g. Pose) carries over instead of resetting on the next.
@@ -85,8 +86,20 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
   // Restores the "Selected" badge from the shared context so navigating away
   // and back (without a full reload) doesn't make the selection look lost.
   const [selectedId, setSelectedId] = useState<string | null>(() => selections[config.key]?.id ?? null);
-  const [items, setItems] = useState(config.items);
+  // Backed by the shared context (not local state) so an uploaded photo or
+  // custom color survives navigating to another step's route and back —
+  // this page fully unmounts on that navigation, and local state would have
+  // reset to the static catalog every time. See option-selection-context.tsx.
+  const items = (itemsByKey[config.key] as OptionPickerItem[] | undefined) ?? config.items;
+  function setItems(updater: OptionPickerItem[] | ((prev: OptionPickerItem[]) => OptionPickerItem[])) {
+    const next = typeof updater === "function" ? (updater as (prev: OptionPickerItem[]) => OptionPickerItem[])(items) : updater;
+    setItemsForKey(config.key, next);
+  }
   const [showColorModal, setShowColorModal] = useState(false);
+  // Set when the color modal was reopened to edit an existing swatch (via its
+  // hover pencil icon) instead of opened fresh from "Create color" — tells
+  // handleAddColor to update that item in place instead of creating a new one.
+  const [editingColorItem, setEditingColorItem] = useState<OptionPickerItem | null>(null);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const guideData = PHOTO_GUIDES[config.key];
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -145,10 +158,28 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
   }
 
   function handleAddColor(hex: string) {
+    if (editingColorItem) {
+      const updated: OptionPickerItem = { ...editingColorItem, color: hex };
+      setItems((prev) => prev.map((i) => (i.id === editingColorItem.id ? updated : i)));
+      if (selectedId === editingColorItem.id) handleSelect(updated);
+      setShowColorModal(false);
+      setEditingColorItem(null);
+      return;
+    }
     const newItem: OptionPickerItem = { id: `color-${Date.now()}`, color: hex };
     setItems((prev) => [newItem, ...prev]);
     setShowColorModal(false);
     handleSelect(newItem);
+  }
+
+  function handleEditColor(item: OptionPickerItem) {
+    setEditingColorItem(item);
+    setShowColorModal(true);
+  }
+
+  function closeColorModal() {
+    setShowColorModal(false);
+    setEditingColorItem(null);
   }
 
   function handleSelectAuto() {
@@ -160,9 +191,7 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
     fileInputRef.current?.click();
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  function addImageFile(file: File) {
     const newItem: OptionPickerItem = {
       id: `upload-${Date.now()}`,
       label: file.name,
@@ -170,8 +199,26 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
     };
     setItems((prev) => [newItem, ...prev]);
     handleSelect(newItem);
+  }
+
+  // Same as addImageFile, for an image dragged in from a webpage instead of
+  // a local file — see useImageDragDrop's onUrl for why there's no File here.
+  function addImageUrl(url: string) {
+    const newItem: OptionPickerItem = { id: `upload-${Date.now()}`, label: url, image: url };
+    setItems((prev) => [newItem, ...prev]);
+    handleSelect(newItem);
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    addImageFile(file);
     e.target.value = "";
   }
+
+  // Lets the upload card double as a drop zone — dragging an image straight
+  // onto it works the same as clicking it and picking a file.
+  const dragDrop = useImageDragDrop(addImageFile, addImageUrl);
 
   function handleRemove(e: React.MouseEvent, item: OptionPickerItem) {
     e.stopPropagation();
@@ -246,7 +293,10 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
               />
               <button
                 onClick={handleUploadClick}
-                className={`aspect-[5/6] min-w-[184px] group  relative border border-white/50 bg-white/8 hover:bg-white-12 cursor-pointer ${
+                onDragOver={dragDrop.onDragOver}
+                onDragLeave={dragDrop.onDragLeave}
+                onDrop={dragDrop.onDrop}
+                className={`aspect-[5/6] min-w-[184px] group  relative border border-white/50 bg-white/8 hover:bg-white-12 cursor-pointer ${dragDrop.isDragging ? "bg-white-12 border-white" : ""} ${
                   "rounded-[16px] min-[1441px]:rounded-[24px]"
                 }`}
                 style={{boxShadow:"0 0 24px 0 rgba(255, 255, 255, 0.24) inset, 0 0 4px 0 rgba(255, 255, 255, 0.40) inset"}}>
@@ -418,15 +468,30 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
                 )}
 
                 {isRemovable && (
-                  <div
-                    onClick={(e) => handleRemove(e, item)}
-                    className="group/remove absolute top-[12px] right-[12px] w-[24px] h-[24px] rounded-full bg-black-60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
-                  >
-                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                      <path d="M12 4L4 12M4 4L12 12" stroke="#EBEDF0" strokeOpacity="0.97" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <div className="absolute bottom-full mb-[4px] left-1/2 -translate-x-1/2 z-20 whitespace-nowrap text-white text-label-xs bg-surface-light px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover/remove:opacity-100 transition-opacity duration-150 pointer-events-none">
-                      Remove image
+                  <div className="absolute top-[12px] right-[12px] flex flex-row items-center gap-[8px] opacity-0 group-hover:opacity-100 transition-opacity">
+                    {item.color && (
+                      <div
+                        onClick={(e) => { e.stopPropagation(); handleEditColor(item); }}
+                        className="group/edit relative w-[24px] h-[24px] rounded-full bg-black-60 flex items-center justify-center cursor-pointer"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                          <path d="M11.333 2.00016C11.5081 1.82506 11.7157 1.68605 11.9441 1.59109C12.1724 1.49614 12.4171 1.44708 12.6642 1.44669C12.9113 1.4463 13.1562 1.49459 13.3848 1.58882C13.6135 1.68305 13.8214 1.82141 13.9971 1.99598C14.1728 2.17055 14.3128 2.37792 14.4092 2.60629C14.5056 2.83465 14.5556 3.07954 14.556 3.32696C14.5564 3.57438 14.5083 3.81942 14.4127 4.04808C14.317 4.27673 14.1776 4.48453 14.0025 4.65961L4.99992 13.6622L1.33325 14.6668L2.33792 11.0001L11.333 2.00016Z" stroke="#EBEDF0" strokeOpacity="0.97" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <div className="absolute bottom-full mb-[4px] left-1/2 -translate-x-1/2 z-20 whitespace-nowrap text-white text-label-xs bg-surface-light px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover/edit:opacity-100 transition-opacity duration-150 pointer-events-none">
+                          Edit color
+                        </div>
+                      </div>
+                    )}
+                    <div
+                      onClick={(e) => handleRemove(e, item)}
+                      className="group/remove relative w-[24px] h-[24px] rounded-full bg-black-60 flex items-center justify-center cursor-pointer"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M12 4L4 12M4 4L12 12" stroke="#EBEDF0" strokeOpacity="0.97" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      <div className="absolute bottom-full mb-[4px] left-1/2 -translate-x-1/2 z-20 whitespace-nowrap text-white text-label-xs bg-surface-light px-[6px] py-[4px] rounded-[6px] opacity-0 group-hover/remove:opacity-100 transition-opacity duration-150 pointer-events-none">
+                        Remove image
+                      </div>
                     </div>
                   </div>
                 )}
@@ -440,7 +505,7 @@ const OptionPicker = ({ config, onSelect,}: {config: OptionPickerConfig;onSelect
       </div>
 
       {showColorModal && (
-        <ColorPickerModal onClose={() => setShowColorModal(false)} onAdd={handleAddColor} />
+        <ColorPickerModal onClose={closeColorModal} onAdd={handleAddColor} initial={editingColorItem?.color} />
       )}
       {guideData && (
         <PhotoGuideModal isOpen={showGuideModal} onClose={() => setShowGuideModal(false)} data={guideData} />

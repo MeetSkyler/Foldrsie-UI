@@ -16,6 +16,7 @@ import SourceFilterDropdown, { SourceFilter } from "@/app/components/optionPicke
 import MobileColorPickerSheet from "./MobileColorPickerSheet";
 import PhotoGuideSheet from "./PhotoGuideSheet";
 import { PHOTO_GUIDES } from "@/app/config/photoGuideConfig";
+import { useImageDragDrop } from "@/app/hooks/useImageDragDrop";
 
 const AUTO_ID = "auto";
 
@@ -58,6 +59,10 @@ export default function MobileOptionStep({
       ? AUTO_ID
       : selections[config.key]!.id;
   const [showColorModal, setShowColorModal] = useState(false);
+  // Set when the color sheet was reopened to edit an existing swatch (via its
+  // always-visible pencil icon — no hover on touch) instead of opened fresh
+  // from "Create color" — tells handleAddColor to update that item in place.
+  const [editingColorItem, setEditingColorItem] = useState<OptionPickerItem | null>(null);
   const [showGuideSheet, setShowGuideSheet] = useState(false);
   const guideData = PHOTO_GUIDES[config.key];
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -77,19 +82,40 @@ export default function MobileOptionStep({
   }
 
   function handleAddColor(hex: string) {
+    if (editingColorItem) {
+      const updated: OptionPickerItem = { ...editingColorItem, color: hex };
+      onItemsChange(items.map((i) => (i.id === editingColorItem.id ? updated : i)));
+      if (selectedId === editingColorItem.id) handleSelect(updated);
+      setShowColorModal(false);
+      setEditingColorItem(null);
+      return;
+    }
     const newItem: OptionPickerItem = { id: `color-${Date.now()}`, color: hex };
     onItemsChange([newItem, ...items]);
     setShowColorModal(false);
     handleSelect(newItem);
   }
 
+  function handleEditColor(item: OptionPickerItem) {
+    setEditingColorItem(item);
+    setShowColorModal(true);
+  }
+
+  function closeColorModal() {
+    setShowColorModal(false);
+    setEditingColorItem(null);
+  }
+
+  function handleRemove(e: React.MouseEvent, item: OptionPickerItem) {
+    e.stopPropagation();
+    onItemsChange(items.filter((i) => i.id !== item.id));
+  }
+
   function handleUploadClick() {
     fileInputRef.current?.click();
   }
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  function addImageFile(file: File) {
     const newItem: OptionPickerItem = {
       id: `upload-${Date.now()}`,
       label: file.name,
@@ -97,8 +123,29 @@ export default function MobileOptionStep({
     };
     onItemsChange([newItem, ...items]);
     handleSelect(newItem);
+  }
+
+  // Same as addImageFile, for an image dragged in from a webpage instead of
+  // a local file — see useImageDragDrop's onUrl for why there's no File here.
+  function addImageUrl(url: string) {
+    const newItem: OptionPickerItem = { id: `upload-${Date.now()}`, label: url, image: url };
+    onItemsChange([newItem, ...items]);
+    handleSelect(newItem);
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    addImageFile(file);
     e.target.value = "";
   }
+
+  // Same drag-to-upload as desktop's OptionPicker — works fine on a laptop
+  // trackpad-in-mobile-viewport case even though real touch devices don't
+  // fire these events; either way there's no hover highlight here (`.
+  // isDragging` is intentionally unused below), since a hover-style
+  // highlight doesn't make sense on a touch screen.
+  const dragDrop = useImageDragDrop(addImageFile, addImageUrl);
 
   return (
     <div className="flex flex-col gap-[32px] px-[16px] py-[32px]">
@@ -108,6 +155,9 @@ export default function MobileOptionStep({
           <div className="flex flex-col gap-[20px]">
             <button
               onClick={handleUploadClick}
+              onDragOver={dragDrop.onDragOver}
+              onDragLeave={dragDrop.onDragLeave}
+              onDrop={dragDrop.onDrop}
               className="group w-full h-[140px] rounded-[16px] border border-white/50 bg-white/8 active:bg-white-12 flex flex-col items-center justify-center gap-[8px] cursor-pointer"
               style={{ boxShadow: "0 0 24px 0 rgba(255, 255, 255, 0.24) inset, 0 0 4px 0 rgba(255, 255, 255, 0.40) inset" }}
             >
@@ -182,24 +232,51 @@ export default function MobileOptionStep({
             </button>
           )}
 
-          {visibleItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => handleSelect(item)}
-              className="group aspect-73/88 rounded-[16px] relative cursor-pointer overflow-hidden"
-            >
-              {item.color ? (
-                <div className="absolute inset-0" style={{ background: item.color }} />
-              ) : (
-                <Image src={item.image!} alt={item.label ?? config.label} fill sizes="200px" unoptimized={typeof item.image === "string"} className="object-cover" />
-              )}
-              {selectedId === item.id && <SelectedBadge />}
-            </button>
-          ))}
+          {visibleItems.map((item) => {
+            const isRemovable = item.id.startsWith("upload-") || item.id.startsWith("color-");
+            return (
+              <button
+                key={item.id}
+                onClick={() => handleSelect(item)}
+                className="group aspect-73/88 rounded-[16px] relative cursor-pointer overflow-hidden"
+              >
+                {item.color ? (
+                  <div className="absolute inset-0" style={{ background: item.color }} />
+                ) : (
+                  <Image src={item.image!} alt={item.label ?? config.label} fill sizes="200px" unoptimized={typeof item.image === "string"} className="object-cover" />
+                )}
+                {selectedId === item.id && <SelectedBadge />}
+                {/* Always visible (no hover on touch), unlike desktop's
+                    hover-reveal versions of these same icons. */}
+                {isRemovable && (
+                  <div className="absolute top-[12px] right-[12px] flex flex-row items-center gap-[8px]">
+                    {item.color && (
+                      <div
+                        onClick={(e) => { e.stopPropagation(); handleEditColor(item); }}
+                        className="w-[24px] h-[24px] rounded-full bg-black-60 flex items-center justify-center cursor-pointer"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                          <path d="M11.333 2.00016C11.5081 1.82506 11.7157 1.68605 11.9441 1.59109C12.1724 1.49614 12.4171 1.44708 12.6642 1.44669C12.9113 1.4463 13.1562 1.49459 13.3848 1.58882C13.6135 1.68305 13.8214 1.82141 13.9971 1.99598C14.1728 2.17055 14.3128 2.37792 14.4092 2.60629C14.5056 2.83465 14.5556 3.07954 14.556 3.32696C14.5564 3.57438 14.5083 3.81942 14.4127 4.04808C14.317 4.27673 14.1776 4.48453 14.0025 4.65961L4.99992 13.6622L1.33325 14.6668L2.33792 11.0001L11.333 2.00016Z" stroke="#EBEDF0" strokeOpacity="0.97" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+                    )}
+                    <div
+                      onClick={(e) => handleRemove(e, item)}
+                      className="w-[24px] h-[24px] rounded-full bg-black-60 flex items-center justify-center cursor-pointer"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M12 4L4 12M4 4L12 12" stroke="#EBEDF0" strokeOpacity="0.97" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {showColorModal && <MobileColorPickerSheet onClose={() => setShowColorModal(false)} onAdd={handleAddColor} />}
+      {showColorModal && <MobileColorPickerSheet onClose={closeColorModal} onAdd={handleAddColor} initial={editingColorItem?.color} />}
       {guideData && <PhotoGuideSheet isOpen={showGuideSheet} onClose={() => setShowGuideSheet(false)} data={guideData} />}
     </div>
   );

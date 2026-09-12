@@ -7,6 +7,7 @@
 // instead of desktop's centered dialog.
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, type PanInfo } from "motion/react";
+import { useImageDragDrop } from "@/app/hooks/useImageDragDrop";
 
 export type GarmentUploadResult = {
   front?: string;
@@ -39,12 +40,17 @@ function MobileUploadSlot({
 }: {
   slotKey: SlotKey;
   state: SlotState;
-  onFileSelected: (file: File) => void;
+  // Also accepts a plain URL string — dragging an image in from a webpage
+  // gives us a URL, not a File (see useImageDragDrop's onUrl).
+  onFileSelected: (fileOrUrl: File | string) => void;
   onCancelUpload: () => void;
   onRemove: () => void;
 }) {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const meta = SLOT_META[slotKey];
+  // Same drag-to-drop as desktop's UploadGarmentModal, minus the hover
+  // highlight — a hover-style highlight doesn't make sense on a touch screen.
+  const dragDrop = useImageDragDrop(onFileSelected, onFileSelected);
 
   function handleClick() {
     inputRef.current?.click();
@@ -105,6 +111,9 @@ function MobileUploadSlot({
         // .....btn inputs .......
         <button
           onClick={handleClick}
+          onDragOver={dragDrop.onDragOver}
+          onDragLeave={dragDrop.onDragLeave}
+          onDrop={dragDrop.onDrop}
           className="group w-full h-[140px] rounded-[16px] bg-surface-alpha-light-weak active:bg-surface-alpha-light-white transition-colors flex flex-col items-center justify-center gap-[12px] cursor-pointer"
         >
           <div
@@ -165,6 +174,15 @@ export default function MobileGarmentUploadSheet({
     back: slotFromInitial(initial?.back),
     closeup: slotFromInitial(initial?.closeup),
   });
+  // Snapshot of what the slots looked like when this sheet opened — reopening
+  // for a missing angle pre-fills from `initial`, and closing without adding
+  // anything new shouldn't prompt to discard something that was never
+  // actually changed in this session. Captured once and never updated.
+  const [initialSlots] = useState<Record<SlotKey, SlotState>>({
+    front: slotFromInitial(initial?.front),
+    back: slotFromInitial(initial?.back),
+    closeup: slotFromInitial(initial?.closeup),
+  });
   const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   // Plays the sheet's exit animation before actually unmounting — the
   // parent's own onClose (which removes this component from the tree) only
@@ -185,18 +203,20 @@ export default function MobileGarmentUploadSheet({
     };
   }, []);
 
-  function startUpload(slotKey: SlotKey, file: File) {
+  function startUpload(slotKey: SlotKey, fileOrUrl: File | string) {
     setSlots((prev) => ({ ...prev, [slotKey]: { previewUrl: null, uploading: true, progress: 0 } }));
 
     const duration = 300 + Math.random() * 200;
     const startedAt = Date.now();
+    // A dragged-in webpage image is already a URL — no blob to create.
+    const previewUrl = typeof fileOrUrl === "string" ? fileOrUrl : URL.createObjectURL(fileOrUrl);
 
     const timer = setInterval(() => {
       const pct = Math.min(100, Math.round(((Date.now() - startedAt) / duration) * 100));
       if (pct >= 100) {
         clearInterval(timer);
         timersRef.current[slotKey] = null;
-        setSlots((prev) => ({ ...prev, [slotKey]: { previewUrl: URL.createObjectURL(file), uploading: false, progress: 100 } }));
+        setSlots((prev) => ({ ...prev, [slotKey]: { previewUrl, uploading: false, progress: 100 } }));
       } else {
         setSlots((prev) => ({ ...prev, [slotKey]: { ...prev[slotKey], progress: pct } }));
       }
@@ -218,11 +238,16 @@ export default function MobileGarmentUploadSheet({
     setSlots((prev) => ({ ...prev, [slotKey]: EMPTY_SLOT }));
   }
 
-  const hasAnyImage = (Object.keys(slots) as SlotKey[]).some((k) => slots[k].previewUrl || slots[k].uploading);
   const hasCompletedImage = (Object.keys(slots) as SlotKey[]).some((k) => slots[k].previewUrl);
+  // Whether anything actually changed since the sheet opened — see the same
+  // note on UploadGarmentModal.tsx's hasChanges for why this (not
+  // hasCompletedImage) is what should gate the discard confirmation.
+  const hasChanges = (Object.keys(slots) as SlotKey[]).some(
+    (k) => slots[k].previewUrl !== initialSlots[k].previewUrl || slots[k].uploading
+  );
 
   function requestClose() {
-    if (hasAnyImage) {
+    if (hasChanges) {
       setShowDiscardConfirm(true);
     } else {
       setIsClosing(true);
